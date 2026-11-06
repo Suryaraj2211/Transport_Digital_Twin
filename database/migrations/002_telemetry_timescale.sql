@@ -49,3 +49,4 @@ CREATE TABLE IF NOT EXISTS device_health_records (
 -- SELECT create_hypertable('device_health_records', 'recorded_at', chunk_time_interval => INTERVAL '14 days', if_not_exists => TRUE);
 
 CREATE INDEX IF NOT EXISTS idx_health_device_time ON device_health_records(device_id, recorded_at DESC);
+
