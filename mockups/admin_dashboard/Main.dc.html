@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fleet Tracker dashboard</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+input,select{font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #1769E0;outline-offset:2px}
+@keyframes ftpulse{0%{box-shadow:0 0 0 0 rgba(23,105,224,.5)}100%{box-shadow:0 0 0 9px rgba(23,105,224,0)}}
+a{color:#0B57C7}a:hover{color:#08439A}
+</style>
+</helmet>
+<div style="display:flex; flex-wrap:wrap; align-items:stretch; min-height:900px; background:#F3F5F7; color:#12202B; font-family:'IBM Plex Sans',system-ui,sans-serif; font-size:14px; line-height:1.4">
+
+<!-- Sidebar -->
+<nav aria-label="Main" style="flex:1 1 208px; box-sizing:border-box; background:#12202B; color:#FFFFFF; padding:20px 12px; display:flex; flex-direction:column; gap:20px">
+<div style="display:flex; align-items:center; gap:10px; padding:0 8px">
+<div style="width:32px; height:32px; border-radius:8px; background:#1769E0; display:flex; align-items:center; justify-content:center">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v9H2z"></path><path d="M13 9h4l3 3v3h-7z"></path><circle cx="6.5" cy="17" r="1.8"></circle><circle cx="16.5" cy="17" r="1.8"></circle></svg>
+</div>
+<span style="font-weight:600; font-size:16px">Fleet Tracker</span>
+</div>
+<div style="display:flex; flex-direction:column; gap:4px">
+<button onClick="{{goLive}}" style="display:flex; align-items:center; gap:12px; width:100%; min-height:44px; padding:0 12px; border:0; border-radius:8px; font-size:14px; font-weight:500; text-align:left; {{navLive}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+Live map
+</button>
+<button onClick="{{goVehicles}}" style="display:flex; align-items:center; gap:12px; width:100%; min-height:44px; padding:0 12px; border:0; border-radius:8px; font-size:14px; font-weight:500; text-align:left; {{navVehicles}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v9H2z"></path><path d="M13 9h4l3 3v3h-7z"></path><circle cx="6.5" cy="17" r="1.8"></circle><circle cx="16.5" cy="17" r="1.8"></circle></svg>
+Vehicles
+</button>
+<button onClick="{{goDrivers}}" style="display:flex; align-items:center; gap:12px; width:100%; min-height:44px; padding:0 12px; border:0; border-radius:8px; font-size:14px; font-weight:500; text-align:left; {{navDrivers}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"></path></svg>
+Drivers
+</button>
+<button onClick="{{goAssign}}" style="display:flex; align-items:center; gap:12px; width:100%; min-height:44px; padding:0 12px; border:0; border-radius:8px; font-size:14px; font-weight:500; text-align:left; {{navAssign}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h12l-3-3"></path><path d="M17 16H5l3 3"></path></svg>
+Assign driver
+</button>
+</div>
+<div style="margin-top:auto; padding:12px; border-radius:8px; background:rgba(255,255,255,.08)">
+<div style="font-weight:500">Bharath Swift Logistics Pvt. Ltd</div>
+<div style="font-size:12px; color:#B9C6D0; margin-top:2px">Owner account</div>
+</div>
+</nav>
+
+<!-- Content -->
+<main style="flex:999 1 560px; min-width:0; box-sizing:border-box; padding:24px; display:flex; flex-direction:column; gap:16px">
+<header style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px">
+<div>
+<h1 style="margin:0; font-size:24px; font-weight:600">{{title}}</h1>
+<p style="margin:4px 0 0; color:#5B6975">{{subtitle}}</p>
+</div>
+<sc-if value="{{isVehicles}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{toggleAddVehicle}}" style="min-height:44px; padding:0 16px; border:0; border-radius:8px; background:#1769E0; color:#FFFFFF; font-size:14px; font-weight:600">{{addVehicleLabel}}</button>
+</sc-if>
+<sc-if value="{{isDrivers}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{toggleAddDriver}}" style="min-height:44px; padding:0 16px; border:0; border-radius:8px; background:#1769E0; color:#FFFFFF; font-size:14px; font-weight:600">{{addDriverLabel}}</button>
+</sc-if>
+</header>
+
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:8px 8px 8px 16px; border-radius:10px; background:#12202B; color:#FFFFFF">
+<span>{{toast}}</span>
+<button onClick="{{dismissToast}}" style="min-height:44px; padding:0 12px; border:0; border-radius:8px; background:transparent; color:#FFFFFF; font-weight:500; text-decoration:underline">Dismiss</button>
+</div>
+</sc-if>
+
+<!-- LIVE -->
+<sc-if value="{{isLive}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex; flex-direction:column; gap:16px">
+<div style="display:flex; flex-wrap:wrap; gap:12px">
+<sc-for list="{{stats}}" as="st" hint-placeholder-count="5">
+<div style="flex:1 1 150px; box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:10px; padding:12px 14px">
+<div style="font-size:12px; color:#5B6975">{{st.label}}</div>
+<div style="font-size:24px; font-weight:600; margin-top:2px">{{st.value}}</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display:flex; flex-wrap:wrap; gap:16px; align-items:stretch">
+
+<!-- Vehicle list -->
+<section aria-label="Vehicles" style="flex:1 1 280px; max-width:340px; box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; display:flex; flex-direction:column; min-height:560px; overflow:hidden">
+<div style="display:flex; gap:4px; padding:8px; border-bottom:1px solid #DDE3E8">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+<button aria-pressed="{{f.pressed}}" onClick="{{f.pick}}" style="flex:1 1 0; min-width:0; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; border:0; border-radius:8px; {{f.style}}">
+<span style="font-size:12px">{{f.label}}</span>
+<span style="font-size:16px; font-weight:600">{{f.count}}</span>
+</button>
+</sc-for>
+</div>
+<div style="display:flex; flex-direction:column">
+<sc-for list="{{listItems}}" as="v" hint-placeholder-count="6">
+<button aria-pressed="{{v.selected}}" onClick="{{v.pick}}" style="display:flex; flex-direction:column; gap:4px; width:100%; box-sizing:border-box; text-align:left; padding:12px 14px; border:0; border-bottom:1px solid #EEF1F4; background:#FFFFFF; color:#12202B; {{v.rowStyle}}">
+<span style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+<span style="font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px">{{v.plate}}</span>
+<span style="display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:500; {{v.chipColors}}"><span style="width:6px; height:6px; border-radius:50%; {{v.dotColor}}"></span>{{v.statusLabel}}</span>
+</span>
+<span style="color:#12202B; font-size:13px">{{v.driverName}}</span>
+<span style="color:#5B6975; font-size:12px">{{v.listMeta}}</span>
+</button>
+</sc-for>
+</div>
+</section>
+
+<!-- Map -->
+<section aria-label="Live map of vehicles" style="flex:999 1 420px; min-width:0; box-sizing:border-box; position:relative; min-height:560px; border-radius:12px; overflow:hidden; border:1px solid #DDE3E8; background:#E8EDF0">
+<svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%">
+<rect width="100" height="100" fill="#E8EDF0"></rect>
+<polygon points="68,100 100,100 100,76 88,82" fill="#CFE2EC"></polygon>
+<polygon points="5,6 22,4 26,18 9,22" fill="#D9E9DA"></polygon>
+<polygon points="76,66 92,60 97,84 80,88" fill="#D9E9DA"></polygon>
+<path d="M0 30 L26 34 L40 26" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="M12 100 L20 74 L30 60" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="M60 70 L78 76 L100 70" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="M70 20 L74 34 L90 40 L100 36" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="M0 52 L28 50" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="M20 10 L30 24 L40 26" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="M84 100 L86 84" fill="none" stroke="#FFFFFF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<polyline points="0,82 18,70 34,60 50,48 66,38 82,24 100,12" fill="none" stroke="#B4BFC9" stroke-width="10" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+<polyline points="40,100 42,80 46,62 50,48 54,30 60,0" fill="none" stroke="#B4BFC9" stroke-width="10" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+<polygon points="28,38 40,26 60,22 74,34 72,56 58,70 40,72 28,58" fill="none" stroke="#B4BFC9" stroke-width="8" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polygon>
+<polyline points="0,82 18,70 34,60 50,48 66,38 82,24 100,12" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+<polyline points="40,100 42,80 46,62 50,48 54,30 60,0" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+<polygon points="28,38 40,26 60,22 74,34 72,56 58,70 40,72 28,58" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polygon>
+</svg>
+<span style="position:absolute; left:10%; top:84%; font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:#5B6975">Chennai</span>
+<span style="position:absolute; left:66%; top:7%; font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:#5B6975">Gudur</span>
+<span style="position:absolute; left:80%; top:30%; font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:#5B6975">Krishnagiri</span>
+<span style="position:absolute; left:46%; top:94%; font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:#5B6975">Chengalpattu</span>
+
+<sc-if value="{{showTrailLine}}" hint-placeholder-val="{{ true }}">
+<svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none">
+<polyline points="{{trailPoints}}" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+<polyline points="{{trailPoints}}" fill="none" stroke="#1769E0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+</svg>
+<div style="position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#12202B; border:2px solid #FFFFFF; box-sizing:border-box; {{trailStartStyle}}">
+<span style="position:absolute; top:-24px; left:50%; transform:translateX(-50%); white-space:nowrap; padding:1px 6px; border-radius:6px; background:#12202B; color:#FFFFFF; font-size:11px; font-weight:500">{{startLabel}}</span>
+</div>
+</sc-if>
+
+<sc-for list="{{markers}}" as="m" hint-placeholder-count="6">
+<button onClick="{{m.pick}}" aria-label="{{m.ariaLabel}}" aria-pressed="{{m.selected}}" style="position:absolute; width:44px; height:44px; margin:-22px 0 0 -22px; padding:0; border:0; background:transparent; {{m.posStyle}}">
+<span style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; margin:4px; border-radius:50%; border:2px solid #FFFFFF; box-sizing:border-box; {{m.dotStyle}}">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v9H2z"></path><path d="M13 9h4l3 3v3h-7z"></path><circle cx="6.5" cy="17" r="1.8"></circle><circle cx="16.5" cy="17" r="1.8"></circle></svg>
+</span>
+<span style="position:absolute; top:44px; left:50%; transform:translateX(-50%); white-space:nowrap; padding:1px 6px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.25); {{m.labelStyle}}">{{m.plate}}</span>
+</button>
+</sc-for>
+
+<div style="position:absolute; top:12px; left:12px; display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; background:#FFFFFF; box-shadow:0 1px 4px rgba(0,0,0,.2); font-size:12px; font-weight:500">
+<span style="width:8px; height:8px; border-radius:50%; background:#1769E0; animation:ftpulse 1.6s infinite"></span>
+Live · refreshes every 5 s
+</div>
+<button onClick="{{fitAll}}" style="position:absolute; top:8px; right:12px; min-height:44px; padding:0 14px; border:0; border-radius:8px; background:#FFFFFF; color:#12202B; font-size:13px; font-weight:500; box-shadow:0 1px 4px rgba(0,0,0,.2)">Show all vehicles</button>
+<div style="position:absolute; left:12px; bottom:12px; display:flex; flex-wrap:wrap; gap:12px; padding:8px 12px; border-radius:8px; background:#FFFFFF; box-shadow:0 1px 4px rgba(0,0,0,.2); font-size:12px">
+<span style="display:inline-flex; align-items:center; gap:6px"><span style="width:10px; height:10px; border-radius:50%; background:#1769E0"></span>Moving</span>
+<span style="display:inline-flex; align-items:center; gap:6px"><span style="width:10px; height:10px; border-radius:50%; background:#B86E00"></span>Idle</span>
+<span style="display:inline-flex; align-items:center; gap:6px"><span style="width:10px; height:10px; border-radius:50%; background:#6B7682"></span>Offline</span>
+</div>
+</section>
+
+<!-- Vehicle detail panel -->
+<aside aria-label="Vehicle details" style="flex:1 1 300px; max-width:360px; box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:16px">
+<sc-if value="{{noSel}}" hint-placeholder-val="{{ false }}">
+<p style="margin:0; color:#5B6975">Select a vehicle on the map or in the list to see its driver, speed and distance covered.</p>
+</sc-if>
+<sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex; flex-direction:column; gap:16px">
+<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px">
+<div style="display:flex; flex-direction:column; gap:6px">
+<span style="font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:20px">{{sel.plate}}</span>
+<span style="color:#5B6975; font-size:13px">{{sel.model}}</span>
+</div>
+<div style="display:flex; align-items:center; gap:4px">
+<span style="display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:500; {{sel.chipColors}}"><span style="width:6px; height:6px; border-radius:50%; {{sel.dotColor}}"></span>{{sel.statusLabel}}</span>
+<button onClick="{{sel.close}}" aria-label="Close vehicle details" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; border:0; border-radius:8px; background:transparent; color:#12202B">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+</button>
+</div>
+</div>
+
+<div style="display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:10px; background:#F0F5FF; border:1px solid #CFE0FA">
+<div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0A4A9E">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c4 0 4-6 8-6s4-6 8-6"></path><circle cx="4" cy="20" r="1.5"></circle><circle cx="20" cy="8" r="1.5"></circle></svg>
+Distance covered
+</div>
+<div style="display:flex; align-items:baseline; gap:6px">
+<span style="font-size:36px; font-weight:600; line-height:1.1">{{sel.kmValue}}</span>
+<span style="font-size:16px; font-weight:500; color:#44505B">km</span>
+</div>
+<div style="font-size:12px; color:#44505B">{{sel.periodLabel}} · {{sel.periodSub}}</div>
+<div role="group" aria-label="Distance period" style="display:flex; gap:4px; padding:4px; border-radius:10px; background:#DCE6F5">
+<sc-for list="{{sel.periods}}" as="p" hint-placeholder-count="3">
+<button aria-pressed="{{p.pressed}}" onClick="{{p.pick}}" style="flex:1 1 0; min-width:0; min-height:40px; border:0; border-radius:7px; font-size:12px; font-weight:500; {{p.style}}">{{p.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex; align-items:center; gap:12px">
+<div aria-hidden="true" style="width:44px; height:44px; flex:0 0 44px; border-radius:50%; background:#12202B; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-weight:600">{{sel.driverInitials}}</div>
+<div style="flex:1 1 auto; min-width:0">
+<div style="font-weight:600">{{sel.driverName}}</div>
+<div style="font-size:12px; color:#5B6975">{{sel.dutyText}}</div>
+</div>
+<sc-if value="{{sel.hasDriver}}" hint-placeholder-val="{{ true }}">
+<a href="{{sel.driverTel}}" aria-label="Call driver" style="display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:8px; border:1px solid #8593A0; color:#12202B">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"></path></svg>
+</a>
+</sc-if>
+</div>
+
+<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px">
+<div><div style="font-size:12px; color:#5B6975">Speed</div><div style="font-weight:600; font-size:16px">{{sel.speedText}}</div></div>
+<div><div style="font-size:12px; color:#5B6975">Last update</div><div style="font-weight:600; font-size:16px">{{sel.lastText}}</div></div>
+<div><div style="font-size:12px; color:#5B6975">Driver phone battery</div><div style="font-weight:600; font-size:16px">{{sel.battery}}</div></div>
+<div><div style="font-size:12px; color:#5B6975">GPS accuracy</div><div style="font-weight:600; font-size:16px">{{sel.acc}}</div></div>
+</div>
+
+<div>
+<div style="font-size:12px; color:#5B6975">{{sel.locLabel}}</div>
+<div style="font-weight:500; margin-top:2px">{{sel.locText}}</div>
+</div>
+
+<sc-if value="{{sel.hasTrail}}" hint-placeholder-val="{{ true }}">
+<button role="switch" aria-checked="{{sel.trailOn}}" onClick="{{sel.trailToggle}}" style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:44px; padding:0; border:0; background:transparent; color:#12202B; font-size:14px; font-weight:500; text-align:left">
+<span>Show today's route on map</span>
+<span style="position:relative; flex:0 0 40px; width:40px; height:24px; border-radius:12px; {{sel.trackStyle}}"><span style="position:absolute; top:3px; width:18px; height:18px; border-radius:50%; background:#FFFFFF; {{sel.knobStyle}}"></span></span>
+</button>
+</sc-if>
+
+<button onClick="{{sel.change}}" style="min-height:44px; padding:0 16px; border:1px solid #8593A0; border-radius:8px; background:#FFFFFF; color:#12202B; font-size:14px; font-weight:600">Change driver</button>
+</div>
+</sc-if>
+</aside>
+</div>
+</div>
+</sc-if>
+
+<!-- VEHICLES -->
+<sc-if value="{{isVehicles}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; flex-direction:column; gap:16px">
+<sc-if value="{{showAddVehicle}}" hint-placeholder-val="{{ false }}">
+<section aria-label="Add vehicle" style="box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:16px">
+<h2 style="margin:0; font-size:16px; font-weight:600">New vehicle</h2>
+<div style="display:flex; flex-wrap:wrap; gap:16px">
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nv-plate" style="font-size:13px; font-weight:500">Registration number</label>
+<input id="nv-plate" value="{{nvPlate}}" onChange="{{setNvPlate}}" placeholder="TN 00 AB 0000" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; text-transform:uppercase; background:#FFFFFF; color:#12202B">
+</div>
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nv-type" style="font-size:13px; font-weight:500">Vehicle type</label>
+<select id="nv-type" value="{{nvType}}" onChange="{{setNvType}}" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; background:#FFFFFF; color:#12202B">
+<option value="Truck 28T">Truck 28T</option>
+<option value="Truck 16T">Truck 16T</option>
+<option value="LCV 7T">LCV 7T</option>
+<option value="Container 40 ft">Container 40 ft</option>
+<option value="Tanker">Tanker</option>
+</select>
+</div>
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nv-model" style="font-size:13px; font-weight:500">Make and model (optional)</label>
+<input id="nv-model" value="{{nvModel}}" onChange="{{setNvModel}}" placeholder="Make and model" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; background:#FFFFFF; color:#12202B">
+</div>
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nv-source" style="font-size:13px; font-weight:500">Location source</label>
+<select id="nv-source" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; background:#FFFFFF; color:#12202B">
+<option value="app">Driver app (phone GPS)</option>
+<option value="device" disabled="">GPS device (coming in phase 2)</option>
+</select>
+</div>
+</div>
+<div style="display:flex; flex-direction:column; gap:8px">
+<span style="font-size:13px; font-weight:500">Attach a driver</span>
+<div style="display:flex; flex-wrap:wrap; gap:8px">
+<sc-for list="{{nvDriverChoices}}" as="c" hint-placeholder-count="5">
+<button aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="min-height:44px; padding:0 14px; border:1px solid #8593A0; border-radius:8px; font-size:13px; font-weight:500; {{c.style}}">{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:flex; flex-wrap:wrap; gap:8px">
+<button disabled="{{saveVehicleDisabled}}" onClick="{{saveVehicle}}" style="min-height:44px; padding:0 16px; border:0; border-radius:8px; background:#1769E0; color:#FFFFFF; font-size:14px; font-weight:600; {{saveVehicleStyle}}">Save vehicle</button>
+<button onClick="{{toggleAddVehicle}}" style="min-height:44px; padding:0 16px; border:1px solid #8593A0; border-radius:8px; background:#FFFFFF; color:#12202B; font-size:14px; font-weight:600">Cancel</button>
+</div>
+</section>
+</sc-if>
+
+<section aria-label="Vehicle list" style="background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; overflow-x:auto">
+<div role="table" aria-label="Vehicles" style="min-width:860px">
+<div role="row" style="display:grid; grid-template-columns:200px 190px 170px 120px 130px minmax(0, 1fr); gap:12px; padding:12px 16px; font-size:12px; font-weight:500; color:#5B6975; border-bottom:1px solid #DDE3E8">
+<div role="columnheader">Vehicle</div>
+<div role="columnheader">Type</div>
+<div role="columnheader">Driver</div>
+<div role="columnheader">Status</div>
+<div role="columnheader">Distance today</div>
+<div role="columnheader">Location</div>
+</div>
+<sc-for list="{{vehicleRows}}" as="r" hint-placeholder-count="6">
+<div role="row" style="display:grid; grid-template-columns:200px 190px 170px 120px 130px minmax(0, 1fr); gap:12px; align-items:center; padding:12px 16px; border-bottom:1px solid #EEF1F4">
+<div role="cell" style="display:flex; flex-direction:column; gap:2px">
+<span style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{r.plate}}</span>
+<span style="font-size:12px; color:#5B6975">{{r.model}}</span>
+</div>
+<div role="cell">{{r.type}}</div>
+<div role="cell">{{r.driverName}}</div>
+<div role="cell"><span style="display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:500; {{r.chipColors}}"><span style="width:6px; height:6px; border-radius:50%; {{r.dotColor}}"></span>{{r.statusLabel}}</span></div>
+<div role="cell" style="font-weight:500">{{r.kmToday}} km</div>
+<div role="cell"><button disabled="{{r.noPos}}" onClick="{{r.viewOnMap}}" style="min-height:44px; padding:0 14px; border:1px solid #8593A0; border-radius:8px; background:#FFFFFF; color:#12202B; font-size:13px; font-weight:500; {{r.viewStyle}}">{{r.viewLabel}}</button></div>
+</div>
+</sc-for>
+</div>
+</section>
+</div>
+</sc-if>
+
+<!-- DRIVERS -->
+<sc-if value="{{isDrivers}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; flex-direction:column; gap:16px">
+<sc-if value="{{showAddDriver}}" hint-placeholder-val="{{ false }}">
+<section aria-label="Add driver" style="box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:16px">
+<h2 style="margin:0; font-size:16px; font-weight:600">New driver</h2>
+<div style="display:flex; flex-wrap:wrap; gap:16px">
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nd-name" style="font-size:13px; font-weight:500">Full name</label>
+<input id="nd-name" value="{{ndName}}" onChange="{{setNdName}}" placeholder="Full name" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; background:#FFFFFF; color:#12202B">
+</div>
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nd-phone" style="font-size:13px; font-weight:500">Mobile number (used for driver app login)</label>
+<input id="nd-phone" value="{{ndPhone}}" onChange="{{setNdPhone}}" placeholder="+91 00000 00000" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; background:#FFFFFF; color:#12202B">
+</div>
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nd-lic" style="font-size:13px; font-weight:500">Licence number</label>
+<input id="nd-lic" value="{{ndLicence}}" onChange="{{setNdLicence}}" placeholder="Licence number" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; text-transform:uppercase; background:#FFFFFF; color:#12202B">
+</div>
+<div style="display:flex; flex-direction:column; gap:6px; flex:1 1 220px">
+<label for="nd-exp" style="font-size:13px; font-weight:500">Licence expiry</label>
+<input id="nd-exp" type="date" value="{{ndExpiry}}" onChange="{{setNdExpiry}}" style="height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #8593A0; border-radius:8px; font-size:14px; background:#FFFFFF; color:#12202B">
+</div>
+</div>
+<div style="display:flex; flex-wrap:wrap; gap:8px">
+<button disabled="{{saveDriverDisabled}}" onClick="{{saveDriver}}" style="min-height:44px; padding:0 16px; border:0; border-radius:8px; background:#1769E0; color:#FFFFFF; font-size:14px; font-weight:600; {{saveDriverStyle}}">Save driver</button>
+<button onClick="{{toggleAddDriver}}" style="min-height:44px; padding:0 16px; border:1px solid #8593A0; border-radius:8px; background:#FFFFFF; color:#12202B; font-size:14px; font-weight:600">Cancel</button>
+</div>
+</section>
+</sc-if>
+
+<section aria-label="Driver list" style="background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; overflow-x:auto">
+<div role="table" aria-label="Drivers" style="min-width:860px">
+<div role="row" style="display:grid; grid-template-columns:190px 230px 170px 120px minmax(0, 1fr); gap:12px; padding:12px 16px; font-size:12px; font-weight:500; color:#5B6975; border-bottom:1px solid #DDE3E8">
+<div role="columnheader">Driver</div>
+<div role="columnheader">Licence</div>
+<div role="columnheader">Vehicle</div>
+<div role="columnheader">Duty</div>
+<div role="columnheader">Action</div>
+</div>
+<sc-for list="{{driverRows}}" as="r" hint-placeholder-count="7">
+<div role="row" style="display:grid; grid-template-columns:190px 230px 170px 120px minmax(0, 1fr); gap:12px; align-items:center; padding:12px 16px; border-bottom:1px solid #EEF1F4">
+<div role="cell" style="display:flex; flex-direction:column; gap:2px">
+<span style="font-weight:600">{{r.name}}</span>
+<span style="font-size:12px; color:#5B6975">{{r.phone}}</span>
+</div>
+<div role="cell" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start">
+<span style="font-family:'IBM Plex Mono',monospace; font-size:13px">{{r.licence}}</span>
+<span style="font-size:12px; padding:2px 8px; border-radius:999px; {{r.expiryStyle}}">{{r.expiryText}}</span>
+</div>
+<div role="cell">{{r.vehicle}}</div>
+<div role="cell"><span style="display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:500; {{r.dutyStyle}}">{{r.dutyText}}</span></div>
+<div role="cell"><button onClick="{{r.assign}}" style="min-height:44px; padding:0 14px; border:1px solid #8593A0; border-radius:8px; background:#FFFFFF; color:#12202B; font-size:13px; font-weight:500">{{r.assignLabel}}</button></div>
+</div>
+</sc-for>
+</div>
+</section>
+</div>
+</sc-if>
+
+<!-- ASSIGN -->
+<sc-if value="{{isAssign}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; flex-direction:column; gap:16px">
+<div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start">
+<section aria-label="Choose a vehicle" style="flex:1 1 280px; min-width:0; box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; overflow:hidden">
+<h2 style="margin:0; padding:14px 16px; font-size:15px; font-weight:600; border-bottom:1px solid #DDE3E8">1. Choose a vehicle</h2>
+<sc-for list="{{avVehicles}}" as="v" hint-placeholder-count="6">
+<button aria-pressed="{{v.pressed}}" onClick="{{v.pick}}" style="display:flex; flex-direction:column; gap:2px; width:100%; box-sizing:border-box; text-align:left; min-height:56px; padding:10px 16px; border:0; border-bottom:1px solid #EEF1F4; background:#FFFFFF; color:#12202B; {{v.style}}">
+<span style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{v.plate}}</span>
+<span style="font-size:12px; color:#5B6975">{{v.sub}}</span>
+</button>
+</sc-for>
+</section>
+<section aria-label="Choose a driver" style="flex:1 1 280px; min-width:0; box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; overflow:hidden">
+<h2 style="margin:0; padding:14px 16px; font-size:15px; font-weight:600; border-bottom:1px solid #DDE3E8">2. Choose a driver</h2>
+<sc-for list="{{avDrivers}}" as="d" hint-placeholder-count="7">
+<button aria-pressed="{{d.pressed}}" onClick="{{d.pick}}" style="display:flex; flex-direction:column; gap:2px; width:100%; box-sizing:border-box; text-align:left; min-height:56px; padding:10px 16px; border:0; border-bottom:1px solid #EEF1F4; background:#FFFFFF; color:#12202B; {{d.style}}">
+<span style="font-weight:600">{{d.name}}</span>
+<span style="font-size:12px; color:#5B6975">{{d.sub}}</span>
+</button>
+</sc-for>
+</section>
+<section aria-label="Confirm assignment" style="flex:1 1 280px; min-width:0; box-sizing:border-box; background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:14px">
+<h2 style="margin:0; font-size:15px; font-weight:600">3. Confirm</h2>
+<p style="margin:0">{{assignSummary}}</p>
+<p style="margin:0; font-size:13px; color:#5B6975">{{assignNote}}</p>
+<button disabled="{{assignDisabled}}" onClick="{{confirmAssign}}" style="min-height:44px; padding:0 16px; border:0; border-radius:8px; background:#1769E0; color:#FFFFFF; font-size:14px; font-weight:600; {{assignStyle}}">Assign driver</button>
+</section>
+</div>
+
+<section aria-label="Assignment history" style="background:#FFFFFF; border:1px solid #DDE3E8; border-radius:12px; overflow-x:auto">
+<h2 style="margin:0; padding:14px 16px; font-size:15px; font-weight:600; border-bottom:1px solid #DDE3E8">Assignment history</h2>
+<div role="table" aria-label="Assignment history" style="min-width:640px">
+<div role="row" style="display:grid; grid-template-columns:200px 200px 160px minmax(0, 1fr); gap:12px; padding:10px 16px; font-size:12px; font-weight:500; color:#5B6975; border-bottom:1px solid #DDE3E8">
+<div role="columnheader">Vehicle</div>
+<div role="columnheader">Driver</div>
+<div role="columnheader">From</div>
+<div role="columnheader">To</div>
+</div>
+<sc-for list="{{historyRows}}" as="h" hint-placeholder-count="5">
+<div role="row" style="display:grid; grid-template-columns:200px 200px 160px minmax(0, 1fr); gap:12px; align-items:center; padding:10px 16px; border-bottom:1px solid #EEF1F4">
+<div role="cell" style="font-family:'IBM Plex Mono',monospace; font-weight:600">{{h.plate}}</div>
+<div role="cell">{{h.driver}}</div>
+<div role="cell">{{h.from}}</div>
+<div role="cell" style="{{h.toStyle}}">{{h.to}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+</div>
+</sc-if>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      screen: 'live', selectedId: 'v1', filter: 'all', period: 'today', showTrail: true,
+      showAddVehicle: false, showAddDriver: false, toast: '',
+      nvPlate: '', nvType: 'Truck 28T', nvModel: '', nvDriver: '',
+      ndName: '', ndPhone: '', ndLicence: '', ndExpiry: '',
+      avVehicle: 'v1', avDriver: '',
+      vehicles: [
+        { id: 'v1', plate: 'TN 09 AB 1234', model: 'Tata Prima 4028.S', type: 'Truck 28T', driverId: 'd1', status: 'moving', speed: 58, last: '8 s ago', loc: 'NH 48, near Sriperumbudur', since: '06:12', battery: '64%', acc: '8 m', km: { today: 214.6, week: 1126.4, month: 4380.2 }, trail: [[34,60],[42,54],[50,48],[58,43]] },
+        { id: 'v2', plate: 'TN 22 CD 5678', model: 'Ashok Leyland 2820', type: 'Truck 28T', driverId: 'd2', status: 'moving', speed: 46, last: '5 s ago', loc: 'NH 32, near Chengalpattu', since: '06:40', battery: '81%', acc: '6 m', km: { today: 168.2, week: 982.7, month: 3905.0 }, trail: [[41,92],[42,80],[44,70],[46,62]] },
+        { id: 'v3', plate: 'KA 01 EF 9012', model: 'Eicher Pro 3015', type: 'Truck 16T', driverId: 'd3', status: 'moving', speed: 71, last: '3 s ago', loc: 'NH 44, near Krishnagiri', since: '05:55', battery: '47%', acc: '10 m', km: { today: 301.9, week: 1402.5, month: 5210.8 }, trail: [[66,38],[74,32],[82,24],[88,19]] },
+        { id: 'v4', plate: 'TN 38 GH 3456', model: 'Mahindra Furio 7', type: 'LCV 7T', driverId: 'd4', status: 'idle', speed: 0, last: '2 min ago', loc: 'Ambattur Industrial Estate, Chennai', since: '07:30', battery: '92%', acc: '5 m', km: { today: 12.4, week: 640.3, month: 3011.6 }, trail: [[18,70],[24,66],[30,60]] },
+        { id: 'v5', plate: 'AP 39 JK 7788', model: 'BharatBenz 3128', type: 'Truck 28T', driverId: 'd5', status: 'offline', speed: 0, last: '42 min ago', loc: 'NH 16, near Gudur', since: '05:40', battery: '12%', acc: '35 m', km: { today: 187.3, week: 954.1, month: 3688.9 }, trail: [[60,0],[58,12],[56,24],[54,30]] },
+        { id: 'v6', plate: 'TN 07 LM 2468', model: 'Tata Ultra T.16', type: 'Truck 16T', driverId: 'd6', status: 'moving', speed: 34, last: '6 s ago', loc: 'Outer Ring Road, near Vandalur', since: '08:05', battery: '73%', acc: '7 m', km: { today: 96.8, week: 733.0, month: 3342.5 }, trail: [[40,72],[58,70],[66,64],[72,56]] }
+      ],
+      drivers: [
+        { id: 'd1', name: 'Murugan K', phone: '+91 90000 00101', licence: 'TN0920190001234', expiry: '14 Aug 2029', soon: false },
+        { id: 'd2', name: 'Selvam R', phone: '+91 90000 00102', licence: 'TN2220180005678', expiry: '28 Nov 2026', soon: true },
+        { id: 'd3', name: 'Imran Pasha', phone: '+91 90000 00103', licence: 'KA0120170009012', expiry: '03 Mar 2028', soon: false },
+        { id: 'd4', name: 'Ravi Kumar', phone: '+91 90000 00104', licence: 'TN3820210003456', expiry: '19 Jan 2031', soon: false },
+        { id: 'd5', name: 'Venkatesh P', phone: '+91 90000 00105', licence: 'AP3920160007788', expiry: '07 Jun 2027', soon: false },
+        { id: 'd6', name: 'Anbu Selvan', phone: '+91 90000 00106', licence: 'TN0720200002468', expiry: '22 Sep 2030', soon: false },
+        { id: 'd7', name: 'Karthik S', phone: '+91 90000 00107', licence: 'TN0920220001357', expiry: '11 Dec 2032', soon: false }
+      ],
+      history: [
+        { vid: 'v4', plate: 'TN 38 GH 3456', driver: 'Ravi Kumar', from: '2 Nov 2026', to: 'Current' },
+        { vid: 'v1', plate: 'TN 09 AB 1234', driver: 'Murugan K', from: '1 Oct 2026', to: 'Current' },
+        { vid: 'v3', plate: 'KA 01 EF 9012', driver: 'Imran Pasha', from: '18 Sep 2026', to: 'Current' },
+        { vid: 'v1', plate: 'TN 09 AB 1234', driver: 'Karthik S', from: '12 Aug 2026', to: '30 Sep 2026' },
+        { vid: 'v2', plate: 'TN 22 CD 5678', driver: 'Selvam R', from: '3 Jul 2026', to: 'Current' }
+      ]
+    };
+  }
+
+  applyAssign(vehicles, history, vid, did) {
+    const today = '5 Nov 2026';
+    const drivers = this.state.drivers;
+    const target = vehicles.find((v) => v.id === vid);
+    const prev = vehicles.find((v) => v.driverId === did && v.id !== vid);
+    const closeIds = [vid];
+    if (prev) closeIds.push(prev.id);
+    const dr = drivers.find((d) => d.id === did);
+    let h = history.map((x) => (closeIds.indexOf(x.vid) >= 0 && x.to === 'Current') ? Object.assign({}, x, { to: today }) : x);
+    h = [{ vid: vid, plate: target.plate, driver: dr ? dr.name : '', from: today, to: 'Current' }].concat(h);
+    const vs = vehicles.map((v) => {
+      if (v.id === vid) return Object.assign({}, v, { driverId: did });
+      if (v.driverId === did) return Object.assign({}, v, { driverId: '' });
+      return v;
+    });
+    return { vehicles: vs, history: h };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const ST = {
+      moving: { label: 'Moving', chipBg: '#DCEBFF', chipFg: '#0A4A9E', dot: '#1769E0', marker: '#1769E0' },
+      idle: { label: 'Idle', chipBg: '#FFEBC2', chipFg: '#6B4100', dot: '#B86E00', marker: '#B86E00' },
+      offline: { label: 'Offline', chipBg: '#E4E7EB', chipFg: '#44505B', dot: '#6B7682', marker: '#6B7682' }
+    };
+    const PERIODS = [{ key: 'today', label: 'Today' }, { key: 'week', label: 'This week' }, { key: 'month', label: 'This month' }];
+    const fmt = (n) => n.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+    const chip = (k) => 'background:' + ST[k].chipBg + '; color:' + ST[k].chipFg + ';';
+    const dot = (k) => 'background:' + ST[k].dot + ';';
+    const drv = {};
+    s.drivers.forEach((d) => { drv[d.id] = d; });
+    const vehOf = {};
+    s.vehicles.forEach((v) => { if (v.driverId) vehOf[v.driverId] = v; });
+    const nameOf = (v) => (drv[v.driverId] ? drv[v.driverId].name : 'No driver assigned');
+
+    const counts = { all: s.vehicles.length, moving: 0, idle: 0, offline: 0 };
+    s.vehicles.forEach((v) => { counts[v.status] += 1; });
+    const fleetKm = s.vehicles.reduce((a, v) => a + v.km.today, 0);
+
+    const stats = [
+      { label: 'Vehicles', value: String(counts.all) },
+      { label: 'Moving', value: String(counts.moving) },
+      { label: 'Idle', value: String(counts.idle) },
+      { label: 'Offline', value: String(counts.offline) },
+      { label: 'Fleet distance today', value: fmt(fleetKm) + ' km' }
+    ];
+
+    const filters = [
+      { key: 'all', label: 'All' }, { key: 'moving', label: 'Moving' }, { key: 'idle', label: 'Idle' }, { key: 'offline', label: 'Offline' }
+    ].map((f) => ({
+      label: f.label, count: String(counts[f.key]), pressed: s.filter === f.key,
+      style: s.filter === f.key ? 'background:#12202B; color:#FFFFFF;' : 'background:#F3F5F7; color:#12202B;',
+      pick: () => this.setState({ filter: f.key })
+    }));
+
+    const shown = s.vehicles.filter((v) => s.filter === 'all' || v.status === s.filter);
+
+    const listItems = shown.map((v) => {
+      const sel = v.id === s.selectedId;
+      let meta = 'Waiting for first location';
+      if (v.trail) {
+        meta = v.status === 'moving' ? (v.speed + ' km/h · ' + v.last) : (v.status === 'idle' ? ('Stopped · ' + v.last) : ('No signal · last seen ' + v.last));
+      }
+      return {
+        plate: v.plate, driverName: nameOf(v), statusLabel: ST[v.status].label, chipColors: chip(v.status), dotColor: dot(v.status),
+        listMeta: meta, selected: sel, rowStyle: sel ? 'background:#EAF2FF;' : '',
+        pick: () => this.setState({ selectedId: v.id })
+      };
+    });
+
+    const markers = shown.filter((v) => v.trail).map((v) => {
+      const p = v.trail[v.trail.length - 1];
+      const sel = v.id === s.selectedId;
+      return {
+        plate: v.plate, selected: sel,
+        ariaLabel: v.plate + ', ' + ST[v.status].label + ', driver ' + nameOf(v),
+        posStyle: 'left:' + p[0] + '%; top:' + p[1] + '%; z-index:' + (sel ? 4 : 2) + ';',
+        dotStyle: 'background:' + ST[v.status].marker + ';' + (sel ? ' box-shadow:0 0 0 5px rgba(23,105,224,.3), 0 2px 6px rgba(0,0,0,.35); transform:scale(1.12);' : ' box-shadow:0 1px 4px rgba(0,0,0,.35);'),
+        labelStyle: sel ? 'background:#12202B; color:#FFFFFF;' : 'background:#FFFFFF; color:#12202B;',
+        pick: () => this.setState({ selectedId: v.id })
+      };
+    });
+
+    const sv = s.vehicles.find((v) => v.id === s.selectedId);
+    const blank = { plate: '', model: '', chipColors: '', dotColor: '', statusLabel: '', kmValue: '', periodLabel: '', periodSub: '', periods: [], driverInitials: '', driverName: '', dutyText: '', hasDriver: false, driverTel: '#', speedText: '', lastText: '', battery: '', acc: '', locLabel: '', locText: '', hasTrail: false, trailOn: false, trackStyle: '', knobStyle: '', trailToggle: null, change: null, close: null };
+    let sel = blank;
+    let trailPoints = '';
+    let trailStartStyle = '';
+    let startLabel = '';
+    let showTrailLine = false;
+    if (sv) {
+      const d = drv[sv.driverId];
+      const hasTrail = !!sv.trail;
+      const on = s.showTrail && hasTrail;
+      const pLabel = PERIODS.find((p) => p.key === s.period).label;
+      const sub = { today: sv.since === '—' ? 'no trips yet' : 'since ' + sv.since, week: 'since Mon, 2 Nov', month: 'since 1 Nov' };
+      let duty = 'Not on duty';
+      if (d && sv.since !== '—') duty = sv.status === 'offline' ? 'On duty since ' + sv.since + ' · phone offline' : 'On duty since ' + sv.since;
+      sel = {
+        plate: sv.plate, model: sv.model + ' · ' + sv.type, chipColors: chip(sv.status), dotColor: dot(sv.status), statusLabel: ST[sv.status].label,
+        kmValue: fmt(sv.km[s.period]), periodLabel: pLabel, periodSub: sub[s.period],
+        periods: PERIODS.map((p) => ({ label: p.label, pressed: s.period === p.key, style: s.period === p.key ? 'background:#12202B; color:#FFFFFF;' : 'background:transparent; color:#12202B;', pick: () => this.setState({ period: p.key }) })),
+        hasDriver: !!d, driverName: d ? d.name : 'No driver assigned', driverInitials: d ? initials(d.name) : '–',
+        driverTel: d ? 'tel:' + d.phone.replace(/\s/g, '') : '#', dutyText: duty,
+        speedText: sv.status === 'moving' ? sv.speed + ' km/h' : (sv.status === 'idle' ? '0 km/h' : '—'),
+        lastText: sv.last, battery: sv.battery, acc: sv.acc,
+        locLabel: (sv.status === 'offline' && hasTrail) ? 'Last known location' : 'Current location', locText: sv.loc,
+        hasTrail: hasTrail, trailOn: on,
+        trackStyle: on ? 'background:#1769E0;' : 'background:#8593A0;', knobStyle: on ? 'left:19px;' : 'left:3px;',
+        trailToggle: () => this.setState({ showTrail: !s.showTrail }),
+        change: () => this.setState({ screen: 'assign', avVehicle: sv.id, avDriver: '' }),
+        close: () => this.setState({ selectedId: '' })
+      };
+      if (on) {
+        showTrailLine = true;
+        trailPoints = sv.trail.map((p) => p[0] + ',' + p[1]).join(' ');
+        trailStartStyle = 'left:' + sv.trail[0][0] + '%; top:' + sv.trail[0][1] + '%; z-index:1;';
+        startLabel = 'Start ' + sv.since;
+      }
+    }
+
+    const vehicleRows = s.vehicles.map((v) => ({
+      plate: v.plate, model: v.model, type: v.type, driverName: nameOf(v), statusLabel: ST[v.status].label, chipColors: chip(v.status), dotColor: dot(v.status),
+      kmToday: fmt(v.km.today), noPos: !v.trail, viewLabel: v.trail ? 'View on map' : 'No location yet',
+      viewStyle: v.trail ? '' : 'opacity:.5;',
+      viewOnMap: () => this.setState({ screen: 'live', selectedId: v.id, filter: 'all' })
+    }));
+
+    const driverRows = s.drivers.map((d) => {
+      const v = vehOf[d.id];
+      return {
+        name: d.name, phone: d.phone, licence: d.licence,
+        expiryText: d.soon ? 'Expires in 23 days · ' + d.expiry : 'Valid till ' + d.expiry,
+        expiryStyle: d.soon ? 'background:#FFEBC2; color:#6B4100; font-weight:500;' : 'color:#5B6975; padding-left:0;',
+        vehicle: v ? v.plate : 'Unassigned',
+        dutyText: v ? 'On duty' : 'Off duty',
+        dutyStyle: v ? 'background:#DCEBFF; color:#0A4A9E;' : 'background:#E4E7EB; color:#44505B;',
+        assignLabel: v ? 'Change vehicle' : 'Assign vehicle',
+        assign: () => this.setState({ screen: 'assign', avDriver: d.id, avVehicle: v ? v.id : s.avVehicle })
+      };
+    });
+
+    const nvDriverChoices = [{ id: '', label: 'Assign later' }].concat(s.drivers.map((d) => ({ id: d.id, label: d.name }))).map((c) => ({
+      label: c.label, pressed: s.nvDriver === c.id,
+      style: s.nvDriver === c.id ? 'background:#12202B; color:#FFFFFF; border-color:#12202B;' : 'background:#FFFFFF; color:#12202B;',
+      pick: () => this.setState({ nvDriver: c.id })
+    }));
+
+    const avVehicles = s.vehicles.map((v) => ({
+      plate: v.plate, sub: drv[v.driverId] ? 'Driver: ' + drv[v.driverId].name : 'No driver assigned', pressed: s.avVehicle === v.id,
+      style: s.avVehicle === v.id ? 'background:#EAF2FF;' : '',
+      pick: () => this.setState({ avVehicle: v.id })
+    }));
+    const avDrivers = s.drivers.map((d) => ({
+      name: d.name, sub: vehOf[d.id] ? 'Currently on ' + vehOf[d.id].plate : 'Unassigned', pressed: s.avDriver === d.id,
+      style: s.avDriver === d.id ? 'background:#EAF2FF;' : '',
+      pick: () => this.setState({ avDriver: d.id })
+    }));
+    const avV = s.vehicles.find((v) => v.id === s.avVehicle);
+    const avD = drv[s.avDriver];
+    let assignSummary = 'Pick a vehicle and a driver to continue.';
+    let assignNote = '';
+    let assignDisabled = true;
+    if (avV && avD) {
+      assignSummary = 'Assign ' + avD.name + ' to ' + avV.plate + '.';
+      if (avV.driverId === avD.id) {
+        assignSummary = avD.name + ' is already assigned to ' + avV.plate + '.';
+      } else {
+        assignDisabled = false;
+        const notes = [];
+        if (drv[avV.driverId]) notes.push(drv[avV.driverId].name + ' will be removed from ' + avV.plate + '.');
+        if (vehOf[avD.id]) notes.push(avD.name + ' will be removed from ' + vehOf[avD.id].plate + '.');
+        notes.push('The change is recorded in the assignment history.');
+        assignNote = notes.join(' ');
+      }
+    } else if (avV) {
+      assignSummary = 'Now choose a driver for ' + avV.plate + '.';
+    }
+
+    const historyRows = s.history.map((h) => ({
+      plate: h.plate, driver: h.driver, from: h.from, to: h.to,
+      toStyle: h.to === 'Current' ? 'font-weight:600; color:#0A4A9E;' : ''
+    }));
+
+    const screens = { live: ['Live tracking', 'Every vehicle reporting from its driver app. Positions refresh every few seconds.'], vehicles: ['Vehicles', 'Add vehicles and see who is driving each one.'], drivers: ['Drivers', 'Driver details, licence expiry and current vehicle.'], assign: ['Assign driver', 'Link a driver to a vehicle. Past assignments are kept in the history.'] };
+    const navOn = 'background:rgba(255,255,255,.14); color:#FFFFFF;';
+    const navOff = 'background:transparent; color:#B9C6D0;';
+    const go = (k) => () => this.setState({ screen: k });
+
+    const nvOk = s.nvPlate.trim().length > 0;
+    const ndOk = s.ndName.trim().length > 0 && s.ndPhone.trim().length > 0;
+
+    return {
+      isLive: s.screen === 'live', isVehicles: s.screen === 'vehicles', isDrivers: s.screen === 'drivers', isAssign: s.screen === 'assign',
+      title: screens[s.screen][0], subtitle: screens[s.screen][1],
+      navLive: s.screen === 'live' ? navOn : navOff, navVehicles: s.screen === 'vehicles' ? navOn : navOff,
+      navDrivers: s.screen === 'drivers' ? navOn : navOff, navAssign: s.screen === 'assign' ? navOn : navOff,
+      goLive: go('live'), goVehicles: go('vehicles'), goDrivers: go('drivers'), goAssign: go('assign'),
+      hasToast: s.toast !== '', toast: s.toast, dismissToast: () => this.setState({ toast: '' }),
+      stats: stats, filters: filters, listItems: listItems, markers: markers,
+      showTrailLine: showTrailLine, trailPoints: trailPoints, trailStartStyle: trailStartStyle, startLabel: startLabel,
+      hasSel: !!sv, noSel: !sv, sel: sel,
+      fitAll: () => this.setState({ selectedId: '', filter: 'all' }),
+      showAddVehicle: s.showAddVehicle, addVehicleLabel: s.showAddVehicle ? 'Close form' : 'Add vehicle',
+      toggleAddVehicle: () => this.setState({ showAddVehicle: !s.showAddVehicle }),
+      nvPlate: s.nvPlate, nvType: s.nvType, nvModel: s.nvModel,
+      setNvPlate: (e) => this.setState({ nvPlate: e.target.value }),
+      setNvType: (e) => this.setState({ nvType: e.target.value }),
+      setNvModel: (e) => this.setState({ nvModel: e.target.value }),
+      nvDriverChoices: nvDriverChoices,
+      saveVehicleDisabled: !nvOk, saveVehicleStyle: nvOk ? '' : 'opacity:.45;',
+      saveVehicle: () => {
+        const plate = s.nvPlate.trim().toUpperCase();
+        if (!plate) return;
+        const id = 'v' + (s.vehicles.length + 1);
+        let vehicles = s.vehicles.concat([{ id: id, plate: plate, type: s.nvType, model: s.nvModel.trim() || 'Model not set', driverId: '', status: 'offline', speed: 0, last: 'No data yet', loc: 'Waiting for the first location from the driver app', since: '—', battery: '—', acc: '—', km: { today: 0, week: 0, month: 0 }, trail: null }]);
+        let history = s.history;
+        if (s.nvDriver) { const r = this.applyAssign(vehicles, history, id, s.nvDriver); vehicles = r.vehicles; history = r.history; }
+        this.setState({ vehicles: vehicles, history: history, showAddVehicle: false, nvPlate: '', nvModel: '', nvDriver: '', toast: plate + ' added. It appears on the map once its driver starts duty in the app.' });
+      },
+      vehicleRows: vehicleRows,
+      showAddDriver: s.showAddDriver, addDriverLabel: s.showAddDriver ? 'Close form' : 'Add driver',
+      toggleAddDriver: () => this.setState({ showAddDriver: !s.showAddDriver }),
+      ndName: s.ndName, ndPhone: s.ndPhone, ndLicence: s.ndLicence, ndExpiry: s.ndExpiry,
+      setNdName: (e) => this.setState({ ndName: e.target.value }),
+      setNdPhone: (e) => this.setState({ ndPhone: e.target.value }),
+      setNdLicence: (e) => this.setState({ ndLicence: e.target.value }),
+      setNdExpiry: (e) => this.setState({ ndExpiry: e.target.value }),
+      saveDriverDisabled: !ndOk, saveDriverStyle: ndOk ? '' : 'opacity:.45;',
+      saveDriver: () => {
+        if (!(s.ndName.trim() && s.ndPhone.trim())) return;
+        const id = 'd' + (s.drivers.length + 1);
+        let expiry = '—';
+        if (s.ndExpiry) { expiry = new Date(s.ndExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+        const nd = { id: id, name: s.ndName.trim(), phone: s.ndPhone.trim(), licence: s.ndLicence.trim().toUpperCase() || '—', expiry: expiry, soon: false };
+        this.setState({ drivers: s.drivers.concat([nd]), showAddDriver: false, ndName: '', ndPhone: '', ndLicence: '', ndExpiry: '', toast: nd.name + ' added. They can log in to the driver app with their mobile number.' });
+      },
+      driverRows: driverRows,
+      avVehicles: avVehicles, avDrivers: avDrivers, assignSummary: assignSummary, assignNote: assignNote,
+      assignDisabled: assignDisabled, assignStyle: assignDisabled ? 'opacity:.45;' : '',
+      confirmAssign: () => {
+        if (!avV || !avD || avV.driverId === avD.id) return;
+        const r = this.applyAssign(s.vehicles, s.history, avV.id, avD.id);
+        this.setState({ vehicles: r.vehicles, history: r.history, avDriver: '', toast: avD.name + ' assigned to ' + avV.plate + '.' });
+      },
+      historyRows: historyRows
+    };
+  }
+}
+</script>
+</body>
+</html>
