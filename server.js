@@ -1,5 +1,6 @@
 /**
- * Fleet Tracker Pro — Central HTTP Server
+ * V3 Logistics — Central HTTP Server
+ * (Founded by Varatharajan, Surya, Akash)
  * Serves:
  * - Admin Dashboard: http://localhost:5000/admin/
  * - Driver Mobile Portal: http://localhost:5000/driver/
@@ -101,7 +102,7 @@ const server = http.createServer((req, res) => {
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const destination = payload.destination || 'Sriperumbudur Logistics Hub';
-        const smsContent = `Vanakkam ${driverName}! Ungal Vandi: ${truckPlate} | Enga Ponum: ${destination}. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: ${tollFree} (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - Bharath Swift Logistics`;
+        const smsContent = `Vanakkam ${driverName}! Ungal Vandi: ${truckPlate} | Enga Ponum: ${destination}. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: ${tollFree} (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - V3 Logistics`;
 
         const cleanNumber = phone.replace(/\D/g, '').slice(-10);
         let liveSent = false;
@@ -201,7 +202,8 @@ const server = http.createServer((req, res) => {
 function startServer(portToTry) {
   server.listen(portToTry, () => {
     console.log(`=======================================================`);
-    console.log(`  Fleet Tracker Pro is Running!`);
+    console.log(`  🚛 V3 Logistics — Fleet Platform is Running!`);
+    console.log(`     (Varatharajan · Surya · Akash)`);
     console.log(`  -----------------------------------------------------`);
     console.log(`  🏢 Admin Operations Dashboard:`);
     console.log(`     👉 http://localhost:${portToTry}/admin/`);

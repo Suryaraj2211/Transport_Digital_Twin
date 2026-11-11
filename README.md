@@ -1,5 +1,6 @@
-# 🚛 Transport Digital Twin & Fleet Operations Platform
+# 🚛 V3 Logistics — Fleet Operations & Trip Tracking Platform
 
+> **Created by: Varatharajan · Surya · Akash (V3 Team)**  
 > **Real-time digital twin & fleet tracking system designed for commercial road transport in India.**  
 > Features a central Admin Operations Dashboard, One-Tap Driver Mobile Portal, and Dual-Mode Smartphone GPS + Feature Phone SIM LBS tracking.
 
@@ -83,4 +84,4 @@ The server will start on **Port 5000**:
 ---
 
 ## 📄 License
-ISC License © 2026 Bharath Swift Logistics.
+ISC License © 2026 V3 Logistics (Varatharajan · Surya · Akash).

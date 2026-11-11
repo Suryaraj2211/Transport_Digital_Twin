@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — Bharath Swift Logistics</title>
+    <title>Admin Dashboard — V3 Logistics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -15,7 +16,7 @@
     <header class="header">
         <div class="header-left">
             <span class="header-logo">🚛</span>
-            <h1 class="header-title">Bharath Swift Logistics</h1>
+            <h1 class="header-title">V3 Logistics</h1>
             <span class="header-badge">ADMIN DASHBOARD</span>
         </div>
         <div class="header-right">
@@ -34,10 +35,6 @@
                     <span class="tab-icon">📊</span>
                     <span class="tab-label">Dashboard Overview</span>
                 </button>
-                <button class="sidebar-tab" data-tab="trips">
-                    <span class="tab-icon">🗺️</span>
-                    <span class="tab-label">Trip History</span>
-                </button>
                 <button class="sidebar-tab" data-tab="vehicles">
                     <span class="tab-icon">🚚</span>
                     <span class="tab-label">Vehicles</span>
@@ -46,49 +43,259 @@
                     <span class="tab-icon">👤</span>
                     <span class="tab-label">Drivers</span>
                 </button>
+                <button class="sidebar-tab" data-tab="trips">
+                    <span class="tab-icon">📋</span>
+                    <span class="tab-label">Trip History</span>
+                </button>
             </nav>
             <div class="sidebar-footer">
-                <p>Fleet Tracker v1.0</p>
+                <p style="font-weight:700; color:#0f172a; margin:0 0 2px 0;">V3 Logistics</p>
+                <p style="font-size:11px; color:#64748b; margin:0;">Owner account</p>
             </div>
         </aside>
 
         <!-- Main Content Area -->
         <main class="content">
 
-            <!-- ===== DASHBOARD OVERVIEW TAB ===== -->
+            <!-- ===== UNIFIED DASHBOARD OVERVIEW & LIVE TRACKING TAB ===== -->
             <section class="tab-panel active" id="panel-dashboard">
-                <div class="panel-header-row">
-                    <h2 class="panel-title" style="margin:0;">Dashboard Overview</h2>
+                <!-- Header -->
+                <div class="live-map-header">
+                    <h2 class="live-map-title">Fleet Dashboard & Live Tracking</h2>
+                    <p class="live-map-subtitle">Real-time commercial fleet digital twin across Tamil Nadu corridors. Positions refresh every few seconds.</p>
                 </div>
 
-                <!-- Metrics Ribbon -->
-                <div class="metrics-ribbon">
-                    <div class="metric-card">
-                        <span class="metric-value" id="metricTotalVehicles">0</span>
-                        <span class="metric-label">Total Vehicles</span>
+                <!-- Metric Cards Bar (Image 3 Match) -->
+                <div class="live-map-kpis">
+                    <div class="live-kpi-card">
+                        <span class="live-kpi-value" id="kpiTotalVehicles">6</span>
+                        <span class="live-kpi-label">TOTAL VEHICLES</span>
                     </div>
-                    <div class="metric-card metric-active">
-                        <span class="metric-value" id="metricActiveTrips">0</span>
-                        <span class="metric-label">Active Trips</span>
+                    <div class="live-kpi-card live-kpi-active" style="border-left: 4px solid #16a34a;">
+                        <span class="live-kpi-value" id="kpiActiveTrips" style="color: #16a34a;">4</span>
+                        <span class="live-kpi-label">ACTIVE TRIPS</span>
                     </div>
-                    <div class="metric-card" style="border-left: 4px solid #f59e0b;">
-                        <span class="metric-value" id="metricHaltedCount" style="color: #d97706;">0</span>
-                        <span class="metric-label">Vehicles Halted</span>
+                    <div class="live-kpi-card live-kpi-halted" style="border-left: 4px solid #f59e0b;">
+                        <span class="live-kpi-value" id="kpiHaltedCount" style="color: #d97706;">1</span>
+                        <span class="live-kpi-label">VEHICLES HALTED</span>
                     </div>
-                    <div class="metric-card metric-completed">
-                        <span class="metric-value" id="metricCompletedToday">0</span>
-                        <span class="metric-label">Completed Today</span>
+                    <div class="live-kpi-card live-kpi-completed" style="border-left: 4px solid #2563eb;">
+                        <span class="live-kpi-value" id="kpiCompletedToday" style="color: #2563eb;">2</span>
+                        <span class="live-kpi-label">COMPLETED TODAY</span>
                     </div>
-                    <div class="metric-card">
-                        <span class="metric-value" id="metricTotalDrivers">0</span>
-                        <span class="metric-label">Total Drivers</span>
+                    <div class="live-kpi-card">
+                        <span class="live-kpi-value" id="kpiTotalDrivers">6</span>
+                        <span class="live-kpi-label">TOTAL DRIVERS</span>
+                    </div>
+                    <div class="live-kpi-card">
+                        <span class="live-kpi-value"><span id="kpiFleetDistance">981.2</span> <span class="unit-km">km</span></span>
+                        <span class="live-kpi-label">FLEET DISTANCE TODAY</span>
                     </div>
                 </div>
 
-                <!-- Live Status Cards -->
-                <h3 class="section-subtitle">Live Vehicle Status</h3>
-                <div class="status-cards" id="statusCards">
-                    <!-- Populated by JS -->
+                <!-- 3-Column Workspace -->
+                <div class="live-map-workspace">
+                    <!-- Left: Vehicle Filter & List -->
+                    <aside class="live-fleet-sidebar">
+                        <div class="live-filter-tabs">
+                            <button class="live-filter-btn active" data-filter="all" onclick="filterLiveFleet('all')">
+                                All <span class="filter-count" id="countAll">6</span>
+                            </button>
+                            <button class="live-filter-btn" data-filter="moving" onclick="filterLiveFleet('moving')">
+                                Moving <span class="filter-count" id="countMoving">4</span>
+                            </button>
+                            <button class="live-filter-btn" data-filter="halt" onclick="filterLiveFleet('halt')">
+                                Halt <span class="filter-count" id="countHalt">1</span>
+                            </button>
+                            <button class="live-filter-btn" data-filter="offline" onclick="filterLiveFleet('offline')">
+                                Offline <span class="filter-count" id="countOffline">1</span>
+                            </button>
+                        </div>
+
+                        <!-- Vehicle Items Scrollable Container -->
+                        <div class="live-vehicle-list" id="liveVehicleList">
+                            <!-- Populated dynamically by admin.js -->
+                        </div>
+                    </aside>
+
+                    <!-- Center: Map -->
+                    <div class="live-map-center">
+                        <div class="live-map-overlay-top">
+                            <div class="live-status-pill">
+                                <span class="live-pulse-dot"></span>
+                                <span>Live - refreshes every 5 s</span>
+                            </div>
+                            <button class="btn-show-all-vehicles" onclick="showAllVehiclesOnMap()">Show all vehicles</button>
+                        </div>
+
+                        <!-- Leaflet Map Container -->
+                        <div id="fleetMap" class="live-leaflet-map"></div>
+
+                        <!-- Map Type Switcher Dock (Default vs Satellite - Matches Image 2) -->
+                        <div class="map-type-dock" id="mapTypeDock">
+                            <span class="map-type-dock-title">Map type</span>
+                            <div class="map-type-cards-row">
+                                <button type="button" class="map-type-card active" id="cardMapDefault" onclick="setMapType('default')" title="Default Street View">
+                                    <div class="map-card-thumb thumb-default">
+                                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="6" fill="#bae6fd"/><path d="M0 20C10 20 14 14 24 16C30 17 33 11 36 8V36H0V20Z" fill="#86efac"/><path d="M0 26C10 22 18 28 36 22" stroke="#0284c7" stroke-width="3"/></svg>
+                                    </div>
+                                    <span class="map-card-name">Default</span>
+                                </button>
+                                <button type="button" class="map-type-card" id="cardMapSatellite" onclick="setMapType('satellite')" title="Satellite Aerial View">
+                                    <div class="map-card-thumb thumb-satellite">
+                                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="6" fill="#1e293b"/><path d="M0 16L36 24" stroke="#64748b" stroke-width="4"/><path d="M10 0L24 36" stroke="#475569" stroke-width="3"/><circle cx="18" cy="18" r="10" fill="#14532d" opacity="0.6"/></svg>
+                                    </div>
+                                    <span class="map-card-name">Satellite</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Legend -->
+                        <div class="live-map-legend-bar">
+                            <div class="legend-item"><span class="legend-dot moving"></span> Moving</div>
+                            <div class="legend-item"><span class="legend-dot halt"></span> Halt</div>
+                            <div class="legend-item"><span class="legend-dot offline"></span> Offline</div>
+                        </div>
+
+                        <!-- Dedicated Zoom Controls (Bottom Right - Clean & Proper) -->
+                        <div class="map-zoom-dock">
+                            <button type="button" class="btn-map-zoom-ctrl" onclick="zoomInMap()" title="Zoom in">+</button>
+                            <div class="zoom-divider"></div>
+                            <button type="button" class="btn-map-zoom-ctrl" onclick="zoomOutMap()" title="Zoom out">−</button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Selected Vehicle Deep Details Panel -->
+                    <aside class="live-vehicle-detail-panel" id="liveVehicleDetailPanel">
+                        <!-- Header -->
+                        <div class="detail-panel-header">
+                            <div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <h3 class="detail-plate" id="detailPlate">AP 39 JK 7788</h3>
+                                    <span class="detail-status-pill offline" id="detailStatusPill">● Offline</span>
+                                </div>
+                                <div class="detail-sub-header">
+                                    <span class="detail-model" id="detailModel">BharatBenz 3128 · Truck 28T</span>
+                                    <span class="source-badge sim" id="detailSourceBadge">📶 Telecom SIM LBS</span>
+                                </div>
+                            </div>
+                            <button class="btn-close-detail" onclick="closeVehicleDetailPanel()" title="Close details">✕</button>
+                        </div>
+
+                        <!-- Driver Card -->
+                        <div class="detail-driver-card">
+                            <div class="driver-avatar" id="detailDriverAvatar">VP</div>
+                            <div class="driver-info">
+                                <div class="driver-name-row">
+                                    <span class="driver-name" id="detailDriverName">Venkatesh P</span>
+                                    <span class="driver-phone-type-badge" id="detailPhoneType">Button Phone</span>
+                                </div>
+                                <div class="driver-status" id="detailDriverStatus">On duty since 05:40 · phone offline</div>
+                                <div class="driver-phone-text" id="detailDriverPhone">+91 98405 67890</div>
+                            </div>
+                            <div class="driver-card-actions">
+                                <a href="tel:+919840567890" id="detailDriverCall" class="btn-driver-call" title="Call Driver">📞</a>
+                            </div>
+                        </div>
+
+                        <!-- Live Trip & Operational Halt Status Card -->
+                        <div class="detail-trip-card" id="detailTripCard">
+                            <!-- Populated dynamically by admin.js with trip info & halt timers -->
+                        </div>
+
+                        <!-- 2x2 Stats Grid -->
+                        <div class="detail-stats-grid">
+                            <div class="stat-cell">
+                                <div class="stat-label">Speed</div>
+                                <div class="stat-value speed-highlight" id="detailSpeed">—</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-label">Last update</div>
+                                <div class="stat-value" id="detailLastUpdate">42 min ago</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-label">Phone battery</div>
+                                <div class="stat-value" id="detailBattery">12%</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-label">GPS accuracy</div>
+                                <div class="stat-value" id="detailAccuracy">35 m</div>
+                            </div>
+                        </div>
+
+                        <!-- Distance Covered Card -->
+                        <div class="detail-distance-card">
+                            <div class="distance-header">
+                                <span>📈 Distance covered</span>
+                                <div class="timeframe-toggle">
+                                    <button class="timeframe-btn active" data-timeframe="today" onclick="setTimeframe('today')">Today</button>
+                                    <button class="timeframe-btn" data-timeframe="week" onclick="setTimeframe('week')">Week</button>
+                                    <button class="timeframe-btn" data-timeframe="month" onclick="setTimeframe('month')">Month</button>
+                                </div>
+                            </div>
+                            <div class="distance-number-row">
+                                <span class="distance-number"><span id="detailDistance">187.3</span> <span class="distance-unit">km</span></span>
+                                <span class="distance-sub" id="detailDistanceSub">Today · since 05:40</span>
+                            </div>
+                        </div>
+
+                        <!-- Last Known Location -->
+                        <div class="detail-location-box">
+                            <div class="stat-label">Last known location</div>
+                            <div class="location-value" id="detailLocation">NH 16, Minjur Freight Junction</div>
+                        </div>
+
+                        <!-- Freight Corridor & Route Progress -->
+                        <div class="detail-corridor-card" id="detailCorridorCard">
+                            <div class="corridor-header">
+                                <span class="corridor-title">🛣️ <span id="detailCorridorTitle">NH 16 Ponneri Corridor</span></span>
+                                <span class="corridor-pct" id="detailCorridorPct">68%</span>
+                            </div>
+                            <div class="corridor-progress-bar">
+                                <div class="corridor-progress-fill" id="detailCorridorFill" style="width: 68%;"></div>
+                            </div>
+                            <div class="corridor-checkpoint-row">
+                                <span class="corridor-sub">📍 Next Toll / Hub:</span>
+                                <span class="corridor-checkpoint-val" id="detailCheckpoint">Minjur Toll Plaza</span>
+                            </div>
+                        </div>
+
+                        <!-- Fleet Telematics Diagnostics Card -->
+                        <div class="detail-diagnostics-card" id="detailDiagnosticsCard">
+                            <div class="diag-row">
+                                <span class="diag-label">📡 Link Signal:</span>
+                                <span class="diag-val" id="detailSignalText">Strong (4G LTE · -74 dBm)</span>
+                            </div>
+                            <div class="diag-row">
+                                <span class="diag-label">🔋 Battery:</span>
+                                <div class="battery-bar-wrapper">
+                                    <div class="battery-bar-fill" id="detailBatteryFill" style="width: 85%; background: #10b981;"></div>
+                                </div>
+                                <span class="diag-val" id="detailBatteryPctText">85%</span>
+                            </div>
+                            <div class="diag-row">
+                                <span class="diag-label">🔑 Ignition:</span>
+                                <span class="diag-val" id="detailIgnitionText">🟢 Engine ON (Driving)</span>
+                            </div>
+                        </div>
+
+                        <!-- SIM Dispatch & Trip Actions Box -->
+                        <div class="detail-actions-box" id="detailActionsBox">
+                            <!-- Populated dynamically with SIM triggers or driver app status -->
+                        </div>
+
+                        <!-- Route Visibility Toggle Card -->
+                        <div class="detail-route-card">
+                            <div class="detail-toggle-row">
+                                <span class="route-icon">🗺️</span>
+                                <span class="toggle-label">Show today's route on map</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="toggleRouteCheckbox" checked onchange="toggleVehicleRoute(this.checked)">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </aside>
                 </div>
             </section>
 
@@ -232,7 +439,7 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="dDestination">Trip Destination (Enga Ponum)</label>
+                            <label for="dDestination">Trip Destination</label>
                             <input type="text" id="dDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot" value="Sriperumbudur Logistics Hub">
                         </div>
                         <div class="form-group">
@@ -259,7 +466,7 @@
                                 <th>Phone Type</th>
                                 <th>Device</th>
                                 <th>Assigned Truck</th>
-                                <th>Enga Ponum (Destination)</th>
+                                <th>Destination</th>
                                 <th>Licence</th>
                                 <th>Expiry</th>
                                 <th>Actions</th>
@@ -358,7 +565,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="editDriverDestination">Trip Destination (Enga Ponum)</label>
+                    <label for="editDriverDestination">Trip Destination</label>
                     <input type="text" id="editDriverDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot">
                 </div>
                 <div class="form-group">
@@ -380,6 +587,8 @@
     <!-- ===== TOAST CONTAINER ===== -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Leaflet Interactive Maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="admin.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   FLEET TRACKER PRO — DRIVER MOBILE PORTAL
+   V3 LOGISTICS — DRIVER MOBILE PORTAL
+   (Varatharajan · Surya · Akash)
    JavaScript · GPS, Trip Management, BroadcastChannel Sync
    ═══════════════════════════════════════════════════════════════ */
 
@@ -18,7 +19,23 @@ const DRIVER_PROFILES = {
         plate: 'TN 22 CD 5678',
         driverName: 'Selvam R',
         driverId: 'd2',
-        truckModel: 'BharatBenz 2823R · Heavy 28T',
+        truckModel: 'Ashok Leyland 2820 · Heavy 28T',
+        speedLimit: 60
+    },
+    d3: {
+        vehicleId: 'v3',
+        plate: 'KA 01 EF 9012',
+        driverName: 'Imran Pasha',
+        driverId: 'd3',
+        truckModel: 'Eicher Pro 6028 · Heavy 28T',
+        speedLimit: 60
+    },
+    d6: {
+        vehicleId: 'v6',
+        plate: 'TN 07 LM 2468',
+        driverName: 'Anbu Selvan',
+        driverId: 'd6',
+        truckModel: 'Tata Signa 4825 · Heavy 28T',
         speedLimit: 60
     }
 };
@@ -784,7 +801,7 @@ function broadcastSpeedUpdate() {
  */
 function simulateSpeed(speed) {
     if (!DRIVER_STATE.isTripActive) {
-        alert("⚠️ Trip innum start aagala!\n\nFirst mela irukkira 'START TRIP' button-ai click pannunga. Athukku apram speed kututha distance (km) second-by-second live-aa increase aagum!");
+        alert("⚠️ Trip is not active yet!\n\nPlease click the 'START TRIP' button above first. Once started, speed and distance will update live in real-time.");
         return;
     }
 

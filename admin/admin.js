@@ -1,5 +1,6 @@
 /* ==========================================================
-   Admin Dashboard — Bharath Swift Logistics
+   Admin Dashboard — V3 Logistics
+   (Varatharajan · Surya · Akash)
    Fleet Tracker · admin.js
    ========================================================== */
 
@@ -7,7 +8,7 @@
 
 // ── Seed Data ──────────────────────────────────────────────
 
-/** @type {Object.<string, {id:string, plate:string, model:string, type:string, source:string, driverId:string, status:string, speed:number, currentLocation:string, lat:number, lng:number}>} */
+/** @type {Object.<string, {id:string, plate:string, model:string, type:string, source:string, driverId:string, status:string, speed:number, currentLocation:string, lat:number, lng:number, battery:number, accuracy:number, lastSeen:string, distanceToday:number, route:Array<[number,number]>}>} */
 const vehicles = {
     v1: {
         id: 'v1',
@@ -16,11 +17,21 @@ const vehicles = {
         type: 'Truck 28T',
         source: 'app',
         driverId: 'd1',
-        status: 'no-trip',    // 'driving' | 'stopped' | 'no-trip'
-        speed: 0,
-        currentLocation: '',
-        lat: 0,
-        lng: 0
+        status: 'driving',
+        speed: 58,
+        currentLocation: 'NH 48, Sriperumbudur Logistics Hub',
+        lat: 12.9818,
+        lng: 79.9442,
+        battery: 88,
+        accuracy: 12,
+        lastSeen: '8 s ago',
+        distanceToday: 214.5,
+        route: [
+            [13.0694, 80.1948],
+            [13.0450, 80.1500],
+            [13.0400, 80.0800],
+            [12.9818, 79.9442]
+        ]
     },
     v2: {
         id: 'v2',
@@ -29,41 +40,115 @@ const vehicles = {
         type: 'Truck 28T',
         source: 'app',
         driverId: 'd2',
-        status: 'no-trip',
-        speed: 0,
-        currentLocation: '',
-        lat: 0,
-        lng: 0
+        status: 'driving',
+        speed: 46,
+        currentLocation: 'GST Road, Chengalpattu Toll Bay',
+        lat: 12.7200,
+        lng: 79.9800,
+        battery: 74,
+        accuracy: 15,
+        lastSeen: '5 s ago',
+        distanceToday: 168.0,
+        route: [
+            [13.0067, 80.2025],
+            [12.9249, 80.1200],
+            [12.8400, 80.0600],
+            [12.7900, 80.0200],
+            [12.7200, 79.9800]
+        ]
     },
     v3: {
         id: 'v3',
-        plate: 'TN 38 GH 3456',
-        model: 'Mahindra Furio 7',
-        type: 'LCV 7T',
-        source: 'sim',        // 📶 Telecom SIM LBS (Button Phone)
+        plate: 'KA 01 EF 9012',
+        model: 'Eicher Pro 6028',
+        type: 'Truck 28T',
+        source: 'app',
         driverId: 'd3',
-        status: 'no-trip',
-        speed: 0,
-        currentLocation: 'Ambattur Industrial Hub',
-        lat: 13.0878,
-        lng: 80.1456
+        status: 'driving',
+        speed: 52,
+        currentLocation: 'NH 48, Kanchipuram Freight Bypass',
+        lat: 12.8450,
+        lng: 79.7400,
+        battery: 92,
+        accuracy: 8,
+        lastSeen: '3 s ago',
+        distanceToday: 248.4,
+        route: [
+            [12.9818, 79.9442],
+            [12.9150, 79.8400],
+            [12.8450, 79.7400]
+        ]
     },
     v4: {
         id: 'v4',
+        plate: 'TN 38 GH 3456',
+        model: 'Mahindra Furio 7',
+        type: 'LCV 7T',
+        source: 'sim',
+        driverId: 'd4',
+        status: 'halted',
+        speed: 0,
+        currentLocation: 'Madhavaram Freight Hub, Red Hills',
+        lat: 13.1518,
+        lng: 80.2000,
+        battery: 65,
+        accuracy: 20,
+        lastSeen: 'Stopped · 2 min ago',
+        distanceToday: 98.7,
+        route: [
+            [13.0694, 80.1948],
+            [13.1000, 80.1600],
+            [13.1400, 80.1800],
+            [13.1518, 80.2000]
+        ]
+    },
+    v5: {
+        id: 'v5',
         plate: 'AP 39 JK 7788',
         model: 'BharatBenz 3128',
         type: 'Truck 28T',
-        source: 'sim',        // 📶 Telecom SIM LBS (Button Phone)
-        driverId: 'd4',
-        status: 'no-trip',
+        source: 'sim',
+        driverId: 'd5',
+        status: 'offline',
         speed: 0,
+        currentLocation: 'NH 16, Minjur / Ponneri Junction',
+        lat: 13.2500,
+        lng: 80.2200,
+        battery: 12,
+        accuracy: 35,
+        lastSeen: 'No signal · last seen 42 min ago',
+        distanceToday: 187.3,
+        route: [
+            [13.1518, 80.2000],
+            [13.2100, 80.2050],
+            [13.2500, 80.2200]
+        ]
+    },
+    v6: {
+        id: 'v6',
+        plate: 'TN 07 LM 2468',
+        model: 'Tata Signa 4825',
+        type: 'Truck 28T',
+        source: 'app',
+        driverId: 'd6',
+        status: 'driving',
+        speed: 34,
         currentLocation: 'Chennai Port Container Bay',
         lat: 13.0900,
-        lng: 80.2900
+        lng: 80.2900,
+        battery: 81,
+        accuracy: 14,
+        lastSeen: '6 s ago',
+        distanceToday: 76.5,
+        route: [
+            [13.2100, 80.3150],
+            [13.1600, 80.2900],
+            [13.0900, 80.2900]
+        ]
     }
 };
 
-/** @type {Object.<string, {id:string, name:string, phone:string, phoneType:string, device:string, assignedVehicle:string, licence:string, licenceExpiry:string}>} */
+/** @type {Object.<string, {id:string, name:string, phone:string, phoneType:string, device:string, assignedVehicle:string, destination:string, licence:string, licenceExpiry:string, onDutySince:string}>} */
 const drivers = {
     d1: {
         id: 'd1',
@@ -74,7 +159,8 @@ const drivers = {
         assignedVehicle: 'v1',
         destination: 'Sriperumbudur Industrial Hub',
         licence: 'TN01 20210001234',
-        licenceExpiry: '2027-03-15'
+        licenceExpiry: '2027-03-15',
+        onDutySince: '06:15'
     },
     d2: {
         id: 'd2',
@@ -85,29 +171,56 @@ const drivers = {
         assignedVehicle: 'v2',
         destination: 'Chengalpattu Logistics Bay',
         licence: 'TN22 20200005678',
-        licenceExpiry: '2026-08-22'
+        licenceExpiry: '2026-08-22',
+        onDutySince: '06:30'
     },
     d3: {
         id: 'd3',
+        name: 'Imran Pasha',
+        phone: '+91 98403 45678',
+        phoneType: 'smart',
+        device: 'OnePlus Nord CE (App GPS)',
+        assignedVehicle: 'v3',
+        destination: 'Kanchipuram Freight Bypass',
+        licence: 'KA01 20210009012',
+        licenceExpiry: '2028-05-18',
+        onDutySince: '05:00'
+    },
+    d4: {
+        id: 'd4',
         name: 'Ravi Kumar',
         phone: '+91 98404 56789',
         phoneType: 'button',
         device: 'Nokia 105 (Keypad Phone · Airtel SIM)',
-        assignedVehicle: 'v3',
-        destination: 'Krishnagiri Highway Depot',
+        assignedVehicle: 'v4',
+        destination: 'Madhavaram Freight Hub',
         licence: 'TN38 20220003456',
-        licenceExpiry: '2028-01-10'
+        licenceExpiry: '2028-01-10',
+        onDutySince: '07:10'
     },
-    d4: {
-        id: 'd4',
+    d5: {
+        id: 'd5',
         name: 'Venkatesh P',
         phone: '+91 98405 67890',
         phoneType: 'button',
         device: 'Samsung Guru 1200 (Keypad · Jio SIM)',
-        assignedVehicle: 'v4',
-        destination: 'Chennai Port Container Terminal',
+        assignedVehicle: 'v5',
+        destination: 'Minjur / Ponneri Freight Junction',
         licence: 'AP39 20210007788',
-        licenceExpiry: '2029-06-15'
+        licenceExpiry: '2029-06-15',
+        onDutySince: '05:40'
+    },
+    d6: {
+        id: 'd6',
+        name: 'Anbu Selvan',
+        phone: '+91 98406 78901',
+        phoneType: 'smart',
+        device: 'Vivo Y20 (App GPS)',
+        assignedVehicle: 'v6',
+        destination: 'Chennai Port Container Bay',
+        licence: 'TN07 20200002468',
+        licenceExpiry: '2027-11-20',
+        onDutySince: '07:45'
     }
 };
 
@@ -131,7 +244,7 @@ function todayAt(timeStr) {
     return d;
 }
 
-// Trip 1: v1/d1 — Completed
+// Trip 1: v1/d1 — Completed earlier today
 tripCounter++;
 trips.push({
     id: tripCounter,
@@ -142,7 +255,7 @@ trips.push({
     startTime: todayAt('06:12'),
     startLocation: 'Chennai Port',
     endTime: todayAt('08:45'),
-    endLocation: 'Sriperumbudur',
+    endLocation: 'Sriperumbudur Hub',
     duration: '2h 33m',
     haltSeconds: 900,
     haltReason: 'Food Break',
@@ -151,12 +264,8 @@ trips.push({
     status: 'completed',
     speed: 0
 });
-vehicles.v1.status = 'stopped';
-vehicles.v1.currentLocation = 'Sriperumbudur';
-vehicles.v1.haltSeconds = 900;
-vehicles.v1.haltReason = 'Food Break';
 
-// Trip 2: v2/d2 — Completed
+// Trip 2: v2/d2 — Completed earlier today
 tripCounter++;
 trips.push({
     id: tripCounter,
@@ -167,7 +276,7 @@ trips.push({
     startTime: todayAt('06:40'),
     startLocation: 'Tambaram',
     endTime: todayAt('09:10'),
-    endLocation: 'Chengalpattu',
+    endLocation: 'Chengalpattu Toll',
     duration: '2h 30m',
     haltSeconds: 480,
     haltReason: 'Toll Plaza',
@@ -176,36 +285,90 @@ trips.push({
     status: 'completed',
     speed: 0
 });
-vehicles.v2.status = 'stopped';
-vehicles.v2.currentLocation = 'Chengalpattu';
-vehicles.v2.haltSeconds = 480;
-vehicles.v2.haltReason = 'Toll Plaza';
 
-// Trip 3: v3/d3 — Active (still driving)
+// Trip 3: v1/d1 — Active live trip
 tripCounter++;
 trips.push({
     id: tripCounter,
-    vehicleId: 'v3',
-    plate: 'TN 38 EF 9012',
-    driverId: 'd3',
-    driverName: 'Ravi Kumar',
-    startTime: todayAt('05:55'),
-    startLocation: 'Krishnagiri Toll Plaza',
+    vehicleId: 'v1',
+    plate: 'TN 09 AB 1234',
+    driverId: 'd1',
+    driverName: 'Murugan K',
+    startTime: todayAt('09:30'),
+    startLocation: 'Chennai Central',
     endTime: null,
     endLocation: '',
     duration: '',
     haltSeconds: 0,
     haltReason: '',
-    avgSpeed: 0,
-    distanceKm: 0,
+    avgSpeed: 58,
+    distanceKm: 42.5,
     status: 'active',
     speed: 58
 });
-vehicles.v3.status = 'driving';
-vehicles.v3.speed = 58;
-vehicles.v3.currentLocation = 'Krishnagiri';
-vehicles.v3.haltSeconds = 0;
-vehicles.v3.haltReason = '';
+
+// Trip 4: v2/d2 — Active live trip
+tripCounter++;
+trips.push({
+    id: tripCounter,
+    vehicleId: 'v2',
+    plate: 'TN 22 CD 5678',
+    driverId: 'd2',
+    driverName: 'Selvam R',
+    startTime: todayAt('09:45'),
+    startLocation: 'Tambaram Depot',
+    endTime: null,
+    endLocation: '',
+    duration: '',
+    haltSeconds: 0,
+    haltReason: '',
+    avgSpeed: 46,
+    distanceKm: 38.2,
+    status: 'active',
+    speed: 46
+});
+
+// Trip 5: v3/d3 — Active live trip
+tripCounter++;
+trips.push({
+    id: tripCounter,
+    vehicleId: 'v3',
+    plate: 'KA 01 EF 9012',
+    driverId: 'd3',
+    driverName: 'Imran Pasha',
+    startTime: todayAt('09:15'),
+    startLocation: 'Sriperumbudur Gate',
+    endTime: null,
+    endLocation: '',
+    duration: '',
+    haltSeconds: 0,
+    haltReason: '',
+    avgSpeed: 52,
+    distanceKm: 34.8,
+    status: 'active',
+    speed: 52
+});
+
+// Trip 6: v6/d6 — Active live trip
+tripCounter++;
+trips.push({
+    id: tripCounter,
+    vehicleId: 'v6',
+    plate: 'TN 07 LM 2468',
+    driverId: 'd6',
+    driverName: 'Anbu Selvan',
+    startTime: todayAt('10:00'),
+    startLocation: 'Ennore Port',
+    endTime: null,
+    endLocation: '',
+    duration: '',
+    haltSeconds: 0,
+    haltReason: '',
+    avgSpeed: 34,
+    distanceKm: 21.0,
+    status: 'active',
+    speed: 34
+});
 
 // ── DOM References ─────────────────────────────────────────
 
@@ -238,6 +401,11 @@ sidebarTabs.forEach(tab => {
         const panel = document.getElementById(`panel-${target}`);
         if (panel) {
             panel.classList.add('active');
+        }
+
+        // If dashboard tab, refresh Leaflet map sizing
+        if (target === 'dashboard') {
+            initOrRefreshFleetMap();
         }
 
         // Refresh the relevant panel
@@ -397,6 +565,8 @@ function phoneTypeDisplay(type) {
  * Refresh the metrics ribbon counts.
  */
 function refreshMetrics() {
+    updateLiveMapKpis();
+
     const vehicleKeys = Object.keys(vehicles);
     const driverKeys = Object.keys(drivers);
     const activeTrips = trips.filter(t => t.status === 'active');
@@ -407,10 +577,10 @@ function refreshMetrics() {
     });
     const haltedCount = Object.values(vehicles).filter(v => v.status === 'driving' && (v.isHalted || v.speed === 0)).length;
 
-    $metricTotalVehicles.textContent = vehicleKeys.length;
-    $metricActiveTrips.textContent = activeTrips.length;
-    $metricCompletedToday.textContent = completedToday.length;
-    $metricTotalDrivers.textContent = driverKeys.length;
+    if ($metricTotalVehicles) $metricTotalVehicles.textContent = vehicleKeys.length;
+    if ($metricActiveTrips) $metricActiveTrips.textContent = activeTrips.length;
+    if ($metricCompletedToday) $metricCompletedToday.textContent = completedToday.length;
+    if ($metricTotalDrivers) $metricTotalDrivers.textContent = driverKeys.length;
     const $metricHaltedCount = document.getElementById('metricHaltedCount');
     if ($metricHaltedCount) $metricHaltedCount.textContent = haltedCount;
 }
@@ -593,7 +763,9 @@ function renderStatusCards() {
         `;
     });
 
-    $statusCards.innerHTML = html;
+    if ($statusCards) {
+        $statusCards.innerHTML = html;
+    }
 }
 
 // ── Render: Trip History Table ─────────────────────────────
@@ -889,9 +1061,9 @@ function populateSimDriverSelector() {
  */
 function saveStateToStorage() {
     try {
-        localStorage.setItem('fleet_admin_vehicles', JSON.stringify(vehicles));
-        localStorage.setItem('fleet_admin_drivers', JSON.stringify(drivers));
-        localStorage.setItem('fleet_admin_trips', JSON.stringify(trips));
+        localStorage.setItem('fleet_admin_vehicles_v5', JSON.stringify(vehicles));
+        localStorage.setItem('fleet_admin_drivers_v5', JSON.stringify(drivers));
+        localStorage.setItem('fleet_admin_trips_v5', JSON.stringify(trips));
     } catch (e) {
         console.warn('[Admin] Failed to save state to localStorage:', e);
     }
@@ -902,17 +1074,38 @@ function saveStateToStorage() {
  */
 function loadStateFromStorage() {
     try {
-        const vRaw = localStorage.getItem('fleet_admin_vehicles');
-        const dRaw = localStorage.getItem('fleet_admin_drivers');
-        const tRaw = localStorage.getItem('fleet_admin_trips');
+        // Clean up legacy storage versions
+        ['v1', 'v2', 'v3', 'v4'].forEach(ver => {
+            try {
+                localStorage.removeItem(`fleet_admin_vehicles_${ver}`);
+                localStorage.removeItem(`fleet_admin_drivers_${ver}`);
+                localStorage.removeItem(`fleet_admin_trips_${ver}`);
+            } catch (_) {}
+        });
+
+        const vRaw = localStorage.getItem('fleet_admin_vehicles_v5');
+        const dRaw = localStorage.getItem('fleet_admin_drivers_v5');
+        const tRaw = localStorage.getItem('fleet_admin_trips_v5');
         if (vRaw) {
             const parsed = JSON.parse(vRaw);
-            Object.keys(vehicles).forEach(k => delete vehicles[k]);
-            Object.assign(vehicles, parsed);
+            Object.keys(parsed).forEach(k => {
+                if (vehicles[k] && parsed[k]) {
+                    // Only accept valid coordinates strictly inside regional freight map bounds
+                    if (parsed[k].lat && parsed[k].lng &&
+                        parsed[k].lat >= 12.60 && parsed[k].lat <= 13.40 &&
+                        parsed[k].lng >= 79.60 && parsed[k].lng <= 80.40) {
+                        vehicles[k].lat = parsed[k].lat;
+                        vehicles[k].lng = parsed[k].lng;
+                    }
+                    if (parsed[k].status) vehicles[k].status = parsed[k].status;
+                    if (parsed[k].speed !== undefined) vehicles[k].speed = parsed[k].speed;
+                    if (parsed[k].driverId) vehicles[k].driverId = parsed[k].driverId;
+                    if (parsed[k].battery !== undefined) vehicles[k].battery = parsed[k].battery;
+                }
+            });
         }
         if (dRaw) {
             const parsed = JSON.parse(dRaw);
-            Object.keys(drivers).forEach(k => delete drivers[k]);
             Object.assign(drivers, parsed);
         }
         if (tRaw) {
@@ -941,6 +1134,10 @@ function refreshAll() {
     renderVehiclesTable();
     renderDriversTable();
     populateSimDriverSelector();
+    updateLiveMapKpis();
+    renderLiveFleetList();
+    updateFleetMapMarkers();
+    renderSelectedVehicleDetail();
     saveStateToStorage();
 }
 
@@ -957,6 +1154,7 @@ function escHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+const escapeHtml = escHtml;
 
 // ── Add Vehicle Form ───────────────────────────────────────
 
@@ -1174,13 +1372,14 @@ window.openEditVehicleModal = function(vid) {
 /**
  * Close the Edit Vehicle modal
  */
-window.closeEditVehicleModal = function() {
+function closeEditVehicleModal() {
     const modal = document.getElementById('modalEditVehicle');
     if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
     }
-};
+}
+window.closeEditVehicleModal = closeEditVehicleModal;
 
 /**
  * Save updated vehicle details
@@ -1312,13 +1511,14 @@ window.openEditDriverModal = function(did) {
 /**
  * Close the Edit Driver modal
  */
-window.closeEditDriverModal = function() {
+function closeEditDriverModal() {
     const modal = document.getElementById('modalEditDriver');
     if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
     }
-};
+}
+window.closeEditDriverModal = closeEditDriverModal;
 
 /**
  * Save updated driver details
@@ -1748,6 +1948,14 @@ function tick() {
                 activeTrip.distanceKm = +(activeTrip.distanceKm + 0.03).toFixed(2);
             }
         }
+
+        // Slight live GPS advancement along corridor for any driving truck
+        if (v.status === 'driving' && v.lat && v.lng) {
+            const latDelta = (Math.random() * 0.0003) - 0.0001;
+            const lngDelta = (Math.random() * 0.0003) - 0.0001;
+            v.lat = +(v.lat + latDelta).toFixed(5);
+            v.lng = +(v.lng + lngDelta).toFixed(5);
+        }
     });
 
     // Check if there are active trips — if so, re-render to update durations
@@ -1756,7 +1964,13 @@ function tick() {
         renderStatusCards();
         renderTripsTable();
         refreshMetrics();
+        if (typeof fleetMap !== 'undefined' && fleetMap) {
+            updateFleetMapMarkers();
+        }
     }
+
+    // Always update selected vehicle details in right panel (speed, halt timers, live duration)
+    renderSelectedVehicleDetail();
 }
 
 // ── Admin Button Phone (SIM LBS) Actions ───────────────────
@@ -2015,29 +2229,892 @@ window.simulateGeofenceTrigger = function() {
     }
 };
 
+// ── Live Fleet Tracking (Screenshot Overview Match) ───────────
+
+let fleetMap = null;
+let defaultTileLayer = null;
+let satelliteTileLayer = null;
+let currentMapType = 'default';
+const fleetMarkers = {};
+const fleetRouteLayers = {};
+const fleetOriginMarkers = {};
+const DEFAULT_MAP_CENTER = [12.985, 80.03]; // Exact regional centroid
+const DEFAULT_MAP_ZOOM = 10;
+let selectedVehicleId = 'v5';              // Default to AP 39 JK 7788 (matches screenshot)
+let currentFleetFilter = 'all';
+let currentSelectedTimeframe = 'today';
+let showRouteOnMap = true;
+
+/**
+ * Fit map to show all 6 vehicles and their complete route polylines
+ * @param {boolean} animate
+ */
+function fitMapToAllVehicles(animate = false) {
+    if (!fleetMap || typeof L === 'undefined') return;
+    const coords = [];
+    Object.values(vehicles).forEach(v => {
+        if (v.lat && v.lng && v.lat >= 12.60 && v.lat <= 13.40) {
+            coords.push([v.lat, v.lng]);
+        }
+        if (v.route && Array.isArray(v.route)) {
+            v.route.forEach(pt => {
+                if (pt && pt.length >= 2 && pt[0] >= 12.60 && pt[0] <= 13.40) {
+                    coords.push(pt);
+                }
+            });
+        }
+    });
+
+    if (coords.length > 0) {
+        fleetMap.fitBounds(coords, {
+            padding: [45, 45],
+            maxZoom: 10,
+            animate: animate
+        });
+    } else {
+        fleetMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+    }
+}
+
+/**
+ * Determine live vehicle status category: 'moving' | 'halt' | 'offline'
+ * @param {Object} v - Vehicle object
+ * @returns {string}
+ */
+function getVehicleStatusCategory(v) {
+    if (!v) return 'offline';
+    if (v.status === 'offline') return 'offline';
+    if (v.status === 'driving' && v.speed > 0) return 'moving';
+    if (v.status === 'halted' || (v.status === 'driving' && (v.speed === 0 || v.isHalted))) return 'halt';
+    return 'offline';
+}
+
+/**
+ * Initialize or resize the Leaflet interactive map on the Live Fleet Map tab.
+ */
+function initOrRefreshFleetMap() {
+    const mapContainer = document.getElementById('fleetMap');
+    if (!mapContainer || typeof L === 'undefined') return;
+
+    if (!fleetMap) {
+        // Default overview view matching user's requested screenshot
+        fleetMap = L.map('fleetMap', {
+            zoomControl: false,
+            scrollWheelZoom: true,
+            zoomSnap: 0.25,
+            zoomDelta: 0.5
+        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+
+        // 1. Default Street View Layer (OpenStreetMap - Free, No Watermark, No Key Required)
+        defaultTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | V3 Logistics'
+        });
+
+        // 2. Satellite Aerial View Layer (ESRI World Imagery - Free, High Res Aerial, No Key Required)
+        satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP | V3 Logistics'
+        });
+
+        // Add Default layer on startup
+        defaultTileLayer.addTo(fleetMap);
+    }
+
+    // Refresh UI components
+    updateLiveMapKpis();
+    renderLiveFleetList();
+    updateFleetMapMarkers();
+    renderSelectedVehicleDetail();
+
+    setTimeout(() => {
+        if (fleetMap) {
+            fleetMap.invalidateSize();
+            fitMapToAllVehicles(false);
+            drawAllVehicleRoutes();
+        }
+    }, 120);
+
+    setTimeout(() => {
+        if (fleetMap) {
+            fleetMap.invalidateSize();
+            fitMapToAllVehicles(false);
+        }
+    }, 450);
+}
+
+/**
+ * Switch map tile layer between 'default' (street view) and 'satellite' (aerial imagery)
+ * @param {string} type - 'default' | 'satellite'
+ */
+window.setMapType = function(type) {
+    if (!fleetMap || !defaultTileLayer || !satelliteTileLayer) return;
+    currentMapType = type;
+
+    const $cardDefault = document.getElementById('cardMapDefault');
+    const $cardSat = document.getElementById('cardMapSatellite');
+
+    if (type === 'satellite') {
+        if (fleetMap.hasLayer(defaultTileLayer)) {
+            fleetMap.removeLayer(defaultTileLayer);
+        }
+        if (!fleetMap.hasLayer(satelliteTileLayer)) {
+            satelliteTileLayer.addTo(fleetMap);
+        }
+        if ($cardDefault) $cardDefault.classList.remove('active');
+        if ($cardSat) $cardSat.classList.add('active');
+    } else {
+        if (fleetMap.hasLayer(satelliteTileLayer)) {
+            fleetMap.removeLayer(satelliteTileLayer);
+        }
+        if (!fleetMap.hasLayer(defaultTileLayer)) {
+            defaultTileLayer.addTo(fleetMap);
+        }
+        if ($cardSat) $cardSat.classList.remove('active');
+        if ($cardDefault) $cardDefault.classList.add('active');
+    }
+};
+
+/**
+ * Dedicated zoom in handler
+ */
+window.zoomInMap = function() {
+    if (fleetMap) fleetMap.zoomIn();
+};
+
+/**
+ * Dedicated zoom out handler
+ */
+window.zoomOutMap = function() {
+    if (fleetMap) fleetMap.zoomOut();
+};
+
+/**
+ * Update Top 5 KPI Cards and Tab Filter Counts
+ */
+function updateLiveMapKpis() {
+    const list = Object.values(vehicles);
+    const total = list.length;
+    let moving = 0;
+    let halt = 0;
+    let offline = 0;
+    let totalDist = 0;
+
+    list.forEach(v => {
+        const cat = getVehicleStatusCategory(v);
+        if (cat === 'moving') moving++;
+        else if (cat === 'halt' || cat === 'idle') halt++;
+        else offline++;
+        totalDist += (v.distanceToday || 0);
+    });
+
+    const activeTrips = trips.filter(t => t.status === 'active').length || moving;
+    const completedToday = trips.filter(t => {
+        if (t.status !== 'completed' || !t.endTime) return false;
+        const now = new Date();
+        return t.endTime.toDateString() === now.toDateString();
+    }).length;
+    const haltedCount = list.filter(v => v.status === 'driving' && (v.isHalted || v.speed === 0)).length || halt;
+    const totalDrivers = Object.keys(drivers).length;
+
+    const $total = document.getElementById('kpiTotalVehicles');
+    const $active = document.getElementById('kpiActiveTrips');
+    const $halted = document.getElementById('kpiHaltedCount');
+    const $completed = document.getElementById('kpiCompletedToday');
+    const $dTotal = document.getElementById('kpiTotalDrivers');
+    const $dist = document.getElementById('kpiFleetDistance');
+
+    if ($total) $total.textContent = total;
+    if ($active) $active.textContent = activeTrips;
+    if ($halted) $halted.textContent = haltedCount;
+    if ($completed) $completed.textContent = completedToday;
+    if ($dTotal) $dTotal.textContent = totalDrivers;
+    if ($dist) $dist.textContent = totalDist.toFixed(1);
+
+    // Tab counts
+    const $cAll = document.getElementById('countAll');
+    const $cMov = document.getElementById('countMoving');
+    const $cHalt = document.getElementById('countHalt') || document.getElementById('countIdle');
+    const $cOff = document.getElementById('countOffline');
+
+    if ($cAll) $cAll.textContent = total;
+    if ($cMov) $cMov.textContent = moving;
+    if ($cHalt) $cHalt.textContent = halt;
+    if ($cOff) $cOff.textContent = offline;
+}
+
+/**
+ * Render Left Sidebar Vehicle List
+ */
+function renderLiveFleetList() {
+    const $container = document.getElementById('liveVehicleList');
+    if (!$container) return;
+
+    const list = Object.values(vehicles);
+    let html = '';
+
+    list.forEach(v => {
+        try {
+            const cat = getVehicleStatusCategory(v);
+            if (currentFleetFilter !== 'all' && cat !== currentFleetFilter && !(currentFleetFilter === 'halt' && cat === 'idle')) {
+                return;
+            }
+
+            const driver = getDriverForVehicle(v.id);
+            const driverName = driver ? driver.name : 'Unassigned';
+            const isSelected = (v.id === selectedVehicleId);
+
+            let pillText = '● Moving';
+            if (cat === 'halt' || cat === 'idle') pillText = '● Halt';
+            else if (cat === 'offline') pillText = '● Offline';
+
+            let subText = '';
+            if (cat === 'moving') {
+                subText = `${v.speed} km/h · ${v.lastSeen || '8 s ago'}`;
+            } else if (cat === 'halt' || cat === 'idle') {
+                subText = v.lastSeen || 'Halted · 2 min ago';
+            } else {
+                subText = v.lastSeen || 'No signal · last seen 42 min ago';
+            }
+
+            html += `
+                <div class="live-vehicle-item ${isSelected ? 'selected' : ''}" onclick="selectVehicleOnLiveMap('${v.id}')">
+                    <div class="item-left">
+                        <span class="item-plate">${escHtml(v.plate)}</span>
+                        <span class="item-driver">${escHtml(driverName)}</span>
+                        <span class="item-sub">${escHtml(subText)}</span>
+                    </div>
+                    <span class="item-pill ${cat}">${pillText}</span>
+                </div>
+            `;
+        } catch (itemErr) {
+            console.error('[Admin] Error rendering vehicle item:', v, itemErr);
+        }
+    });
+
+    if (html === '') {
+        const filterName = currentFleetFilter === 'halt' ? 'Halt' : currentFleetFilter;
+        html = `<div style="padding:24px; text-align:center; color:#94a3b8; font-size:12px;">No vehicles in "${filterName}" status.</div>`;
+    }
+
+    $container.innerHTML = html;
+}
+
+/**
+ * Update Leaflet Map Markers for all vehicles
+ */
+function updateFleetMapMarkers() {
+    if (!fleetMap || typeof L === 'undefined') return;
+
+    Object.values(vehicles).forEach(v => {
+        const cat = getVehicleStatusCategory(v);
+        const isSelected = (v.id === selectedVehicleId);
+        const lat = v.lat || 13.0827;
+        const lng = v.lng || 80.2707;
+
+        // Custom divIcon matching screenshot
+        const iconHtml = `
+            <div class="custom-map-pin">
+                <div class="map-pin-icon-circle ${cat} ${isSelected ? 'selected' : ''}">
+                    <span style="font-size:14px;">🚚</span>
+                </div>
+                <div class="map-pin-label">${escHtml(v.plate)}</div>
+            </div>
+        `;
+
+        const customIcon = L.divIcon({
+            html: iconHtml,
+            className: 'truck-pin-wrapper',
+            iconSize: [90, 52],
+            iconAnchor: [45, 46],
+            popupAnchor: [0, -45]
+        });
+
+        const zIndexVal = isSelected ? 3000 : 1500;
+
+        if (fleetMarkers[v.id]) {
+            fleetMarkers[v.id].setLatLng([lat, lng]);
+            fleetMarkers[v.id].setIcon(customIcon);
+            if (fleetMarkers[v.id].setZIndexOffset) {
+                fleetMarkers[v.id].setZIndexOffset(zIndexVal);
+            }
+        } else {
+            const marker = L.marker([lat, lng], {
+                icon: customIcon,
+                zIndexOffset: zIndexVal
+            }).addTo(fleetMap);
+
+            marker.on('click', () => {
+                selectVehicleOnLiveMap(v.id);
+            });
+            fleetMarkers[v.id] = marker;
+        }
+    });
+
+    // Remove obsolete markers
+    Object.keys(fleetMarkers).forEach(vid => {
+        if (!vehicles[vid]) {
+            fleetMap.removeLayer(fleetMarkers[vid]);
+            delete fleetMarkers[vid];
+        }
+    });
+}
+
+/**
+ * Ensure vehicle markers always float cleanly on top of route polylines
+ */
+function updateFleetMarkerZIndex() {
+    Object.keys(fleetMarkers).forEach(vid => {
+        const marker = fleetMarkers[vid];
+        if (marker && marker.setZIndexOffset) {
+            marker.setZIndexOffset(vid === selectedVehicleId ? 3000 : 1500);
+        }
+    });
+}
+
+/**
+ * Draw all fleet routes on the live map simultaneously.
+ * The currently selected vehicle's route is highlighted with a bold solid Royal Blue stroke (#1d4ed8),
+ * while all other fleet routes are rendered as crisp high-contrast dashed lines (#0284c7).
+ * Each route also features an origin checkpoint dot showing dispatch origin.
+ */
+function drawAllVehicleRoutes() {
+    if (!fleetMap || typeof L === 'undefined') return;
+
+    // Remove existing route layers
+    Object.keys(fleetRouteLayers).forEach(vid => {
+        if (fleetRouteLayers[vid]) {
+            fleetMap.removeLayer(fleetRouteLayers[vid]);
+        }
+    });
+    for (let key in fleetRouteLayers) delete fleetRouteLayers[key];
+
+    // Remove existing origin checkpoint dots
+    Object.keys(fleetOriginMarkers).forEach(vid => {
+        if (fleetOriginMarkers[vid]) {
+            fleetMap.removeLayer(fleetOriginMarkers[vid]);
+        }
+    });
+    for (let key in fleetOriginMarkers) delete fleetOriginMarkers[key];
+
+    if (!showRouteOnMap) return;
+
+    // Sort to render non-selected first, selected last on top
+    const vIds = Object.keys(vehicles);
+    const sortedIds = vIds.sort((a, b) => (a === selectedVehicleId ? 1 : -1));
+
+    sortedIds.forEach(vid => {
+        const v = vehicles[vid];
+        if (!v || !v.route || v.route.length < 2) return;
+
+        const isSelected = (v.id === selectedVehicleId);
+        const routeColor = isSelected ? '#1d4ed8' : '#0284c7';
+        const routeWeight = isSelected ? 5.5 : 3.5;
+        const routeOpacity = isSelected ? 1.0 : 0.85;
+
+        const polyline = L.polyline(v.route, {
+            color: routeColor,
+            weight: routeWeight,
+            opacity: routeOpacity,
+            dashArray: isSelected ? null : '7, 9',
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(fleetMap);
+
+        const driver = getDriverForVehicle(v.id);
+        const driverName = driver ? driver.name : 'Unassigned';
+        polyline.bindTooltip(`<b>${escHtml(v.plate)}</b> · ${escHtml(driverName)} · ${escHtml(v.model)}`, {
+            sticky: true,
+            direction: 'top',
+            offset: [0, -10]
+        });
+
+        polyline.on('click', (e) => {
+            if (L.DomEvent) L.DomEvent.stopPropagation(e);
+            selectVehicleOnLiveMap(v.id);
+        });
+
+        fleetRouteLayers[v.id] = polyline;
+
+        // Origin checkpoint dot marker
+        const originCoord = v.route[0];
+        if (originCoord && originCoord.length >= 2) {
+            const originDot = L.circleMarker(originCoord, {
+                radius: isSelected ? 5.5 : 4,
+                color: routeColor,
+                fillColor: '#ffffff',
+                fillOpacity: 1.0,
+                weight: 2.5
+            }).addTo(fleetMap);
+
+            originDot.bindTooltip(`📍 Origin: ${escHtml(v.plate)} dispatch point`, {
+                direction: 'top',
+                offset: [0, -6]
+            });
+
+            originDot.on('click', (e) => {
+                if (L.DomEvent) L.DomEvent.stopPropagation(e);
+                selectVehicleOnLiveMap(v.id);
+            });
+
+            fleetOriginMarkers[v.id] = originDot;
+        }
+    });
+
+    // Bring selected vehicle's route layer to front so it is crisp on top
+    if (selectedVehicleId && fleetRouteLayers[selectedVehicleId]) {
+        fleetRouteLayers[selectedVehicleId].bringToFront();
+    }
+
+    // Ensure truck markers always float above route polylines
+    updateFleetMarkerZIndex();
+}
+
+/**
+ * Backward compatibility alias for drawAllVehicleRoutes
+ * @param {string} vid
+ */
+function drawVehicleRoute(vid) {
+    drawAllVehicleRoutes();
+}
+
+/**
+ * Select a vehicle on the live map, pan to it, draw route, and update right panel
+ * @param {string} vid
+ */
+window.selectVehicleOnLiveMap = function(vid) {
+    selectedVehicleId = vid;
+    const v = vehicles[vid];
+    if (!v) return;
+
+    // Show panel if it was closed
+    const $panel = document.getElementById('liveVehicleDetailPanel');
+    if ($panel) $panel.style.display = 'flex';
+
+    // Update list selection highlight
+    renderLiveFleetList();
+
+    // Update marker halo
+    updateFleetMapMarkers();
+
+    // Pan map to vehicle
+    if (fleetMap && v.lat && v.lng) {
+        fleetMap.panTo([v.lat, v.lng], { animate: true, duration: 0.5 });
+    }
+
+    // Redraw all routes (selected route highlighted as solid, others dashed)
+    drawAllVehicleRoutes();
+
+    // Render details
+    renderSelectedVehicleDetail();
+};
+
+/**
+ * Render Right Side Vehicle Detail Panel
+ */
+function renderSelectedVehicleDetail() {
+    if (!selectedVehicleId || !vehicles[selectedVehicleId]) return;
+
+    const v = vehicles[selectedVehicleId];
+    const driver = getDriverForVehicle(v.id);
+    const cat = getVehicleStatusCategory(v);
+    const activeTrip = getActiveTripForVehicle(v.id);
+    const lastTrip = getLastCompletedTripForVehicle(v.id);
+
+    // Plate & status
+    const $plate = document.getElementById('detailPlate');
+    const $pill = document.getElementById('detailStatusPill');
+    const $model = document.getElementById('detailModel');
+    const $sourceBadge = document.getElementById('detailSourceBadge');
+
+    if ($plate) $plate.textContent = v.plate;
+    if ($pill) {
+        $pill.className = `detail-status-pill ${cat}`;
+        $pill.textContent = cat === 'moving' ? '● Moving' : ((cat === 'halt' || cat === 'idle') ? '● Halt' : '● Offline');
+    }
+    if ($model) $model.textContent = `${v.model} · ${v.type}`;
+    if ($sourceBadge) {
+        $sourceBadge.className = `source-badge ${v.source}`;
+        $sourceBadge.innerHTML = v.source === 'sim' ? '📶 Telecom SIM LBS' : '📱 Driver App GPS';
+    }
+
+    // Driver Card
+    const $avatar = document.getElementById('detailDriverAvatar');
+    const $dName = document.getElementById('detailDriverName');
+    const $dStatus = document.getElementById('detailDriverStatus');
+    const $dCall = document.getElementById('detailDriverCall');
+    const $pType = document.getElementById('detailPhoneType');
+    const $dPhone = document.getElementById('detailDriverPhone');
+
+    const dName = driver ? driver.name : 'Unassigned';
+    const initials = dName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'TR';
+
+    if ($avatar) $avatar.textContent = initials;
+    if ($dName) $dName.textContent = dName;
+    if ($pType) $pType.textContent = driver ? phoneTypeDisplay(driver.phoneType) : 'Unassigned';
+    if ($dPhone) $dPhone.textContent = driver ? `${driver.phone}` : 'No phone linked';
+    if ($dStatus) {
+        const onDuty = driver ? driver.onDutySince || '05:40' : '05:40';
+        if (cat === 'moving') {
+            $dStatus.textContent = `On duty since ${onDuty} · Moving ${v.speed} km/h`;
+        } else if (cat === 'halt' || cat === 'idle') {
+            $dStatus.textContent = `On duty since ${onDuty} · Halted / Stopped`;
+        } else {
+            $dStatus.textContent = `On duty since ${onDuty} · phone offline`;
+        }
+    }
+    if ($dCall) {
+        $dCall.href = `tel:${driver ? driver.phone : ''}`;
+    }
+
+    // Live Trip & Operational Halt Status Card
+    const $tripCard = document.getElementById('detailTripCard');
+    if ($tripCard) {
+        let tripHtml = '';
+        if (v.status === 'driving' && activeTrip) {
+            const haltSec = (activeTrip && activeTrip.haltSeconds) || v.haltSeconds || 0;
+            const haltDisplay = formatHaltDuration(haltSec);
+            const haltReasonDisplay = (activeTrip && activeTrip.haltReason) || v.haltReason || '';
+            const runDur = runningDuration(activeTrip.startTime);
+            const dest = activeTrip.destination || (driver && driver.destination) || 'Sriperumbudur Logistics Hub';
+            const fromLoc = activeTrip.startLocation || 'Krishnagiri Toll Plaza';
+            tripHtml = `
+                <div class="trip-status-header">
+                    <span class="trip-badge active">🟢 Active Trip</span>
+                    <span class="trip-duration-live">⏱️ ${runDur}</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">Destination:</span>
+                    <span class="t-val highlight">${escHtml(dest)}</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">From:</span>
+                    <span class="t-val">${escHtml(fromLoc)} (${fmtTime(activeTrip.startTime)})</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">Trip Halt:</span>
+                    <span class="t-val" style="color:${haltSec > 0 ? '#d97706' : '#16a34a'}; font-weight:600;">
+                        ${haltDisplay} ${haltReasonDisplay ? `(${escHtml(haltReasonDisplay)})` : ''}
+                    </span>
+                </div>
+            `;
+        } else if (v.status === 'halted' || (v.status === 'driving' && v.speed === 0)) {
+            const haltSec = (activeTrip && activeTrip.haltSeconds) || v.haltSeconds || 120;
+            const dest = (driver && driver.destination) || 'Madhavaram Freight Hub';
+            tripHtml = `
+                <div class="trip-status-header">
+                    <span class="trip-badge halt">⏸️ Halted (Speed 0)</span>
+                    <span class="trip-duration-live" style="color:#d97706;">Stopped</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">Halt Duration:</span>
+                    <span class="t-val" style="color:#d97706; font-weight:700;">${formatHaltDuration(haltSec)} (Tea Break)</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">Destination:</span>
+                    <span class="t-val">${escHtml(dest)}</span>
+                </div>
+            `;
+        } else if (lastTrip) {
+            const haltSec = lastTrip.haltSeconds || 0;
+            tripHtml = `
+                <div class="trip-status-header">
+                    <span class="trip-badge completed">🏁 Last Trip Completed</span>
+                    <span class="trip-duration-live">Ended ${fmtTime(lastTrip.endTime)}</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">At:</span>
+                    <span class="t-val">${escHtml(lastTrip.endLocation || 'Chengalpattu')}</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">Trip Halt:</span>
+                    <span class="t-val">${formatHaltDuration(haltSec)}</span>
+                </div>
+            `;
+        } else {
+            tripHtml = `
+                <div class="trip-status-header">
+                    <span class="trip-badge available">⚪ Available / No Active Trip</span>
+                </div>
+                <div class="trip-info-row">
+                    <span class="t-label">Status:</span>
+                    <span class="t-val" style="color:#64748b;">Ready for dispatch</span>
+                </div>
+            `;
+        }
+        $tripCard.innerHTML = tripHtml;
+    }
+
+    // 2x2 stats grid
+    const $speed = document.getElementById('detailSpeed');
+    const $lastUp = document.getElementById('detailLastUpdate');
+    const $batt = document.getElementById('detailBattery');
+    const $acc = document.getElementById('detailAccuracy');
+
+    if ($speed) $speed.textContent = (cat === 'moving') ? `${v.speed} km/h` : '—';
+    if ($lastUp) $lastUp.textContent = v.lastSeen || (cat === 'offline' ? '42 min ago' : '8 s ago');
+    if ($batt) $batt.textContent = `${v.battery || 85}%`;
+    if ($acc) $acc.textContent = `${v.accuracy || 15} m`;
+
+    // Distance covered with timeframe
+    const $dist = document.getElementById('detailDistance');
+    const $distSub = document.getElementById('detailDistanceSub');
+    if ($dist) {
+        let d = v.distanceToday || 187.3;
+        if (currentSelectedTimeframe === 'week') d = +(d * 4.8).toFixed(1);
+        else if (currentSelectedTimeframe === 'month') d = +(d * 19.5).toFixed(1);
+        $dist.textContent = d;
+    }
+    if ($distSub) {
+        const onDuty = driver ? driver.onDutySince || '05:40' : '05:40';
+        $distSub.textContent = `Today · since ${onDuty}`;
+    }
+
+    // Last known location
+    const $loc = document.getElementById('detailLocation');
+    if ($loc) $loc.textContent = v.currentLocation || 'NH 16, Minjur / Ponneri Junction';
+
+    // Freight Corridor & Route Progress Card
+    const vehicleCorridorMap = {
+        v1: { name: 'NH 48 Chennai-Bengaluru Highway', checkpoint: 'Sriperumbudur Toll Plaza', pct: 78 },
+        v2: { name: 'NH 32 GST Road Expressway', checkpoint: 'Chengalpattu Toll Plaza', pct: 62 },
+        v3: { name: 'NH 48 Kanchipuram Freight Bypass', checkpoint: 'Kanchipuram Toll Gate', pct: 85 },
+        v4: { name: 'Madhavaram Freight Hub Bypass', checkpoint: 'Madhavaram Ring Gate', pct: 45 },
+        v5: { name: 'NH 16 Chennai-Ponneri Freight Corridor', checkpoint: 'Minjur Toll Plaza', pct: 68 },
+        v6: { name: 'Chennai Port Harbor Corridor', checkpoint: 'Port Gate 2 Terminal', pct: 54 }
+    };
+    const corridor = vehicleCorridorMap[v.id] || {
+        name: v.currentLocation || 'State Freight Corridor',
+        checkpoint: 'Logistics Checkpoint Hub',
+        pct: 50
+    };
+    const $cTitle = document.getElementById('detailCorridorTitle');
+    const $cPct = document.getElementById('detailCorridorPct');
+    const $cFill = document.getElementById('detailCorridorFill');
+    const $cCheck = document.getElementById('detailCheckpoint');
+    if ($cTitle) $cTitle.textContent = corridor.name;
+    if ($cPct) $cPct.textContent = `${corridor.pct}%`;
+    if ($cFill) $cFill.style.width = `${corridor.pct}%`;
+    if ($cCheck) $cCheck.textContent = corridor.checkpoint;
+
+    // Fleet Telematics Diagnostics Card
+    const $sig = document.getElementById('detailSignalText');
+    const $bFill = document.getElementById('detailBatteryFill');
+    const $bPct = document.getElementById('detailBatteryPctText');
+    const $ign = document.getElementById('detailIgnitionText');
+
+    if ($sig) {
+        if (v.status === 'offline') {
+            $sig.textContent = 'No Signal (Offline · 42m)';
+            $sig.style.color = '#ef4444';
+        } else if (v.status === 'stopped') {
+            $sig.textContent = 'Standby (Cell Tower Linked)';
+            $sig.style.color = '#64748b';
+        } else if (v.source === 'sim') {
+            $sig.textContent = 'BSNL SIM Tower LBS (Cell #4819)';
+            $sig.style.color = '#2563eb';
+        } else if (cat === 'moving') {
+            $sig.textContent = 'Strong (4G LTE · -74 dBm)';
+            $sig.style.color = '#16a34a';
+        } else {
+            $sig.textContent = 'Good (4G LTE · -82 dBm)';
+            $sig.style.color = '#d97706';
+        }
+    }
+
+    const batt = v.battery || 85;
+    if ($bPct) $bPct.textContent = `${batt}%`;
+    if ($bFill) {
+        $bFill.style.width = `${batt}%`;
+        if (batt < 20) {
+            $bFill.style.background = '#ef4444';
+        } else if (batt < 50) {
+            $bFill.style.background = '#f59e0b';
+        } else {
+            $bFill.style.background = '#10b981';
+        }
+    }
+
+    if ($ign) {
+        if (cat === 'moving') {
+            $ign.innerHTML = '<span style="color:#16a34a; font-weight:700;">🟢 Engine ON (Driving)</span>';
+        } else if (cat === 'halt' || cat === 'idle') {
+            $ign.innerHTML = '<span style="color:#d97706; font-weight:700;">🟡 Idling / Parked</span>';
+        } else if (v.status === 'stopped') {
+            $ign.innerHTML = '<span style="color:#64748b; font-weight:700;">⚪ Engine OFF (Trip Ended)</span>';
+        } else {
+            $ign.innerHTML = '<span style="color:#64748b; font-weight:700;">⚪ Engine OFF</span>';
+        }
+    }
+
+    // SIM Dispatch & Trip Actions Box
+    const $actionsBox = document.getElementById('detailActionsBox');
+    if ($actionsBox) {
+        if (v.source === 'sim') {
+            if (v.status !== 'driving') {
+                $actionsBox.innerHTML = `
+                    <button class="btn btn-sm btn-primary" style="width:100%; justify-content:center; padding:7px 10px; font-weight:600;" onclick="adminStartSimTrip('${v.id}')">
+                        ▶️ Admin: Start SIM Trip
+                    </button>
+                `;
+            } else {
+                $actionsBox.innerHTML = `
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn btn-sm btn-danger" style="flex:1; justify-content:center; padding:7px 10px; font-weight:600;" onclick="adminEndSimTrip('${v.id}')">
+                            🛑 Admin: End Trip
+                        </button>
+                        <button class="btn btn-sm btn-outline" style="padding:7px 10px; font-weight:600;" onclick="adminPingSim('${v.id}')">
+                            📡 Ping Tower
+                        </button>
+                    </div>
+                `;
+            }
+        } else {
+            $actionsBox.innerHTML = `
+                <div class="app-control-notice">
+                    🔒 Driver controls trip via Smartphone Mobile App
+                </div>
+            `;
+        }
+    }
+
+    // Route checkbox
+    const $chk = document.getElementById('toggleRouteCheckbox');
+    if ($chk) $chk.checked = showRouteOnMap;
+}
+
+/**
+ * Filter live fleet by status: 'all' | 'moving' | 'halt' | 'offline'
+ * @param {string} fType
+ */
+window.filterLiveFleet = function(fType) {
+    currentFleetFilter = (fType === 'idle') ? 'halt' : fType;
+    document.querySelectorAll('.live-filter-btn').forEach(btn => {
+        const bFilter = btn.dataset.filter;
+        if (bFilter === fType || (currentFleetFilter === 'halt' && (bFilter === 'halt' || bFilter === 'idle'))) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    renderLiveFleetList();
+};
+
+/**
+ * Fit map to show all 6 vehicles and all routes simultaneously with comfortable padding
+ */
+window.showAllVehiclesOnMap = function() {
+    if (!fleetMap) return;
+    fitMapToAllVehicles(true);
+    drawAllVehicleRoutes();
+};
+
+/**
+ * Close right vehicle detail panel
+ */
+window.closeVehicleDetailPanel = function() {
+    const $panel = document.getElementById('liveVehicleDetailPanel');
+    if ($panel) $panel.style.display = 'none';
+};
+
+/**
+ * Set timeframe toggle in distance covered card
+ * @param {string} tf - 'today' | 'week' | 'month'
+ */
+window.setTimeframe = function(tf) {
+    currentSelectedTimeframe = tf;
+    document.querySelectorAll('.timeframe-btn').forEach(btn => {
+        if (btn.dataset.timeframe === tf) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    renderSelectedVehicleDetail();
+};
+
+/**
+ * Toggle route polyline visibility on map
+ * @param {boolean} show
+ */
+window.toggleVehicleRoute = function(show) {
+    showRouteOnMap = show;
+    if (selectedVehicleId) {
+        drawVehicleRoute(selectedVehicleId);
+    }
+};
+
+/**
+ * Open Change Driver modal for currently selected vehicle
+ */
+window.openChangeDriverForSelected = function() {
+    if (selectedVehicleId) {
+        openEditVehicleModal(selectedVehicleId);
+    }
+};
+
+/**
+ * Switch to Map tab, select vehicle, center map, and open details
+ * @param {string} vid - Vehicle ID
+ */
+window.trackVehicleOnMap = function(vid) {
+    const dashTab = document.querySelector('.sidebar-tab[data-tab="dashboard"]');
+    if (dashTab) {
+        dashTab.click();
+    }
+    setTimeout(() => {
+        selectVehicleOnLiveMap(vid);
+    }, 250);
+};
+
 // ── Initialization ─────────────────────────────────────────
 
 /**
  * Initialize the admin dashboard.
  */
 function init() {
-    // Load persisted state if exists
-    loadStateFromStorage();
+    try {
+        loadStateFromStorage();
+    } catch (e) {
+        console.warn('[Admin] loadStateFromStorage error:', e);
+    }
 
-    // Ensure both modals are closed on startup
-    closeEditVehicleModal();
-    closeEditDriverModal();
+    try {
+        if (typeof closeEditVehicleModal === 'function') closeEditVehicleModal();
+        if (typeof closeEditDriverModal === 'function') closeEditDriverModal();
+    } catch (e) {
+        console.warn('[Admin] close modals error:', e);
+    }
 
-    // Initial clock update
-    updateClock();
+    try {
+        updateClock();
+    } catch (e) {
+        console.warn('[Admin] updateClock error:', e);
+    }
 
-    // Initial render
-    refreshAll();
+    try {
+        refreshAll();
+    } catch (e) {
+        console.warn('[Admin] refreshAll error:', e);
+    }
+
+    try {
+        initOrRefreshFleetMap();
+    } catch (e) {
+        console.warn('[Admin] initOrRefreshFleetMap error:', e);
+    }
+
+    // Ensure Leaflet map tile layout recalculates on window events
+    if (typeof window !== 'undefined') {
+        window.addEventListener('load', () => {
+            if (fleetMap) fleetMap.invalidateSize();
+        });
+        window.addEventListener('resize', () => {
+            if (fleetMap) fleetMap.invalidateSize();
+        });
+    }
 
     // Start the 2-second ticker
     setInterval(tick, 2000);
 
-    console.log('[Admin] Dashboard initialized.');
+    console.log('[Admin] Dashboard initialized successfully.');
     console.log(`[Admin] ${Object.keys(vehicles).length} vehicles, ${Object.keys(drivers).length} drivers, ${trips.length} trips loaded.`);
 }
 

@@ -1,7 +1,7 @@
 {
-  "name": "transport-digital-twin",
+  "name": "v3-fleet-logistics",
   "version": "1.0.0",
-  "description": "Transport Digital Twin & Smart Fleet Operations Platform with Real-Time Start/End Trip Tracking",
+  "description": "V3 Logistics (Varatharajan, Surya, Akash) — Smart Fleet Operations Platform with Real-Time Start/End Trip Tracking",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,12 +9,12 @@
   },
   "keywords": [
     "fleet-management",
-    "digital-twin",
+    "v3-fleet",
     "logistics",
     "telematics",
     "trip-tracking",
     "gps-tracking"
   ],
-  "author": "Bharath Swift Logistics",
+  "author": "V3 Logistics (Varatharajan, Surya, Akash)",
   "license": "ISC"
 }

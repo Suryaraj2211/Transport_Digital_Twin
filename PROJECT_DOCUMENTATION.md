@@ -93,7 +93,7 @@ Truck_Project/
    - Name, Phone, Phone Type (Smartphone / Button Phone), Device Model, Assigned Truck (with 1-click reassign dropdown), Enga Ponum (Destination), Licence, Expiry, Actions.
    - **📲 Automated Toll-Free SMS Dispatch (Background & Silent)**:
      - Driver number add pannina udane automatic-ah driver phone-ku SMS dispatch aagum:
-       `"Vanakkam [Name]! Ungal Vandi: [Plate] | Enga Ponum: [Destination]. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: 1800-419-7890 (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - Bharath Swift Logistics"`
+       `"Vanakkam [Name]! Ungal Vandi: [Plate] | Enga Ponum: [Destination]. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: 1800-419-7890 (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - V3 Logistics"`
      - Driver button phone-la antha SMS open panni 1800 number-ah single-click panni call pannittu vandi eduthutu kilambalaam.
      - Admin dashboard-la entha UI modal interruptions-um illama background-la silent-ah execute aagum.
      - Backend API: `POST /api/send-driver-sms`.
