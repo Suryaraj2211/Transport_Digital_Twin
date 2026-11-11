@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Bharath Swift Logistics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- ===== HEADER BAR ===== -->
+    <header class="header">
+        <div class="header-left">
+            <span class="header-logo">🚛</span>
+            <h1 class="header-title">Bharath Swift Logistics</h1>
+            <span class="header-badge">ADMIN DASHBOARD</span>
+        </div>
+        <div class="header-right">
+            <a href="/driver/" target="_blank" class="header-link">📱 Open Driver Portal ↗</a>
+            <span class="header-clock" id="headerClock">--:--:-- --</span>
+        </div>
+    </header>
+
+    <!-- ===== MAIN LAYOUT ===== -->
+    <div class="layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <button class="sidebar-tab active" data-tab="dashboard">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-label">Dashboard Overview</span>
+                </button>
+                <button class="sidebar-tab" data-tab="trips">
+                    <span class="tab-icon">🗺️</span>
+                    <span class="tab-label">Trip History</span>
+                </button>
+                <button class="sidebar-tab" data-tab="vehicles">
+                    <span class="tab-icon">🚚</span>
+                    <span class="tab-label">Vehicles</span>
+                </button>
+                <button class="sidebar-tab" data-tab="drivers">
+                    <span class="tab-icon">👤</span>
+                    <span class="tab-label">Drivers</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Fleet Tracker v1.0</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+
+            <!-- ===== DASHBOARD OVERVIEW TAB ===== -->
+            <section class="tab-panel active" id="panel-dashboard">
+                <h2 class="panel-title">Dashboard Overview</h2>
+
+                <!-- Dual Tracking Architecture Banner -->
+                <div class="info-banner">
+                    <div class="info-banner-icon">💡</div>
+                    <div class="info-banner-content">
+                        <strong>Dual Fleet Tracking System:</strong>
+                        <span><strong>📱 Smartphone Drivers</strong> use the Driver Mobile Portal (One-tap Start/Stop GPS). <strong>📞 Button Phone Drivers</strong> (Nokia 105, Samsung Guru) have no app — the <strong>Admin Dispatches & Halts SIM Trips</strong> directly from here using Telecom Cellular Tower Triangulation!</span>
+                    </div>
+                </div>
+
+                <!-- Metrics Ribbon -->
+                <div class="metrics-ribbon">
+                    <div class="metric-card">
+                        <span class="metric-value" id="metricTotalVehicles">0</span>
+                        <span class="metric-label">Total Vehicles</span>
+                    </div>
+                    <div class="metric-card metric-active">
+                        <span class="metric-value" id="metricActiveTrips">0</span>
+                        <span class="metric-label">Active Trips</span>
+                    </div>
+                    <div class="metric-card" style="border-left: 4px solid #f59e0b;">
+                        <span class="metric-value" id="metricHaltedCount" style="color: #d97706;">0</span>
+                        <span class="metric-label">Vehicles Halted</span>
+                    </div>
+                    <div class="metric-card metric-completed">
+                        <span class="metric-value" id="metricCompletedToday">0</span>
+                        <span class="metric-label">Completed Today</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="metricTotalDrivers">0</span>
+                        <span class="metric-label">Total Drivers</span>
+                    </div>
+                </div>
+
+                <!-- Live Status Cards -->
+                <h3 class="section-subtitle">Live Vehicle Status</h3>
+                <div class="status-cards" id="statusCards">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ===== TRIP HISTORY TAB ===== -->
+            <section class="tab-panel" id="panel-trips">
+                <div class="panel-header-row">
+                    <h2 class="panel-title">Trip History</h2>
+                    <button class="btn btn-outline" id="btnExportCSV">📥 Export CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="tripsTable">
+                        <thead>
+                            <tr>
+                                <th>Trip #</th>
+                                <th>Truck Plate</th>
+                                <th>Driver Name</th>
+                                <th>Start Time</th>
+                                <th>Start Location</th>
+                                <th>End Time</th>
+                                <th>End Location</th>
+                                <th>Duration</th>
+                                <th>Halt Time</th>
+                                <th>Avg Speed</th>
+                                <th>Distance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tripsTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== VEHICLES TAB ===== -->
+            <section class="tab-panel" id="panel-vehicles">
+                <div class="panel-header-row">
+                    <h2 class="panel-title">Vehicles</h2>
+                    <button class="btn btn-primary" id="btnAddVehicle">+ Add Vehicle</button>
+                </div>
+
+                <!-- Add Vehicle Inline Form (hidden by default) -->
+                <div class="inline-form hidden" id="formAddVehicle">
+                    <h4 class="form-heading">Add New Vehicle</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vPlate">Registration Plate</label>
+                            <input type="text" id="vPlate" placeholder="TN 00 XX 0000">
+                        </div>
+                        <div class="form-group">
+                            <label for="vModel">Model</label>
+                            <input type="text" id="vModel" placeholder="Tata Prima 4028.S">
+                        </div>
+                        <div class="form-group">
+                            <label for="vType">Type</label>
+                            <select id="vType">
+                                <option value="Truck 28T">Truck 28T</option>
+                                <option value="Truck 16T">Truck 16T</option>
+                                <option value="LCV 7T">LCV 7T</option>
+                                <option value="LCV 3.5T">LCV 3.5T</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vTracking">Tracking Method</label>
+                            <select id="vTracking">
+                                <option value="app">App (Smartphone)</option>
+                                <option value="gps">GPS Device</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="btnSaveVehicle">Save Vehicle</button>
+                        <button class="btn btn-ghost" id="btnCancelVehicle">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table" id="vehiclesTable">
+                        <thead>
+                            <tr>
+                                <th>Registration Plate</th>
+                                <th>Model</th>
+                                <th>Type</th>
+                                <th>Tracking Source</th>
+                                <th>Assigned Driver</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehiclesTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== DRIVERS TAB ===== -->
+            <section class="tab-panel" id="panel-drivers">
+                <div class="panel-header-row">
+                    <h2 class="panel-title">Drivers</h2>
+                    <button class="btn btn-primary" id="btnAddDriver">+ Add Driver</button>
+                </div>
+
+                <!-- Add Driver Inline Form (hidden by default) -->
+                <div class="inline-form hidden" id="formAddDriver">
+                    <h4 class="form-heading">Add New Driver</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dName">Full Name</label>
+                            <input type="text" id="dName" placeholder="Driver Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="dPhone">Phone Number</label>
+                            <input type="text" id="dPhone" placeholder="+91 98401 23456">
+                        </div>
+                        <div class="form-group">
+                            <label for="dPhoneType">Phone Type</label>
+                            <select id="dPhoneType">
+                                <option value="smart">📱 Smartphone</option>
+                                <option value="button">📞 Button Phone</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dDevice">Device Model</label>
+                            <input type="text" id="dDevice" placeholder="Samsung Galaxy M14">
+                        </div>
+                        <div class="form-group">
+                            <label for="dLicence">Licence Number</label>
+                            <input type="text" id="dLicence" placeholder="TN01 20210001234">
+                        </div>
+                        <div class="form-group">
+                            <label for="dExpiry">Licence Expiry</label>
+                            <input type="date" id="dExpiry">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="btnSaveDriver">Save Driver</button>
+                        <button class="btn btn-ghost" id="btnCancelDriver">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table" id="driversTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone Number</th>
+                                <th>Phone Type</th>
+                                <th>Device</th>
+                                <th>Assigned Truck</th>
+                                <th>Licence</th>
+                                <th>Expiry</th>
+                            </tr>
+                        </thead>
+                        <tbody id="driversTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

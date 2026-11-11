@@ -1,0 +1,20 @@
+{
+  "name": "transport-digital-twin",
+  "version": "1.0.0",
+  "description": "Transport Digital Twin & Smart Fleet Operations Platform with Real-Time Start/End Trip Tracking",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "fleet-management",
+    "digital-twin",
+    "logistics",
+    "telematics",
+    "trip-tracking",
+    "gps-tracking"
+  ],
+  "author": "Bharath Swift Logistics",
+  "license": "ISC"
+}
