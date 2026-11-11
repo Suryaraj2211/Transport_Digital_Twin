@@ -57,15 +57,8 @@
 
             <!-- ===== DASHBOARD OVERVIEW TAB ===== -->
             <section class="tab-panel active" id="panel-dashboard">
-                <h2 class="panel-title">Dashboard Overview</h2>
-
-                <!-- Dual Tracking Architecture Banner -->
-                <div class="info-banner">
-                    <div class="info-banner-icon">💡</div>
-                    <div class="info-banner-content">
-                        <strong>Dual Fleet Tracking System:</strong>
-                        <span><strong>📱 Smartphone Drivers</strong> use the Driver Mobile Portal (One-tap Start/Stop GPS). <strong>📞 Button Phone Drivers</strong> (Nokia 105, Samsung Guru) have no app — the <strong>Admin Dispatches & Halts SIM Trips</strong> directly from here using Telecom Cellular Tower Triangulation!</span>
-                    </div>
+                <div class="panel-header-row">
+                    <h2 class="panel-title" style="margin:0;">Dashboard Overview</h2>
                 </div>
 
                 <!-- Metrics Ribbon -->
@@ -101,8 +94,11 @@
 
             <!-- ===== TRIP HISTORY TAB ===== -->
             <section class="tab-panel" id="panel-trips">
-                <div class="panel-header-row">
-                    <h2 class="panel-title">Trip History</h2>
+                <div class="panel-header-row" style="flex-wrap: wrap; gap: 12px;">
+                    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                        <h2 class="panel-title" style="margin:0;">Trip History</h2>
+                        <input type="text" id="tripSearchInput" placeholder="🔍 Search truck plate, driver, location, status..." style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 300px; outline:none;" oninput="filterTripsTable(this.value)">
+                    </div>
                     <button class="btn btn-outline" id="btnExportCSV">📥 Export CSV</button>
                 </div>
                 <div class="table-wrapper">
@@ -162,7 +158,14 @@
                             <label for="vTracking">Tracking Method</label>
                             <select id="vTracking">
                                 <option value="app">App (Smartphone)</option>
+                                <option value="sim">SIM LBS (Button Phone)</option>
                                 <option value="gps">GPS Device</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vAssignedDriver">Assign Driver</label>
+                            <select id="vAssignedDriver">
+                                <option value="">-- No Driver Assigned --</option>
                             </select>
                         </div>
                     </div>
@@ -182,6 +185,7 @@
                                 <th>Tracking Source</th>
                                 <th>Assigned Driver</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="vehiclesTableBody">
@@ -218,8 +222,18 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="dDevice">Device Model</label>
-                            <input type="text" id="dDevice" placeholder="Samsung Galaxy M14">
+                            <label for="dDevice">Device Model (Optional)</label>
+                            <input type="text" id="dDevice" placeholder="e.g. Nokia 105, Samsung Guru">
+                        </div>
+                        <div class="form-group">
+                            <label for="dAssignedVehicle">Assign Truck</label>
+                            <select id="dAssignedVehicle">
+                                <option value="">-- No Truck Assigned --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dDestination">Trip Destination (Enga Ponum)</label>
+                            <input type="text" id="dDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot" value="Sriperumbudur Logistics Hub">
                         </div>
                         <div class="form-group">
                             <label for="dLicence">Licence Number</label>
@@ -245,8 +259,10 @@
                                 <th>Phone Type</th>
                                 <th>Device</th>
                                 <th>Assigned Truck</th>
+                                <th>Enga Ponum (Destination)</th>
                                 <th>Licence</th>
                                 <th>Expiry</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="driversTableBody">
@@ -257,6 +273,108 @@
             </section>
 
         </main>
+    </div>
+
+    <!-- ===== EDIT VEHICLE MODAL ===== -->
+    <div class="modal-overlay hidden" id="modalEditVehicle" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Edit Vehicle Details</h3>
+                <button type="button" class="modal-close-btn" onclick="closeEditVehicleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editVehicleId">
+                <div class="form-group">
+                    <label for="editVehiclePlate">Registration Plate</label>
+                    <input type="text" id="editVehiclePlate">
+                </div>
+                <div class="form-group">
+                    <label for="editVehicleModel">Model</label>
+                    <input type="text" id="editVehicleModel">
+                </div>
+                <div class="form-group">
+                    <label for="editVehicleType">Type</label>
+                    <select id="editVehicleType">
+                        <option value="Truck 28T">Truck 28T</option>
+                        <option value="Truck 16T">Truck 16T</option>
+                        <option value="LCV 7T">LCV 7T</option>
+                        <option value="LCV 3.5T">LCV 3.5T</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editVehicleTracking">Tracking Method</label>
+                    <select id="editVehicleTracking">
+                        <option value="app">App (Smartphone)</option>
+                        <option value="sim">SIM LBS (Button Phone)</option>
+                        <option value="gps">GPS Device</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editVehicleDriver">Assigned Driver</label>
+                    <select id="editVehicleDriver">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeEditVehicleModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditedVehicle()">💾 Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT DRIVER MODAL ===== -->
+    <div class="modal-overlay hidden" id="modalEditDriver" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Edit Driver Details</h3>
+                <button type="button" class="modal-close-btn" onclick="closeEditDriverModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editDriverId">
+                <div class="form-group">
+                    <label for="editDriverName">Full Name</label>
+                    <input type="text" id="editDriverName">
+                </div>
+                <div class="form-group">
+                    <label for="editDriverPhone">Phone Number</label>
+                    <input type="text" id="editDriverPhone">
+                </div>
+                <div class="form-group">
+                    <label for="editDriverPhoneType">Phone Type</label>
+                    <select id="editDriverPhoneType">
+                        <option value="smart">📱 Smartphone</option>
+                        <option value="button">📞 Button Phone</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDriverDevice">Device Model (Optional)</label>
+                    <input type="text" id="editDriverDevice">
+                </div>
+                <div class="form-group">
+                    <label for="editDriverVehicle">Assigned Truck</label>
+                    <select id="editDriverVehicle">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDriverDestination">Trip Destination (Enga Ponum)</label>
+                    <input type="text" id="editDriverDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot">
+                </div>
+                <div class="form-group">
+                    <label for="editDriverLicence">Licence Number</label>
+                    <input type="text" id="editDriverLicence">
+                </div>
+                <div class="form-group">
+                    <label for="editDriverExpiry">Licence Expiry</label>
+                    <input type="date" id="editDriverExpiry">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeEditDriverModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditedDriver()">💾 Save Changes</button>
+            </div>
+        </div>
     </div>
 
     <!-- ===== TOAST CONTAINER ===== -->

@@ -85,11 +85,21 @@ Truck_Project/
    - Completed trips `✅ Completed` status-oda total duration, distance, avg speed kaattum.
    - **"📥 Export CSV"** click panna Excel sheet download aagum.
 3. **Vehicles Table (Tab 3):**
-   - Plate, Model, Category, Tracking Source, Driver, Status.
-   - `+ Add Vehicle` inline form to register new trucks.
+   - Plate, Model, Category, Tracking Source, Assigned Driver (with 1-click reassign dropdown), Status, Actions.
+   - **✏️ Edit**: Registration Plate, Model, Type, Tracking Source, Assigned Driver direct-ah edit pannalam.
+   - **🗑️ Delete**: Unwanted vehicles delete pannalam (active trip-la irukkum pothu safe guard panni block pannum).
+   - `+ Add Vehicle` inline form to register new trucks with driver assignment dropdown.
 4. **Drivers Table (Tab 4):**
-   - Name, Phone, Phone Type, Device Model, Assigned Truck, Licence, Expiry.
-   - `+ Add Driver` inline form to add new drivers.
+   - Name, Phone, Phone Type (Smartphone / Button Phone), Device Model, Assigned Truck (with 1-click reassign dropdown), Enga Ponum (Destination), Licence, Expiry, Actions.
+   - **📲 Automated Toll-Free SMS Dispatch (Background & Silent)**:
+     - Driver number add pannina udane automatic-ah driver phone-ku SMS dispatch aagum:
+       `"Vanakkam [Name]! Ungal Vandi: [Plate] | Enga Ponum: [Destination]. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: 1800-419-7890 (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - Bharath Swift Logistics"`
+     - Driver button phone-la antha SMS open panni 1800 number-ah single-click panni call pannittu vandi eduthutu kilambalaam.
+     - Admin dashboard-la entha UI modal interruptions-um illama background-la silent-ah execute aagum.
+     - Backend API: `POST /api/send-driver-sms`.
+   - **✏️ Edit**: Name, Phone, Device, Truck, Destination (Enga Ponum), Licence, Expiry direct-ah popup modal-la edit pannalam.
+   - **🗑️ Delete**: 1-click clean delete without annoying browser popups.
+   - `+ Add Driver` inline form to add new drivers with truck assignment & destination.
 
 ---
 
@@ -130,7 +140,13 @@ Browser-la open pannunga:
    - Driver screen-la **"🚗 Drive 55 km/h"** or **"⚡ Overspeed 72 km/h"** click pannunga — live-aa distance `0.02 km`, `0.04 km`, `0.06 km` second-by-second increase aagum!
    - "📍 Simulated Location" dropdown-la location maathina, Admin card-layum new area name sync aagum!
    - Trip mudiyumpothu **"🛑 END TRIP"** click pannunga — full trip summary (Start/End location & time, Duration, Distance, Avg speed) calculate aagidum!
-4. **Button Phone SIM LBS Driver Test (Ravi Kumar - Nokia 105 / Venkatesh P - Samsung Guru):**
-   - Button phone-la app install panna mudiyadhadhaala, Admin Dashboard-la `v3` / `v4` card-la irukka **"▶ Start SIM Trip"** button-ai click pannunga.
-   - Admin initiates telecom cellular tower triangulation ping; vehicle status `Driving` aagum, live duration and speed variation automatically update aagum!
-   - Trip mudiyumpothu Admin card-la **"⏹ End Trip"** click panni trip complete pannalaam.
+4. **Button Phone SIM LBS Automated Dispatch (Zero Admin Work):**
+   - **Method A: 📞 Toll-Free Missed Call Simulator (`1800-419-7890`):**
+     - Admin dashboard-la top banner-la irukka **"📞 Simulate Missed Call"** button click pannunga.
+     - System identifies incoming Caller ID (e.g. Ravi Kumar - Nokia 105), maps to his assigned truck, and **AUTOMATICALLY starts the trip**!
+     - Destination reach aana udane marubadiyum **"📞 Simulate Missed Call"** click panna, trip **AUTOMATICALLY completes** and logs to Trip History!
+   - **Method B: 🌐 Geofence Boundary Crossing (500m Gate Trigger):**
+     - Click **"🌐 Simulate Geofence Gate Trigger"**.
+     - Vandi Madhavaram Depot 500m geofence gate-ai thaandi veliya ponal (Exit) ➔ **Trip AUTO-STARTS (100% Hands-Free)**!
+     - Destination Sriperumbudur Hub 500m boundary-kulla vanthal (Entry) ➔ **Trip AUTO-COMPLETES & logs duration & distance**!
+   - Rendume Admin manual intervention illamal 100% automatic-aa operate aagum!

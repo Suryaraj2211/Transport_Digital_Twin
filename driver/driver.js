@@ -614,7 +614,42 @@ function updateTripDuration() {
     DOM.tripDuration.textContent = formatDuration(elapsed);
 }
 
-// ─── SPEED DISPLAY ───────────────────────────────────────────
+// ─── SPEED DISPLAY & AUDIO WARNING ───────────────────────────
+let audioCtx = null;
+let lastOverspeedBeepTime = 0;
+
+/**
+ * Plays a short warning chime when exceeding legal speed limit
+ */
+function playOverspeedWarningChime() {
+    const now = Date.now();
+    if (now - lastOverspeedBeepTime < 3000) return; // Beep at most once every 3 seconds
+    lastOverspeedBeepTime = now;
+
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.35);
+
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+    } catch (e) {
+        console.warn('[Audio] Overspeed sound note:', e);
+    }
+}
 
 /**
  * Updates the speedometer display with current speed
@@ -640,6 +675,7 @@ function updateSpeedDisplay(speed) {
         DOM.speedBar.classList.add('overspeed');
         DOM.speedNumber.style.color = '#dc2626';
         DOM.overspeedAlert.style.display = 'block';
+        playOverspeedWarningChime();
     } else {
         DOM.speedBar.classList.remove('overspeed');
         DOM.speedNumber.style.color = '#0f172a';

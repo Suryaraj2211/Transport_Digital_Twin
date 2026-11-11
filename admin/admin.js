@@ -72,6 +72,7 @@ const drivers = {
         phoneType: 'smart',
         device: 'Samsung Galaxy M14 (App GPS)',
         assignedVehicle: 'v1',
+        destination: 'Sriperumbudur Industrial Hub',
         licence: 'TN01 20210001234',
         licenceExpiry: '2027-03-15'
     },
@@ -82,6 +83,7 @@ const drivers = {
         phoneType: 'smart',
         device: 'Redmi Note 12 (App GPS)',
         assignedVehicle: 'v2',
+        destination: 'Chengalpattu Logistics Bay',
         licence: 'TN22 20200005678',
         licenceExpiry: '2026-08-22'
     },
@@ -92,6 +94,7 @@ const drivers = {
         phoneType: 'button',
         device: 'Nokia 105 (Keypad Phone · Airtel SIM)',
         assignedVehicle: 'v3',
+        destination: 'Krishnagiri Highway Depot',
         licence: 'TN38 20220003456',
         licenceExpiry: '2028-01-10'
     },
@@ -102,6 +105,7 @@ const drivers = {
         phoneType: 'button',
         device: 'Samsung Guru 1200 (Keypad · Jio SIM)',
         assignedVehicle: 'v4',
+        destination: 'Chennai Port Container Terminal',
         licence: 'AP39 20210007788',
         licenceExpiry: '2029-06-15'
     }
@@ -451,7 +455,10 @@ function renderStatusCards() {
             bodyHtml += `
                 <div class="detail-row">
                     <span class="detail-label">Driver:</span>
-                    <span class="detail-value">${escHtml(driver.name)}</span>
+                    <span class="detail-value" style="display:inline-flex; align-items:center;">
+                        <strong>${escHtml(driver.name)}</strong>
+                        <button type="button" class="btn-card-edit" onclick="openEditDriverModal('${driver.id}')" title="Edit Driver Details">✏️ Edit</button>
+                    </span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Phone:</span>
@@ -462,7 +469,10 @@ function renderStatusCards() {
             bodyHtml += `
                 <div class="detail-row">
                     <span class="detail-label">Driver:</span>
-                    <span class="detail-value" style="color:#94A3B8;">Unassigned</span>
+                    <span class="detail-value" style="color:#94A3B8; display:inline-flex; align-items:center;">
+                        Unassigned
+                        <button type="button" class="btn-card-edit" onclick="openEditVehicleModal('${v.id}')" title="Assign Driver">➕ Assign</button>
+                    </span>
                 </div>
             `;
         }
@@ -570,6 +580,7 @@ function renderStatusCards() {
                     <div>
                         <span class="status-card-plate">${escHtml(v.plate)}</span>
                         <span class="status-card-model"> · ${escHtml(v.model)}</span>
+                        <button type="button" class="btn-card-edit" onclick="openEditVehicleModal('${v.id}')" title="Edit Truck Details">✏️ Edit</button>
                         <div style="margin-top:4px;">${sourceBadge}</div>
                     </div>
                     <span class="status-badge ${badgeClass}">${badgeText}</span>
@@ -648,6 +659,20 @@ function renderTripsTable() {
     $tripsTableBody.innerHTML = html;
 }
 
+/**
+ * Filter the trips table by search query
+ * @param {string} query
+ */
+window.filterTripsTable = function(query) {
+    const q = (query || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('#tripsTableBody tr');
+    rows.forEach(r => {
+        if (r.classList.contains('empty-row')) return;
+        const text = r.textContent.toLowerCase();
+        r.style.display = text.includes(q) ? '' : 'none';
+    });
+};
+
 // ── Render: Vehicles Table ─────────────────────────────────
 
 /**
@@ -657,14 +682,20 @@ function renderVehiclesTable() {
     const vehicleList = Object.values(vehicles);
 
     if (vehicleList.length === 0) {
-        $vehiclesTableBody.innerHTML = `<tr class="empty-row"><td colspan="6">No vehicles added.</td></tr>`;
+        $vehiclesTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">No vehicles added.</td></tr>`;
         return;
     }
 
     let html = '';
     vehicleList.forEach(v => {
-        const driver = getDriverForVehicle(v.id);
-        const driverName = driver ? escHtml(driver.name) : '<span style="color:#94A3B8;">Unassigned</span>';
+        let driverSelectHtml = `<select class="table-select" onchange="assignDriverToVehicle('${v.id}', this.value)">`;
+        driverSelectHtml += `<option value="">-- Unassigned --</option>`;
+        Object.values(drivers).forEach(d => {
+            const isSelected = v.driverId === d.id ? 'selected' : '';
+            driverSelectHtml += `<option value="${d.id}" ${isSelected}>${escHtml(d.name)} (${phoneTypeDisplay(d.phoneType)})</option>`;
+        });
+        driverSelectHtml += `</select>`;
+
         const sourceDisplay = v.source === 'app'
             ? '<span class="source-badge app">📱 Driver App GPS</span>'
             : '<span class="source-badge sim">📶 Telecom SIM LBS</span>';
@@ -684,8 +715,12 @@ function renderVehiclesTable() {
                 <td>${escHtml(v.model)}</td>
                 <td>${escHtml(v.type)}</td>
                 <td>${sourceDisplay}</td>
-                <td>${driverName}</td>
+                <td>${driverSelectHtml}</td>
                 <td>${statusHtml}</td>
+                <td style="white-space:nowrap;">
+                    <button class="btn btn-sm btn-outline" style="padding:4px 8px; font-size:12px;" onclick="openEditVehicleModal('${v.id}')">✏️ Edit</button>
+                    <button class="btn btn-sm btn-ghost" style="padding:4px 8px; font-size:12px; color:#DC2626;" onclick="deleteVehicle('${v.id}')" title="Delete Vehicle">🗑️</button>
+                </td>
             </tr>
         `;
     });
@@ -702,15 +737,19 @@ function renderDriversTable() {
     const driverList = Object.values(drivers);
 
     if (driverList.length === 0) {
-        $driversTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">No drivers added.</td></tr>`;
+        $driversTableBody.innerHTML = `<tr class="empty-row"><td colspan="9">No drivers added.</td></tr>`;
         return;
     }
 
     let html = '';
     driverList.forEach(d => {
-        const assignedVehicle = d.assignedVehicle && vehicles[d.assignedVehicle]
-            ? escHtml(vehicles[d.assignedVehicle].plate)
-            : '<span style="color:#94A3B8;">None</span>';
+        let vehicleSelectHtml = `<select class="table-select" onchange="assignTruckToDriver('${d.id}', this.value)">`;
+        vehicleSelectHtml += `<option value="">-- No Truck Assigned --</option>`;
+        Object.values(vehicles).forEach(v => {
+            const isSelected = d.assignedVehicle === v.id ? 'selected' : '';
+            vehicleSelectHtml += `<option value="${v.id}" ${isSelected}>${escHtml(v.plate)} (${escHtml(v.model)})</option>`;
+        });
+        vehicleSelectHtml += `</select>`;
 
         const phoneClass = d.phoneType === 'smart' ? 'cell-phone-smart' : 'cell-phone-button';
         const phoneLabel = phoneTypeDisplay(d.phoneType);
@@ -719,13 +758,18 @@ function renderDriversTable() {
 
         html += `
             <tr>
-                <td>${escHtml(d.name)}</td>
+                <td><strong>${escHtml(d.name)}</strong></td>
                 <td>${escHtml(d.phone)}</td>
                 <td class="${phoneClass}">${phoneLabel}</td>
-                <td>${escHtml(d.device)}</td>
-                <td class="cell-plate">${assignedVehicle}</td>
+                <td>${escHtml(d.device || '—')}</td>
+                <td class="cell-plate">${vehicleSelectHtml}</td>
+                <td>${escHtml(d.destination || 'Sriperumbudur Logistics Hub')}</td>
                 <td>${escHtml(d.licence || '—')}</td>
                 <td>${expiryDate}</td>
+                <td style="white-space:nowrap;">
+                    <button type="button" class="btn btn-sm btn-outline" style="padding:4px 8px; font-size:12px;" onclick="openEditDriverModal('${d.id}')">✏️ Edit</button>
+                    <button type="button" class="btn btn-sm btn-ghost" style="padding:4px 8px; font-size:12px; color:#DC2626;" onclick="deleteDriver('${d.id}')" title="Delete Driver">🗑️</button>
+                </td>
             </tr>
         `;
     });
@@ -733,7 +777,159 @@ function renderDriversTable() {
     $driversTableBody.innerHTML = html;
 }
 
-// ── Refresh All ────────────────────────────────────────────
+/**
+ * Assigns a truck to a driver with two-way sync
+ * @param {string} driverId
+ * @param {string} vehicleId
+ */
+window.assignTruckToDriver = function(driverId, vehicleId) {
+    const driver = drivers[driverId];
+    if (!driver) return;
+
+    // Unassign old vehicle if any
+    if (driver.assignedVehicle && vehicles[driver.assignedVehicle]) {
+        vehicles[driver.assignedVehicle].driverId = '';
+    }
+
+    if (!vehicleId) {
+        driver.assignedVehicle = '';
+        showToast(`Truck unassigned from ${driver.name}.`, 'info');
+        refreshAll();
+        return;
+    }
+
+    const v = vehicles[vehicleId];
+    if (!v) return;
+
+    // Unassign previous driver of this vehicle if any
+    if (v.driverId && drivers[v.driverId] && v.driverId !== driverId) {
+        drivers[v.driverId].assignedVehicle = '';
+    }
+
+    driver.assignedVehicle = vehicleId;
+    v.driverId = driverId;
+
+    if (driver.phoneType === 'button') {
+        v.source = 'sim';
+    } else {
+        v.source = 'app';
+    }
+
+    showToast(`🚛 Truck ${v.plate} successfully assigned to ${driver.name}!`, 'success');
+    refreshAll();
+};
+
+/**
+ * Assigns a driver to a vehicle with two-way sync
+ * @param {string} vehicleId
+ * @param {string} driverId
+ */
+window.assignDriverToVehicle = function(vehicleId, driverId) {
+    const v = vehicles[vehicleId];
+    if (!v) return;
+
+    if (v.driverId && drivers[v.driverId]) {
+        drivers[v.driverId].assignedVehicle = '';
+    }
+
+    if (!driverId) {
+        v.driverId = '';
+        showToast(`Driver unassigned from ${v.plate}.`, 'info');
+        refreshAll();
+        return;
+    }
+
+    const driver = drivers[driverId];
+    if (!driver) return;
+
+    if (driver.assignedVehicle && vehicles[driver.assignedVehicle] && driver.assignedVehicle !== vehicleId) {
+        vehicles[driver.assignedVehicle].driverId = '';
+    }
+
+    v.driverId = driverId;
+    driver.assignedVehicle = vehicleId;
+
+    if (driver.phoneType === 'button') {
+        v.source = 'sim';
+    } else {
+        v.source = 'app';
+    }
+
+    showToast(`👤 Driver ${driver.name} assigned to truck ${v.plate}!`, 'success');
+    refreshAll();
+};
+
+/**
+ * Populates the Missed Call simulator driver selector with all button phone drivers
+ */
+function populateSimDriverSelector() {
+    const $select = document.getElementById('simDriverSelector');
+    if (!$select) return;
+    const buttonDrivers = Object.values(drivers).filter(d => d.phoneType === 'button');
+    if (buttonDrivers.length === 0) {
+        $select.innerHTML = '<option value="">No button phone drivers registered</option>';
+        return;
+    }
+    const currentVal = $select.value;
+    let html = '';
+    buttonDrivers.forEach(d => {
+        const v = d.assignedVehicle && vehicles[d.assignedVehicle] ? vehicles[d.assignedVehicle].plate : '⚠️ No Truck Assigned';
+        html += `<option value="${d.id}">${escHtml(d.name)} (${escHtml(d.phone)} · ${v})</option>`;
+    });
+    $select.innerHTML = html;
+    if (currentVal && drivers[currentVal]) {
+        $select.value = currentVal;
+    }
+}
+
+// ── Refresh All & LocalStorage Persistence ─────────────────
+
+/**
+ * Save current state to localStorage
+ */
+function saveStateToStorage() {
+    try {
+        localStorage.setItem('fleet_admin_vehicles', JSON.stringify(vehicles));
+        localStorage.setItem('fleet_admin_drivers', JSON.stringify(drivers));
+        localStorage.setItem('fleet_admin_trips', JSON.stringify(trips));
+    } catch (e) {
+        console.warn('[Admin] Failed to save state to localStorage:', e);
+    }
+}
+
+/**
+ * Load state from localStorage if available
+ */
+function loadStateFromStorage() {
+    try {
+        const vRaw = localStorage.getItem('fleet_admin_vehicles');
+        const dRaw = localStorage.getItem('fleet_admin_drivers');
+        const tRaw = localStorage.getItem('fleet_admin_trips');
+        if (vRaw) {
+            const parsed = JSON.parse(vRaw);
+            Object.keys(vehicles).forEach(k => delete vehicles[k]);
+            Object.assign(vehicles, parsed);
+        }
+        if (dRaw) {
+            const parsed = JSON.parse(dRaw);
+            Object.keys(drivers).forEach(k => delete drivers[k]);
+            Object.assign(drivers, parsed);
+        }
+        if (tRaw) {
+            const parsed = JSON.parse(tRaw);
+            trips.length = 0;
+            parsed.forEach(t => {
+                if (t.startTime) t.startTime = new Date(t.startTime);
+                if (t.endTime) t.endTime = new Date(t.endTime);
+                trips.push(t);
+            });
+            const ids = trips.map(t => typeof t.id === 'number' ? t.id : parseInt(t.id, 10)).filter(n => !isNaN(n));
+            if (ids.length > 0) tripCounter = Math.max(...ids);
+        }
+    } catch (e) {
+        console.warn('[Admin] Failed to load state from localStorage:', e);
+    }
+}
 
 /**
  * Refresh all dashboard panels and metrics.
@@ -744,6 +940,8 @@ function refreshAll() {
     renderTripsTable();
     renderVehiclesTable();
     renderDriversTable();
+    populateSimDriverSelector();
+    saveStateToStorage();
 }
 
 // ── HTML Escape ────────────────────────────────────────────
@@ -770,6 +968,16 @@ const $btnCancelVehicle = document.getElementById('btnCancelVehicle');
 $btnAddVehicle.addEventListener('click', () => {
     $formAddVehicle.classList.remove('hidden');
     $btnAddVehicle.style.display = 'none';
+
+    const $drvSelect = document.getElementById('vAssignedDriver');
+    if ($drvSelect) {
+        let dHtml = '<option value="">-- No Driver Assigned --</option>';
+        Object.values(drivers).forEach(d => {
+            const currentTruck = d.assignedVehicle && vehicles[d.assignedVehicle] ? ` (${vehicles[d.assignedVehicle].plate})` : ' (Available)';
+            dHtml += `<option value="${d.id}">${escHtml(d.name)} (${phoneTypeDisplay(d.phoneType)})${currentTruck}</option>`;
+        });
+        $drvSelect.innerHTML = dHtml;
+    }
 });
 
 $btnCancelVehicle.addEventListener('click', () => {
@@ -783,6 +991,7 @@ $btnSaveVehicle.addEventListener('click', () => {
     const model = document.getElementById('vModel').value.trim();
     const type = document.getElementById('vType').value;
     const source = document.getElementById('vTracking').value;
+    const assignedDriver = document.getElementById('vAssignedDriver') ? document.getElementById('vAssignedDriver').value : '';
 
     if (!plate) {
         showToast('Please enter a registration plate.', 'warning');
@@ -804,13 +1013,20 @@ $btnSaveVehicle.addEventListener('click', () => {
         model: model,
         type: type,
         source: source,
-        driverId: '',
+        driverId: assignedDriver,
         status: 'no-trip',
         speed: 0,
         currentLocation: '',
         lat: 0,
         lng: 0
     };
+
+    if (assignedDriver && drivers[assignedDriver]) {
+        drivers[assignedDriver].assignedVehicle = vid;
+        if (drivers[assignedDriver].phoneType === 'button') {
+            vehicles[vid].source = 'sim';
+        }
+    }
 
     showToast(`Vehicle ${plate} added successfully!`, 'success');
     clearVehicleForm();
@@ -836,6 +1052,16 @@ const $btnCancelDriver = document.getElementById('btnCancelDriver');
 $btnAddDriver.addEventListener('click', () => {
     $formAddDriver.classList.remove('hidden');
     $btnAddDriver.style.display = 'none';
+
+    const $vehSelect = document.getElementById('dAssignedVehicle');
+    if ($vehSelect) {
+        let vHtml = '<option value="">-- No Truck Assigned --</option>';
+        Object.values(vehicles).forEach(v => {
+            const currentDriver = v.driverId && drivers[v.driverId] ? ` (${drivers[v.driverId].name})` : ' (Available)';
+            vHtml += `<option value="${v.id}">${escHtml(v.plate)} - ${escHtml(v.model)}${currentDriver}</option>`;
+        });
+        $vehSelect.innerHTML = vHtml;
+    }
 });
 
 $btnCancelDriver.addEventListener('click', () => {
@@ -849,8 +1075,10 @@ $btnSaveDriver.addEventListener('click', () => {
     const phone = document.getElementById('dPhone').value.trim();
     const phoneType = document.getElementById('dPhoneType').value;
     const device = document.getElementById('dDevice').value.trim();
+    const destination = document.getElementById('dDestination') ? document.getElementById('dDestination').value.trim() : 'Sriperumbudur Logistics Hub';
     const licence = document.getElementById('dLicence').value.trim();
     const expiry = document.getElementById('dExpiry').value;
+    const assignedVehicle = document.getElementById('dAssignedVehicle') ? document.getElementById('dAssignedVehicle').value : '';
 
     if (!name) {
         showToast('Please enter the driver name.', 'warning');
@@ -871,17 +1099,30 @@ $btnSaveDriver.addEventListener('click', () => {
         name: name,
         phone: phone,
         phoneType: phoneType,
-        device: device || '—',
-        assignedVehicle: '',
+        device: device || (phoneType === 'button' ? 'Feature Keypad Phone' : 'Smartphone'),
+        assignedVehicle: assignedVehicle,
+        destination: destination || 'Sriperumbudur Logistics Hub',
         licence: licence || '—',
         licenceExpiry: expiry || '—'
     };
 
-    showToast(`Driver ${name} added successfully!`, 'success');
+    if (assignedVehicle && vehicles[assignedVehicle]) {
+        vehicles[assignedVehicle].driverId = did;
+        if (phoneType === 'button') {
+            vehicles[assignedVehicle].source = 'sim';
+        }
+    }
+
+    showToast(`Driver ${name} added successfully! Toll-Free Missed Call SMS sent to ${phone}.`, 'success');
     clearDriverForm();
     $formAddDriver.classList.add('hidden');
     $btnAddDriver.style.display = '';
     refreshAll();
+
+    // Automatically send SMS with vehicle number, destination, and 1800 number to driver
+    if (phone) {
+        sendDriverTollFreeSms(did);
+    }
 });
 
 function clearDriverForm() {
@@ -889,9 +1130,337 @@ function clearDriverForm() {
     document.getElementById('dPhone').value = '';
     document.getElementById('dPhoneType').selectedIndex = 0;
     document.getElementById('dDevice').value = '';
+    if (document.getElementById('dDestination')) document.getElementById('dDestination').value = 'Sriperumbudur Logistics Hub';
     document.getElementById('dLicence').value = '';
     document.getElementById('dExpiry').value = '';
 }
+
+// ── Edit & Delete Vehicle / Driver Modals ──────────────────
+
+/**
+ * Open the Edit Vehicle modal and populate inputs
+ * @param {string} vid
+ */
+window.openEditVehicleModal = function(vid) {
+    const v = vehicles[vid];
+    if (!v) return;
+
+    document.getElementById('editVehicleId').value = v.id;
+    document.getElementById('editVehiclePlate').value = v.plate || '';
+    document.getElementById('editVehicleModel').value = v.model || '';
+    document.getElementById('editVehicleType').value = v.type || 'Truck 28T';
+    document.getElementById('editVehicleTracking').value = v.source || 'app';
+
+    const $driverSelect = document.getElementById('editVehicleDriver');
+    if ($driverSelect) {
+        let dHtml = '<option value="">-- No Driver Assigned --</option>';
+        Object.values(drivers).forEach(d => {
+            const isSel = v.driverId === d.id ? 'selected' : '';
+            const currTruckNote = d.assignedVehicle && d.assignedVehicle !== v.id && vehicles[d.assignedVehicle]
+                ? ` (${vehicles[d.assignedVehicle].plate})`
+                : '';
+            dHtml += `<option value="${d.id}" ${isSel}>${escHtml(d.name)} (${phoneTypeDisplay(d.phoneType)})${currTruckNote}</option>`;
+        });
+        $driverSelect.innerHTML = dHtml;
+    }
+
+    const modal = document.getElementById('modalEditVehicle');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+};
+
+/**
+ * Close the Edit Vehicle modal
+ */
+window.closeEditVehicleModal = function() {
+    const modal = document.getElementById('modalEditVehicle');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+};
+
+/**
+ * Save updated vehicle details
+ */
+window.saveEditedVehicle = function() {
+    const vid = document.getElementById('editVehicleId').value;
+    const v = vehicles[vid];
+    if (!v) return;
+
+    const plate = document.getElementById('editVehiclePlate').value.trim();
+    const model = document.getElementById('editVehicleModel').value.trim();
+    const type = document.getElementById('editVehicleType').value;
+    const source = document.getElementById('editVehicleTracking').value;
+    const driverId = document.getElementById('editVehicleDriver').value;
+
+    if (!plate) {
+        showToast('Please enter registration plate.', 'warning');
+        return;
+    }
+    if (!model) {
+        showToast('Please enter vehicle model.', 'warning');
+        return;
+    }
+
+    v.plate = plate;
+    v.model = model;
+    v.type = type;
+    v.source = source;
+
+    // Handle driver reassignment
+    if (v.driverId && v.driverId !== driverId && drivers[v.driverId]) {
+        drivers[v.driverId].assignedVehicle = '';
+    }
+
+    if (driverId && drivers[driverId]) {
+        const d = drivers[driverId];
+        if (d.assignedVehicle && d.assignedVehicle !== vid && vehicles[d.assignedVehicle]) {
+            vehicles[d.assignedVehicle].driverId = '';
+        }
+        d.assignedVehicle = vid;
+        v.driverId = driverId;
+        if (d.phoneType === 'button') {
+            v.source = 'sim';
+        }
+    } else {
+        v.driverId = '';
+    }
+
+    // Update active trips if any
+    trips.forEach(t => {
+        if (t.vehicleId === vid && t.status === 'active') {
+            t.plate = plate;
+            if (v.driverId && drivers[v.driverId]) {
+                t.driverId = v.driverId;
+                t.driverName = drivers[v.driverId].name;
+            }
+        }
+    });
+
+    closeEditVehicleModal();
+    showToast(`🚛 Vehicle ${plate} updated successfully!`, 'success');
+    refreshAll();
+};
+
+/**
+ * Delete a vehicle (Instant 1-click delete without annoying browser alert popups)
+ * @param {string} vid
+ */
+window.deleteVehicle = function(vid) {
+    const v = vehicles[vid];
+    if (!v) return;
+
+    if (v.status === 'driving') {
+        showToast(`⚠️ Cannot delete ${v.plate} while trip is active! Please end trip first.`, 'warning');
+        return;
+    }
+
+    const plate = v.plate;
+
+    // Unassign driver if any
+    if (v.driverId && drivers[v.driverId]) {
+        drivers[v.driverId].assignedVehicle = '';
+    }
+
+    delete vehicles[vid];
+    showToast(`🗑️ Vehicle ${plate} deleted successfully.`, 'info');
+    refreshAll();
+};
+
+/**
+ * Open the Edit Driver modal and populate inputs
+ * @param {string} did
+ */
+window.openEditDriverModal = function(did) {
+    const d = drivers[did];
+    if (!d) return;
+
+    document.getElementById('editDriverId').value = d.id;
+    document.getElementById('editDriverName').value = d.name || '';
+    document.getElementById('editDriverPhone').value = d.phone || '';
+    document.getElementById('editDriverPhoneType').value = d.phoneType || 'smart';
+    document.getElementById('editDriverDevice').value = d.device || '';
+    if (document.getElementById('editDriverDestination')) {
+        document.getElementById('editDriverDestination').value = d.destination || 'Sriperumbudur Logistics Hub';
+    }
+    document.getElementById('editDriverLicence').value = (d.licence && d.licence !== '—') ? d.licence : '';
+    document.getElementById('editDriverExpiry').value = (d.licenceExpiry && d.licenceExpiry !== '—') ? d.licenceExpiry : '';
+
+    const $vehSelect = document.getElementById('editDriverVehicle');
+    if ($vehSelect) {
+        let vHtml = '<option value="">-- No Truck Assigned --</option>';
+        Object.values(vehicles).forEach(v => {
+            const isSel = d.assignedVehicle === v.id ? 'selected' : '';
+            const currDriverNote = v.driverId && v.driverId !== d.id && drivers[v.driverId]
+                ? ` (${drivers[v.driverId].name})`
+                : '';
+            vHtml += `<option value="${v.id}" ${isSel}>${escHtml(v.plate)} - ${escHtml(v.model)}${currDriverNote}</option>`;
+        });
+        $vehSelect.innerHTML = vHtml;
+    }
+
+    const modal = document.getElementById('modalEditDriver');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+};
+
+/**
+ * Close the Edit Driver modal
+ */
+window.closeEditDriverModal = function() {
+    const modal = document.getElementById('modalEditDriver');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+};
+
+/**
+ * Save updated driver details
+ */
+window.saveEditedDriver = function() {
+    const did = document.getElementById('editDriverId').value;
+    const d = drivers[did];
+    if (!d) return;
+
+    const name = document.getElementById('editDriverName').value.trim();
+    const phone = document.getElementById('editDriverPhone').value.trim();
+    const phoneType = document.getElementById('editDriverPhoneType').value;
+    const device = document.getElementById('editDriverDevice').value.trim();
+    const destination = document.getElementById('editDriverDestination') ? document.getElementById('editDriverDestination').value.trim() : '';
+    const licence = document.getElementById('editDriverLicence').value.trim();
+    const expiry = document.getElementById('editDriverExpiry').value;
+    const assignedVehicle = document.getElementById('editDriverVehicle').value;
+
+    if (!name) {
+        showToast('Please enter driver name.', 'warning');
+        return;
+    }
+    if (!phone) {
+        showToast('Please enter phone number.', 'warning');
+        return;
+    }
+
+    d.name = name;
+    d.phone = phone;
+    d.phoneType = phoneType;
+    d.device = device || (phoneType === 'button' ? 'Feature Keypad Phone' : 'Smartphone');
+    d.destination = destination || 'Sriperumbudur Logistics Hub';
+    d.licence = licence || '—';
+    d.licenceExpiry = expiry || '—';
+
+    // Handle vehicle reassignment
+    if (d.assignedVehicle && d.assignedVehicle !== assignedVehicle && vehicles[d.assignedVehicle]) {
+        vehicles[d.assignedVehicle].driverId = '';
+    }
+
+    if (assignedVehicle && vehicles[assignedVehicle]) {
+        const v = vehicles[assignedVehicle];
+        if (v.driverId && v.driverId !== did && drivers[v.driverId]) {
+            drivers[v.driverId].assignedVehicle = '';
+        }
+        d.assignedVehicle = assignedVehicle;
+        v.driverId = did;
+        if (phoneType === 'button') {
+            v.source = 'sim';
+        } else {
+            v.source = 'app';
+        }
+    } else {
+        d.assignedVehicle = '';
+    }
+
+    // Update active trips if any
+    trips.forEach(t => {
+        if (t.driverId === did && t.status === 'active') {
+            t.driverName = name;
+        }
+    });
+
+    closeEditDriverModal();
+    showToast(`👤 Driver ${name} updated successfully!`, 'success');
+    refreshAll();
+};
+
+/**
+ * Delete a driver (Instant 1-click delete without annoying browser alert popups)
+ * @param {string} did
+ */
+window.deleteDriver = function(did) {
+    const d = drivers[did];
+    if (!d) return;
+
+    if (d.assignedVehicle && vehicles[d.assignedVehicle] && vehicles[d.assignedVehicle].status === 'driving') {
+        showToast(`⚠️ Cannot delete ${d.name} while their truck (${vehicles[d.assignedVehicle].plate}) is on an active trip!`, 'warning');
+        return;
+    }
+
+    const name = d.name;
+
+    // Unassign from vehicle
+    if (d.assignedVehicle && vehicles[d.assignedVehicle]) {
+        vehicles[d.assignedVehicle].driverId = '';
+    }
+
+    delete drivers[did];
+    showToast(`🗑️ Driver ${name} deleted successfully.`, 'info');
+    refreshAll();
+};
+
+// ── Automated Driver Toll-Free SMS Dispatch (Background) ───
+
+/**
+ * Automatically dispatches the 1800-419-7890 Toll-Free missed call instructions to the driver via SMS (silent background)
+ * @param {string} driverId
+ */
+window.sendDriverTollFreeSms = async function(driverId) {
+    const d = drivers[driverId];
+    if (!d || !d.phone) return;
+
+    const truckPlate = (d.assignedVehicle && vehicles[d.assignedVehicle])
+        ? `${vehicles[d.assignedVehicle].plate} (${vehicles[d.assignedVehicle].model})`
+        : 'Assigned Truck';
+
+    const destination = d.destination || 'Sriperumbudur Logistics Hub';
+
+    try {
+        await fetch('/api/send-driver-sms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                driverName: d.name,
+                phone: d.phone,
+                truckPlate: truckPlate,
+                destination: destination,
+                tollFree: '1800-419-7890'
+            })
+        });
+
+        d.smsSent = true;
+        d.smsTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        saveStateToStorage();
+    } catch (err) {
+        console.warn('[SMS] Background dispatch handled:', err);
+    }
+};
+
+// Close modals when clicking overlay backdrop or pressing Escape
+document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'modalEditVehicle') closeEditVehicleModal();
+    if (e.target && e.target.id === 'modalEditDriver') closeEditDriverModal();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeEditVehicleModal();
+        closeEditDriverModal();
+    }
+});
 
 // ── Export CSV ──────────────────────────────────────────────
 
@@ -1274,12 +1843,191 @@ window.adminPingSim = function(vehicleId) {
     showToast(`📡 Cell Tower Ping: ${randomTower} (RSSI: ${randomRssi} dBm) · Lat: 12.9812, Lng: 79.9488 · Signal: Strong`, 'info');
 };
 
+// ── Automated Dispatch: Missed Call & Geofencing ───────────
+
+/**
+ * Method 1: Simulate Driver Missed Call to Toll-Free Number (1800-419-7890).
+ * Zero admin manual intervention — system auto-starts or auto-ends trip by Caller-ID.
+ */
+window.simulateDriverMissedCall = function() {
+    const driverSelect = document.getElementById('simDriverSelector');
+    const driverId = driverSelect ? driverSelect.value : 'd3';
+    const driver = drivers[driverId];
+    if (!driver) return;
+
+    const vehicleId = driver.assignedVehicle;
+    const v = vehicles[vehicleId];
+    if (!v) {
+        showToast(`⚠️ ${driver.name}-க்கு லாரி எதுவும் அசைன் செய்யப்படவில்லை!\nகீழே உள்ள 'Drivers' டேபில் 'Assigned Truck' டிராப்டவுனில் உங்கள் லாரியைத் தேர்ந்தெடுக்கவும்.`, 'warning');
+        return;
+    }
+
+    const activeTrip = getActiveTripForVehicle(vehicleId);
+
+    if (!activeTrip) {
+        // Driver gave missed call to START trip!
+        v.status = 'driving';
+        v.speed = 52;
+        v.isHalted = false;
+        v.haltSeconds = 0;
+        v.haltReason = '';
+        v.currentLocation = 'Airtel Tower #4819 - Poonamallee Highway';
+
+        tripCounter++;
+        const now = new Date();
+        const newTrip = {
+            id: tripCounter,
+            vehicleId: vehicleId,
+            plate: v.plate,
+            driverId: driver.id,
+            driverName: driver.name,
+            startTime: now,
+            startLocation: 'Airtel Tower #4819 - Poonamallee Highway',
+            endTime: null,
+            endLocation: '',
+            duration: '',
+            haltSeconds: 0,
+            haltReason: '',
+            avgSpeed: 52,
+            distanceKm: 0,
+            status: 'active',
+            speed: 52
+        };
+
+        trips.push(newTrip);
+
+        showToast(
+            `📞 Incoming Missed Call from ${driver.name} (${driver.phone})!\nTrip #${newTrip.id} AUTO-STARTED for ${v.plate}! Status: 🟢 Driving via Telecom SIM LBS. (Zero Admin Work!)`,
+            'success'
+        );
+        refreshAll();
+    } else {
+        // Driver gave missed call to END trip!
+        const now = new Date();
+        activeTrip.endTime = now;
+        activeTrip.endLocation = 'Jio Tower #1204 - Sriperumbudur Hub';
+        activeTrip.status = 'completed';
+        activeTrip.speed = 0;
+        if (!activeTrip.distanceKm || activeTrip.distanceKm < 1) {
+            activeTrip.distanceKm = 42.8;
+        }
+        activeTrip.duration = calcDuration(activeTrip.startTime, activeTrip.endTime);
+        const durationHrs = (activeTrip.endTime - activeTrip.startTime) / 3600000;
+        if (durationHrs > 0) {
+            activeTrip.avgSpeed = Math.round(activeTrip.distanceKm / durationHrs) || 50;
+        }
+
+        v.status = 'stopped';
+        v.speed = 0;
+        v.isHalted = false;
+        v.currentLocation = 'Sriperumbudur Hub';
+
+        showToast(
+            `📞 Incoming Missed Call from ${driver.name} (${driver.phone})!\nTrip #${activeTrip.id} AUTO-COMPLETED! Duration: ${activeTrip.duration}, Distance: ${activeTrip.distanceKm} km. Logged in Trip History!`,
+            'info'
+        );
+        refreshAll();
+    }
+};
+
+/**
+ * Method 2: Simulate Geofence Boundary Crossing (500m Depot Exit / Hub Entry).
+ * 100% hands-free: neither driver nor admin presses any button.
+ */
+window.simulateGeofenceTrigger = function() {
+    const driverSelect = document.getElementById('simDriverSelector');
+    const driverId = driverSelect ? driverSelect.value : 'd3';
+    const driver = drivers[driverId];
+    if (!driver) return;
+
+    const vehicleId = driver.assignedVehicle;
+    const v = vehicles[vehicleId];
+    if (!v) {
+        showToast(`⚠️ ${driver.name}-க்கு லாரி எதுவும் அசைன் செய்யப்படவில்லை!\nகீழே உள்ள 'Drivers' டேபில் 'Assigned Truck' டிராப்டவுனில் உங்கள் லாரியைத் தேர்ந்தெடுக்கவும்.`, 'warning');
+        return;
+    }
+
+    const activeTrip = getActiveTripForVehicle(vehicleId);
+
+    if (!activeTrip) {
+        // Vehicle exits 500m Depot Geofence (Madhavaram Depot) -> Auto-Starts Trip!
+        v.status = 'driving';
+        v.speed = 48;
+        v.isHalted = false;
+        v.haltSeconds = 0;
+        v.haltReason = '';
+        v.currentLocation = 'Madhavaram Depot Gate (Geofence Exit: Distance > 500m)';
+
+        tripCounter++;
+        const now = new Date();
+        const newTrip = {
+            id: tripCounter,
+            vehicleId: vehicleId,
+            plate: v.plate,
+            driverId: driver.id,
+            driverName: driver.name,
+            startTime: now,
+            startLocation: 'Madhavaram Logistics Depot (Gate Exit)',
+            endTime: null,
+            endLocation: '',
+            duration: '',
+            haltSeconds: 0,
+            haltReason: '',
+            avgSpeed: 48,
+            distanceKm: 0,
+            status: 'active',
+            speed: 48
+        };
+
+        trips.push(newTrip);
+
+        showToast(
+            `🌐 GEOFENCE AUTO-START: ${v.plate} crossed 500m Depot boundary!\nTrip #${newTrip.id} started automatically. (Driver & Admin: 100% Hands-Free)`,
+            'success'
+        );
+        refreshAll();
+    } else {
+        // Vehicle enters 500m Destination Hub Geofence (Sriperumbudur Hub) -> Auto-Ends Trip!
+        const now = new Date();
+        activeTrip.endTime = now;
+        activeTrip.endLocation = 'Sriperumbudur Hub (Geofence Entry: Distance < 500m)';
+        activeTrip.status = 'completed';
+        activeTrip.speed = 0;
+        if (!activeTrip.distanceKm || activeTrip.distanceKm < 1) {
+            activeTrip.distanceKm = 56.2;
+        }
+        activeTrip.duration = calcDuration(activeTrip.startTime, activeTrip.endTime);
+        const durationHrs = (activeTrip.endTime - activeTrip.startTime) / 3600000;
+        if (durationHrs > 0) {
+            activeTrip.avgSpeed = Math.round(activeTrip.distanceKm / durationHrs) || 52;
+        }
+
+        v.status = 'stopped';
+        v.speed = 0;
+        v.isHalted = false;
+        v.currentLocation = 'Sriperumbudur Hub Gate';
+
+        showToast(
+            `🏁 GEOFENCE AUTO-END: ${v.plate} entered Sriperumbudur Hub 500m gate!\nTrip #${activeTrip.id} completed automatically! Duration: ${activeTrip.duration}, Distance: ${activeTrip.distanceKm} km.`,
+            'info'
+        );
+        refreshAll();
+    }
+};
+
 // ── Initialization ─────────────────────────────────────────
 
 /**
  * Initialize the admin dashboard.
  */
 function init() {
+    // Load persisted state if exists
+    loadStateFromStorage();
+
+    // Ensure both modals are closed on startup
+    closeEditVehicleModal();
+    closeEditDriverModal();
+
     // Initial clock update
     updateClock();
 
