@@ -1367,6 +1367,35 @@ body {
     background: #f8fafc;
 }
 
+.btn-toggle-route-filter {
+    pointer-events: auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 7px 13px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-toggle-route-filter:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.btn-toggle-route-filter.focused {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
 .live-map-legend-bar {
     position: absolute;
     bottom: 14px;
@@ -2076,51 +2105,108 @@ input:checked + .slider:before {
     flex-direction: column;
     align-items: center;
     cursor: pointer;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.custom-map-pin:hover {
+    transform: translateY(-2px) scale(1.06);
 }
 
 .map-pin-icon-circle {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    border: 2px solid #ffffff;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 2.5px solid #ffffff;
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .map-pin-icon-circle.moving {
-    background: #0284c7;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}
+
+.map-pin-icon-circle.moving::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #38bdf8;
+    opacity: 0.65;
+    animation: pin-radar-pulse 2s infinite ease-out;
+}
+
+@keyframes pin-radar-pulse {
+    0% { transform: scale(0.95); opacity: 0.85; }
+    70% { transform: scale(1.45); opacity: 0; }
+    100% { transform: scale(1.45); opacity: 0; }
 }
 
 .map-pin-icon-circle.halt,
 .map-pin-icon-circle.idle {
-    background: #d97706;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
 .map-pin-icon-circle.offline {
-    background: #64748b;
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
 }
 
 .map-pin-icon-circle.selected {
-    box-shadow: 0 0 0 8px rgba(2, 132, 199, 0.35);
-    transform: scale(1.1);
+    box-shadow: 0 0 0 4px #ffffff, 0 0 0 8px #0284c7;
+    transform: scale(1.15);
+}
+
+.map-pin-pointer {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #ffffff;
+    margin-top: -1px;
 }
 
 .map-pin-label {
-    background: #0f172a;
+    background: #090d16;
     color: #ffffff;
-    font-size: 9.5px;
+    font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
     margin-top: 3px;
     white-space: nowrap;
-    letter-spacing: -0.2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    letter-spacing: -0.1px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pin-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pin-status-dot.moving {
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+}
+
+.pin-status-dot.halt,
+.pin-status-dot.idle {
+    background: #f59e0b;
+}
+
+.pin-status-dot.offline {
+    background: #94a3b8;
 }
 
 @media (max-width: 1300px) {

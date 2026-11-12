@@ -2232,11 +2232,13 @@ window.simulateGeofenceTrigger = function() {
 // ── Live Fleet Tracking (Screenshot Overview Match) ───────────
 
 let fleetMap = null;
-let defaultTileLayer = null;
-let satelliteTileLayer = null;
-let currentMapType = 'default';
+let satelliteGroup = null;
+let streetsTileLayer = null;
+let currentMapType = 'satellite'; // 'satellite' (Default Hybrid with town/place labels) | 'streets' (OSM)
+let routeDisplayMode = 'all';      // 'all' | 'focus'
 const fleetMarkers = {};
 const fleetRouteLayers = {};
+const fleetRouteCasings = {};
 const fleetOriginMarkers = {};
 const DEFAULT_MAP_CENTER = [12.985, 80.03]; // Exact regional centroid
 const DEFAULT_MAP_ZOOM = 10;
@@ -2244,6 +2246,28 @@ let selectedVehicleId = 'v5';              // Default to AP 39 JK 7788 (matches 
 let currentFleetFilter = 'all';
 let currentSelectedTimeframe = 'today';
 let showRouteOnMap = true;
+
+/**
+ * Toggle route display mode between 'all' (all 6 trucks) and 'focus' (selected truck only)
+ */
+window.toggleRouteFilterMode = function() {
+    routeDisplayMode = (routeDisplayMode === 'all') ? 'focus' : 'all';
+    const $btn = document.getElementById('btnToggleRouteFilter');
+    const $icon = document.getElementById('routeFilterIcon');
+    const $text = document.getElementById('routeFilterText');
+    if ($btn && $text && $icon) {
+        if (routeDisplayMode === 'focus') {
+            $icon.textContent = '🎯';
+            $text.textContent = 'Focused Route';
+            $btn.classList.add('focused');
+        } else {
+            $icon.textContent = '🛣️';
+            $text.textContent = 'All Routes';
+            $btn.classList.remove('focused');
+        }
+    }
+    drawAllVehicleRoutes();
+};
 
 /**
  * Fit map to show all 6 vehicles and their complete route polylines
@@ -2305,20 +2329,36 @@ function initOrRefreshFleetMap() {
             zoomDelta: 0.5
         }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
 
-        // 1. Default Street View Layer (OpenStreetMap - Free, No Watermark, No Key Required)
-        defaultTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // 1. Satellite Base Layer (ESRI World Imagery - Free High Res Aerial)
+        const satelliteBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            zIndex: 1,
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP | V3 Logistics'
+        });
+
+        // 2. Satellite Road Network Overlay (Highways, bypass corridors, expressways)
+        const satelliteRoads = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            zIndex: 2
+        });
+
+        // 3. Satellite Places & Towns Reference Layer (Town names: Chennai, Sriperumbudur, Kanchipuram, Chengalpattu, Minjur, etc.)
+        const satellitePlaces = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            zIndex: 3
+        });
+
+        // Bundle into Hybrid Satellite LayerGroup (Satellite imagery + Town/City Names)
+        satelliteGroup = L.layerGroup([satelliteBase, satelliteRoads, satellitePlaces]);
+
+        // 4. Detailed Street View (OpenStreetMap - Alternative option)
+        streetsTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | V3 Logistics'
         });
 
-        // 2. Satellite Aerial View Layer (ESRI World Imagery - Free, High Res Aerial, No Key Required)
-        satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP | V3 Logistics'
-        });
-
-        // Add Default layer on startup
-        defaultTileLayer.addTo(fleetMap);
+        // Satellite Hybrid view with town names added as DEFAULT on startup!
+        satelliteGroup.addTo(fleetMap);
     }
 
     // Refresh UI components
@@ -2344,34 +2384,29 @@ function initOrRefreshFleetMap() {
 }
 
 /**
- * Switch map tile layer between 'default' (street view) and 'satellite' (aerial imagery)
- * @param {string} type - 'default' | 'satellite'
+ * Switch map tile layer between 'satellite' (Hybrid with town/place names) and 'streets' (detailed OSM)
+ * @param {string} type - 'satellite' | 'streets'
  */
 window.setMapType = function(type) {
-    if (!fleetMap || !defaultTileLayer || !satelliteTileLayer) return;
+    if (!fleetMap) return;
     currentMapType = type;
 
-    const $cardDefault = document.getElementById('cardMapDefault');
-    const $cardSat = document.getElementById('cardMapSatellite');
+    if (satelliteGroup && fleetMap.hasLayer(satelliteGroup)) fleetMap.removeLayer(satelliteGroup);
+    if (streetsTileLayer && fleetMap.hasLayer(streetsTileLayer)) fleetMap.removeLayer(streetsTileLayer);
 
-    if (type === 'satellite') {
-        if (fleetMap.hasLayer(defaultTileLayer)) {
-            fleetMap.removeLayer(defaultTileLayer);
-        }
-        if (!fleetMap.hasLayer(satelliteTileLayer)) {
-            satelliteTileLayer.addTo(fleetMap);
-        }
-        if ($cardDefault) $cardDefault.classList.remove('active');
-        if ($cardSat) $cardSat.classList.add('active');
+    const $cardSat = document.getElementById('cardMapSatellite');
+    const $cardStreets = document.getElementById('cardMapStreets');
+
+    if ($cardSat) $cardSat.classList.remove('active');
+    if ($cardStreets) $cardStreets.classList.remove('active');
+
+    if (type === 'streets') {
+        if (streetsTileLayer) streetsTileLayer.addTo(fleetMap);
+        if ($cardStreets) $cardStreets.classList.add('active');
     } else {
-        if (fleetMap.hasLayer(satelliteTileLayer)) {
-            fleetMap.removeLayer(satelliteTileLayer);
-        }
-        if (!fleetMap.hasLayer(defaultTileLayer)) {
-            defaultTileLayer.addTo(fleetMap);
-        }
-        if ($cardSat) $cardSat.classList.remove('active');
-        if ($cardDefault) $cardDefault.classList.add('active');
+        // 'satellite' (default)
+        if (satelliteGroup) satelliteGroup.addTo(fleetMap);
+        if ($cardSat) $cardSat.classList.add('active');
     }
 };
 
@@ -2512,22 +2547,26 @@ function updateFleetMapMarkers() {
         const lat = v.lat || 13.0827;
         const lng = v.lng || 80.2707;
 
-        // Custom divIcon matching screenshot
+        // Custom divIcon with pin pointer and high-contrast status dot
         const iconHtml = `
             <div class="custom-map-pin">
                 <div class="map-pin-icon-circle ${cat} ${isSelected ? 'selected' : ''}">
-                    <span style="font-size:14px;">🚚</span>
+                    <span>🚚</span>
                 </div>
-                <div class="map-pin-label">${escHtml(v.plate)}</div>
+                <div class="map-pin-pointer"></div>
+                <div class="map-pin-label">
+                    <span class="pin-status-dot ${cat}"></span>
+                    <span>${escHtml(v.plate)}</span>
+                </div>
             </div>
         `;
 
         const customIcon = L.divIcon({
             html: iconHtml,
             className: 'truck-pin-wrapper',
-            iconSize: [90, 52],
-            iconAnchor: [45, 46],
-            popupAnchor: [0, -45]
+            iconSize: [96, 64],
+            iconAnchor: [48, 44],
+            popupAnchor: [0, -44]
         });
 
         const zIndexVal = isSelected ? 3000 : 1500;
@@ -2576,6 +2615,7 @@ function updateFleetMarkerZIndex() {
  * Draw all fleet routes on the live map simultaneously.
  * The currently selected vehicle's route is highlighted with a bold solid Royal Blue stroke (#1d4ed8),
  * while all other fleet routes are rendered as crisp high-contrast dashed lines (#0284c7).
+ * Each route features an underlay white casing line so routes never blend into background roads.
  * Each route also features an origin checkpoint dot showing dispatch origin.
  */
 function drawAllVehicleRoutes() {
@@ -2588,6 +2628,14 @@ function drawAllVehicleRoutes() {
         }
     });
     for (let key in fleetRouteLayers) delete fleetRouteLayers[key];
+
+    // Remove existing white casings
+    Object.keys(fleetRouteCasings).forEach(vid => {
+        if (fleetRouteCasings[vid]) {
+            fleetMap.removeLayer(fleetRouteCasings[vid]);
+        }
+    });
+    for (let key in fleetRouteCasings) delete fleetRouteCasings[key];
 
     // Remove existing origin checkpoint dots
     Object.keys(fleetOriginMarkers).forEach(vid => {
@@ -2608,10 +2656,25 @@ function drawAllVehicleRoutes() {
         if (!v || !v.route || v.route.length < 2) return;
 
         const isSelected = (v.id === selectedVehicleId);
+        // In focus mode, only show the selected vehicle's route for an ultra-clean uncluttered look
+        if (routeDisplayMode === 'focus' && !isSelected) return;
+
         const routeColor = isSelected ? '#1d4ed8' : '#0284c7';
         const routeWeight = isSelected ? 5.5 : 3.5;
         const routeOpacity = isSelected ? 1.0 : 0.85;
 
+        // 1. Underlay casing line (pure white halo) so polyline never blends into roads
+        const casing = L.polyline(v.route, {
+            color: '#ffffff',
+            weight: isSelected ? 9 : 6.5,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(fleetMap);
+
+        fleetRouteCasings[v.id] = casing;
+
+        // 2. Main polyline
         const polyline = L.polyline(v.route, {
             color: routeColor,
             weight: routeWeight,
@@ -2661,9 +2724,10 @@ function drawAllVehicleRoutes() {
         }
     });
 
-    // Bring selected vehicle's route layer to front so it is crisp on top
-    if (selectedVehicleId && fleetRouteLayers[selectedVehicleId]) {
-        fleetRouteLayers[selectedVehicleId].bringToFront();
+    // Bring selected vehicle's casing and route layer to front so it is crisp on top
+    if (selectedVehicleId) {
+        if (fleetRouteCasings[selectedVehicleId]) fleetRouteCasings[selectedVehicleId].bringToFront();
+        if (fleetRouteLayers[selectedVehicleId]) fleetRouteLayers[selectedVehicleId].bringToFront();
     }
 
     // Ensure truck markers always float above route polylines
