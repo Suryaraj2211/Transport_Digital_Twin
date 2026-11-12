@@ -12,7 +12,25 @@ const DRIVER_PROFILES = {
         driverName: 'Murugan K',
         driverId: 'd1',
         truckModel: 'Tata Prima 4028.S · Heavy 28T',
-        speedLimit: 60
+        speedLimit: 60,
+        startName: 'Chennai Central Freight Corridor',
+        startCoords: [13.0694, 80.1948],
+        destName: 'Sriperumbudur Logistics Hub (NH 48)',
+        destCoords: [12.9818, 79.9442],
+        routeInfo: 'via NH 48 · 29 km · ~40 min',
+        corridorPoints: [
+            [13.0694, 80.1948], // Koyambedu Central Freight Hub
+            [13.0645, 80.1605], // Maduravoyal Flyover
+            [13.0538, 80.1340], // Vanagaram Junction
+            [13.0460, 80.1050], // Poonamallee Entry
+            [13.0440, 80.0880], // Poonamallee Bypass (NH 48)
+            [13.0360, 80.0550], // Nazarathpet Outer Ring
+            [13.0240, 80.0220], // Chembarambakkam North Bypass (NH 48)
+            [13.0125, 79.9950], // Pappanchatram Toll
+            [12.9980, 79.9730], // Irungattukottai SIPCOT
+            [12.9890, 79.9550], // Pennalur Flyover
+            [12.9818, 79.9442]  // Sriperumbudur Logistics Hub
+        ]
     },
     d2: {
         vehicleId: 'v2',
@@ -20,7 +38,22 @@ const DRIVER_PROFILES = {
         driverName: 'Selvam R',
         driverId: 'd2',
         truckModel: 'Ashok Leyland 2820 · Heavy 28T',
-        speedLimit: 60
+        speedLimit: 60,
+        startName: 'Tambaram GST Freight Yard',
+        startCoords: [12.9249, 80.1200],
+        destName: 'Chengalpattu Logistics Terminal (NH 32)',
+        destCoords: [12.7000, 79.9800],
+        routeInfo: 'via GST Road (NH 32) · 28 km · ~38 min',
+        corridorPoints: [
+            [12.9249, 80.1200], // Tambaram Sanatorium
+            [12.9050, 80.0950], // Perungalathur NH 32
+            [12.8850, 80.0800], // Vandalur Flyover
+            [12.8450, 80.0600], // Guduvanchery NH 32
+            [12.8000, 80.0350], // Maraimalai Nagar Industrial
+            [12.7650, 80.0150], // Singaperumal Koil Bypass
+            [12.7300, 79.9950], // Paranur Toll Plaza
+            [12.7000, 79.9800]  // Chengalpattu Terminal
+        ]
     },
     d3: {
         vehicleId: 'v3',
@@ -28,7 +61,20 @@ const DRIVER_PROFILES = {
         driverName: 'Imran Pasha',
         driverId: 'd3',
         truckModel: 'Eicher Pro 6028 · Heavy 28T',
-        speedLimit: 60
+        speedLimit: 60,
+        startName: 'Sriperumbudur West Terminal',
+        startCoords: [12.9818, 79.9442],
+        destName: 'Kanchipuram Freight Bypass (NH 48)',
+        destCoords: [12.8350, 79.7000],
+        routeInfo: 'via NH 48 Express · 32 km · ~42 min',
+        corridorPoints: [
+            [12.9818, 79.9442], // Sriperumbudur Terminal
+            [12.9650, 79.8800], // Mambakkam Toll
+            [12.9350, 79.8400], // Sunguvarchatram Industrial Bay
+            [12.8950, 79.7750], // Damal Toll Plaza
+            [12.8650, 79.7350], // Kanchipuram East Entry
+            [12.8350, 79.7000]  // Kanchipuram Freight Bypass
+        ]
     },
     d6: {
         vehicleId: 'v6',
@@ -36,21 +82,37 @@ const DRIVER_PROFILES = {
         driverName: 'Anbu Selvan',
         driverId: 'd6',
         truckModel: 'Tata Signa 4825 · Heavy 28T',
-        speedLimit: 60
+        speedLimit: 60,
+        startName: 'Porur Toll Plaza (Chennai Bypass)',
+        startCoords: [13.0350, 80.1550],
+        destName: 'Ambattur Industrial Estate North Bay',
+        destCoords: [13.0900, 80.1600],
+        routeInfo: 'via Chennai Bypass · 8 km · ~12 min',
+        corridorPoints: [
+            [13.0350, 80.1550], // Porur Toll Plaza
+            [13.0520, 80.1580], // Maduravoyal South Approach
+            [13.0645, 80.1605], // Maduravoyal Cloverleaf
+            [13.0800, 80.1620], // Mogappair West
+            [13.0900, 80.1600]  // Ambattur Industrial Estate
+        ]
     }
 };
 
 let DRIVER_CONFIG = { ...DRIVER_PROFILES.d1 };
 
+// Waypoint progress along active route corridor
+let currentWaypointIndex = 0;
+let waypointProgress = 0;
+
 // ─── DRIVER STATE ─────────────────────────────────────────────
 const DRIVER_STATE = {
     // GPS
-    lat: 13.0827,
-    lng: 80.2707,
+    lat: 13.0694,
+    lng: 80.1948,
     accuracy: 5,
     gpsLocked: true,
     gpsWatchId: null,
-    currentLocationName: 'Chennai Central Freight Corridor (NH 48)',
+    currentLocationName: 'Chennai Central Freight Corridor',
 
     // Trip
     isTripActive: false,
@@ -82,24 +144,6 @@ const DRIVER_STATE = {
     distanceInterval: null,
     haltCheckInterval: null,
     clockInterval: null
-};
-
-// ─── SAMPLE LOCATIONS (Tamil Nadu) ────────────────────────────
-const SAMPLE_LOCATIONS = {
-    start: [
-        'Chennai Port Terminal',
-        'Ambattur Industrial Estate',
-        'Guindy Warehouse',
-        'Ennore Port',
-        'Madhavaram Depot'
-    ],
-    end: [
-        'Sriperumbudur Industrial Hub',
-        'Hosur SIPCOT Zone',
-        'Coimbatore Central Hub',
-        'Tiruvallur Distribution Center',
-        'Oragadam Logistics Park'
-    ]
 };
 
 // ─── BROADCAST CHANNEL ───────────────────────────────────────
@@ -135,6 +179,17 @@ function broadcastSync(payload) {
     }
 }
 
+// ─── LEAFLET MINI-MAP VARIABLES ─────────────────────────────
+let driverMap = null;
+let driverMarker = null;
+let driverRouteLine = null;
+let driverCorridorCasing = null;
+let driverCorridorLine = null;
+let driverStartMarker = null;
+let driverDestMarker = null;
+let driverDirectionArrows = [];
+let driverBreadcrumbs = [];
+
 // ─── DOM REFERENCES ──────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
 
@@ -143,6 +198,13 @@ const DOM = {
     dutyStatusPill: $('dutyStatusPill'),
     headerClock: $('headerClock'),
     driverSelectDropdown: $('driverSelectDropdown'),
+    truckMetaSub: $('truckMetaSub'),
+
+    // Map & Route Corridor
+    driverMap: $('driverMap'),
+    routeStartName: $('routeStartName'),
+    routeDestName: $('routeDestName'),
+    mapRouteInfoText: $('mapRouteInfoText'),
 
     // GPS
     gpsBar: $('gpsBar'),
@@ -167,8 +229,7 @@ const DOM = {
     // Speed
     speedCard: $('speedCard'),
     speedNumber: $('speedNumber'),
-    speedBar: $('speedBar'),
-    speedLimitMarker: $('speedLimitMarker'),
+    speedGaugeFill: $('speedGaugeFill'),
     overspeedAlert: $('overspeedAlert'),
 
     // Halt
@@ -201,6 +262,7 @@ function init() {
     // Populate driver info
     if (DOM.truckPlate) DOM.truckPlate.textContent = DRIVER_CONFIG.plate;
     if (DOM.truckModel) DOM.truckModel.textContent = DRIVER_CONFIG.truckModel;
+    if (DOM.truckMetaSub) DOM.truckMetaSub.textContent = DRIVER_CONFIG.truckModel;
 
     // Driver switch dropdown
     if (DOM.driverSelectDropdown) {
@@ -213,6 +275,9 @@ function init() {
     // Start header clock
     updateHeaderClock();
     DRIVER_STATE.clockInterval = setInterval(updateHeaderClock, 1000);
+
+    // Initialize Driver Mini Map
+    initDriverMap();
 
     // Start GPS tracking
     initGPS();
@@ -231,8 +296,174 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 /**
+ * Initializes the driver's live mini navigation map (Google Maps style corridor)
+ */
+function initDriverMap() {
+    const mapEl = document.getElementById('driverMap');
+    if (!mapEl || typeof L === 'undefined') return;
+
+    if (driverMap) {
+        driverMap.remove();
+        driverMap = null;
+    }
+
+    const startLat = DRIVER_STATE.lat || (DRIVER_CONFIG.startCoords ? DRIVER_CONFIG.startCoords[0] : 13.0694);
+    const startLng = DRIVER_STATE.lng || (DRIVER_CONFIG.startCoords ? DRIVER_CONFIG.startCoords[1] : 80.1948);
+
+    driverMap = L.map('driverMap', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView([startLat, startLng], 12);
+
+    // High quality clean OpenStreetMap streets basemap
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(driverMap);
+
+    // 1. Google Maps Navigation Route (Dual-Layer Blue Highway Ribbon)
+    if (DRIVER_CONFIG.corridorPoints && DRIVER_CONFIG.corridorPoints.length > 0) {
+        // Casing shadow
+        driverCorridorCasing = L.polyline(DRIVER_CONFIG.corridorPoints, {
+            color: '#1e3a8a',
+            weight: 7,
+            opacity: 0.5,
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(driverMap);
+
+        // Vibrant Google Electric Blue route line
+        driverCorridorLine = L.polyline(DRIVER_CONFIG.corridorPoints, {
+            color: '#2563eb',
+            weight: 5,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(driverMap);
+    }
+
+    // 2. Render Direction Chevrons along each segment
+    renderDirectionArrows();
+
+    // 3. Start Marker (Google Maps Green Origin Pin with visible bubble)
+    if (DRIVER_CONFIG.startCoords) {
+        const startIcon = L.divIcon({
+            className: 'nav-pin-wrap',
+            html: `
+                <div class="nav-pin-bubble start">🟢 START</div>
+                <div class="nav-pin-stem"></div>
+                <div class="nav-pin-dot start"></div>
+            `,
+            iconSize: [80, 40],
+            iconAnchor: [40, 40]
+        });
+        driverStartMarker = L.marker(DRIVER_CONFIG.startCoords, { icon: startIcon, zIndexOffset: 800 }).addTo(driverMap);
+    }
+
+    // 4. Destination Marker (Google Maps Red Destination Pin with visible bubble)
+    if (DRIVER_CONFIG.destCoords) {
+        const destIcon = L.divIcon({
+            className: 'nav-pin-wrap',
+            html: `
+                <div class="nav-pin-bubble dest">🏁 DESTINATION</div>
+                <div class="nav-pin-stem"></div>
+                <div class="nav-pin-dot dest"></div>
+            `,
+            iconSize: [110, 40],
+            iconAnchor: [55, 40]
+        });
+        driverDestMarker = L.marker(DRIVER_CONFIG.destCoords, { icon: destIcon, zIndexOffset: 800 }).addTo(driverMap);
+    }
+
+    // 5. Live Breadcrumb Path (Solid Traveled Trail behind truck)
+    driverBreadcrumbs = [[startLat, startLng]];
+    driverRouteLine = L.polyline(driverBreadcrumbs, {
+        color: '#059669',
+        weight: 5,
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round'
+    }).addTo(driverMap);
+
+    // 6. Custom Live Truck Marker Pin
+    const truckIcon = L.divIcon({
+        className: 'driver-truck-pin-wrap',
+        html: `<div class="driver-truck-pin">🚚</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+    });
+    driverMarker = L.marker([startLat, startLng], { icon: truckIcon, zIndexOffset: 1000 }).addTo(driverMap);
+
+    // Update Header Route Text & Info Badge
+    if (DOM.routeStartName) DOM.routeStartName.textContent = DRIVER_CONFIG.startName;
+    if (DOM.routeDestName) DOM.routeDestName.textContent = DRIVER_CONFIG.destName;
+    if (DOM.mapRouteInfoText) DOM.mapRouteInfoText.textContent = DRIVER_CONFIG.routeInfo || 'Highway Corridor';
+
+    // Fit map bounds to encompass Start, Destination, and Current Truck position
+    if (DRIVER_CONFIG.startCoords && DRIVER_CONFIG.destCoords) {
+        const bounds = L.latLngBounds([DRIVER_CONFIG.startCoords, DRIVER_CONFIG.destCoords]);
+        bounds.extend([startLat, startLng]);
+        driverMap.fitBounds(bounds, { padding: [35, 35] });
+    }
+
+    setTimeout(() => {
+        if (driverMap) driverMap.invalidateSize();
+    }, 400);
+}
+
+/**
+ * Renders directional arrow chevrons along highway route segments
+ */
+function renderDirectionArrows() {
+    if (!driverMap) return;
+    driverDirectionArrows.forEach(m => driverMap.removeLayer(m));
+    driverDirectionArrows = [];
+
+    const pts = DRIVER_CONFIG.corridorPoints;
+    if (!pts || pts.length < 2) return;
+
+    for (let i = 0; i < pts.length - 1; i++) {
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const midLat = (p1[0] + p2[0]) / 2;
+        const midLng = (p1[1] + p2[1]) / 2;
+
+        const dLat = (p2[0] - p1[0]);
+        const dLng = (p2[1] - p1[1]) * Math.cos(p1[0] * Math.PI / 180);
+        const bearing = Math.round(Math.atan2(dLng, dLat) * 180 / Math.PI);
+
+        const arrowIcon = L.divIcon({
+            className: 'route-dir-arrow-wrap',
+            html: `<div class="route-dir-arrow" style="transform: rotate(${bearing - 90}deg);">➤</div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+        });
+
+        const arrowMarker = L.marker([midLat, midLng], {
+            icon: arrowIcon,
+            interactive: false,
+            zIndexOffset: 100
+        }).addTo(driverMap);
+
+        driverDirectionArrows.push(arrowMarker);
+    }
+}
+
+/**
+ * Smoothly recenters map on driver's current position or fits start-to-end corridor
+ */
+window.recenterDriverMap = function() {
+    if (!driverMap) return;
+    if (DRIVER_STATE.lat && DRIVER_STATE.lng) {
+        driverMap.setView([DRIVER_STATE.lat, DRIVER_STATE.lng], 13, { animate: true });
+    } else if (DRIVER_CONFIG.startCoords && DRIVER_CONFIG.destCoords) {
+        const bounds = L.latLngBounds([DRIVER_CONFIG.startCoords, DRIVER_CONFIG.destCoords]);
+        driverMap.fitBounds(bounds, { padding: [35, 35], animate: true });
+    }
+};
+
+/**
  * Switches driver profile
- * @param {string} profileKey - 'd1' or 'd2'
+ * @param {string} profileKey - 'd1' | 'd2' | 'd3' | 'd6'
  */
 function switchDriverProfile(profileKey) {
     if (DRIVER_STATE.isTripActive) {
@@ -243,8 +474,56 @@ function switchDriverProfile(profileKey) {
     const profile = DRIVER_PROFILES[profileKey];
     if (profile) {
         DRIVER_CONFIG = { ...profile };
+        currentWaypointIndex = 0;
+        waypointProgress = 0;
+
         if (DOM.truckPlate) DOM.truckPlate.textContent = DRIVER_CONFIG.plate;
         if (DOM.truckModel) DOM.truckModel.textContent = DRIVER_CONFIG.truckModel;
+        if (DOM.truckMetaSub) DOM.truckMetaSub.textContent = DRIVER_CONFIG.truckModel;
+
+        // Set realistic starting coordinates matching the assigned corridor start
+        DRIVER_STATE.lat = profile.startCoords[0];
+        DRIVER_STATE.lng = profile.startCoords[1];
+        DRIVER_STATE.currentLocationName = profile.startName;
+
+        if (DOM.gpsCoords) {
+            DOM.gpsCoords.textContent = `${DRIVER_STATE.currentLocationName} (${DRIVER_STATE.lat.toFixed(4)}°N, ${DRIVER_STATE.lng.toFixed(4)}°E)`;
+        }
+        if (DOM.routeStartName) DOM.routeStartName.textContent = DRIVER_CONFIG.startName;
+        if (DOM.routeDestName) DOM.routeDestName.textContent = DRIVER_CONFIG.destName;
+        if (DOM.mapRouteInfoText) DOM.mapRouteInfoText.textContent = DRIVER_CONFIG.routeInfo || 'Highway Corridor';
+
+        // Re-render mini map components for new profile
+        if (driverMap) {
+            // Update Start & Destination markers
+            if (driverStartMarker && DRIVER_CONFIG.startCoords) {
+                driverStartMarker.setLatLng(DRIVER_CONFIG.startCoords);
+            }
+            if (driverDestMarker && DRIVER_CONFIG.destCoords) {
+                driverDestMarker.setLatLng(DRIVER_CONFIG.destCoords);
+            }
+            if (driverCorridorCasing && DRIVER_CONFIG.corridorPoints) {
+                driverCorridorCasing.setLatLngs(DRIVER_CONFIG.corridorPoints);
+            }
+            if (driverCorridorLine && DRIVER_CONFIG.corridorPoints) {
+                driverCorridorLine.setLatLngs(DRIVER_CONFIG.corridorPoints);
+            }
+            renderDirectionArrows();
+
+            if (driverMarker) {
+                driverMarker.setLatLng([DRIVER_STATE.lat, DRIVER_STATE.lng]);
+            }
+            driverBreadcrumbs = [[DRIVER_STATE.lat, DRIVER_STATE.lng]];
+            if (driverRouteLine) {
+                driverRouteLine.setLatLngs(driverBreadcrumbs);
+            }
+
+            // Fit bounds to new start and destination
+            const bounds = L.latLngBounds([DRIVER_CONFIG.startCoords, DRIVER_CONFIG.destCoords]);
+            bounds.extend([DRIVER_STATE.lat, DRIVER_STATE.lng]);
+            driverMap.fitBounds(bounds, { padding: [35, 35] });
+        }
+
         loadTodayStats();
         console.log(`[Driver Portal] Switched to ${DRIVER_CONFIG.driverName} (${DRIVER_CONFIG.plate})`);
     }
@@ -305,14 +584,14 @@ const DEMO_LOCATIONS = {
 function initGPS() {
     // Provide immediate default location so screen is never blank or stuck
     if (!DRIVER_STATE.lat) {
-        DRIVER_STATE.lat = 13.0827;
-        DRIVER_STATE.lng = 80.2707;
-        DRIVER_STATE.currentLocationName = 'Chennai Central Transport Corridor (NH 48)';
+        DRIVER_STATE.lat = 12.9818;
+        DRIVER_STATE.lng = 79.9442;
+        DRIVER_STATE.currentLocationName = 'NH 48, Sriperumbudur Logistics Corridor';
     }
 
     setGPSStatus('locked', 'Corridor GPS Ready ✓', '🛰️');
     if (DOM.gpsCoords) {
-        DOM.gpsCoords.textContent = `${DRIVER_STATE.currentLocationName} (13.0827°N, 80.2707°E)`;
+        DOM.gpsCoords.textContent = `${DRIVER_STATE.currentLocationName} (${DRIVER_STATE.lat.toFixed(4)}°N, ${DRIVER_STATE.lng.toFixed(4)}°E)`;
     }
     if (DOM.gpsAccuracy) {
         DOM.gpsAccuracy.textContent = 'High Precision · Tap to test device GPS';
@@ -467,7 +746,17 @@ function startTrip() {
     DRIVER_STATE.isTripActive = true;
     DRIVER_STATE.tripStartTimestamp = Date.now();
     DRIVER_STATE.tripStartTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    DRIVER_STATE.tripStartLocation = DRIVER_STATE.currentLocationName || (DRIVER_STATE.lat ? `GPS (${DRIVER_STATE.lat.toFixed(4)}°N, ${DRIVER_STATE.lng.toFixed(4)}°E)` : 'Chennai Fleet Hub');
+
+    // Reset waypoint navigation along highway corridor from START
+    currentWaypointIndex = 0;
+    waypointProgress = 0;
+    if (DRIVER_CONFIG.startCoords) {
+        DRIVER_STATE.lat = DRIVER_CONFIG.startCoords[0];
+        DRIVER_STATE.lng = DRIVER_CONFIG.startCoords[1];
+        DRIVER_STATE.currentLocationName = DRIVER_CONFIG.startName;
+    }
+
+    DRIVER_STATE.tripStartLocation = DRIVER_CONFIG.startName || (DRIVER_STATE.lat ? `GPS (${DRIVER_STATE.lat.toFixed(4)}°N, ${DRIVER_STATE.lng.toFixed(4)}°E)` : 'Chennai Fleet Hub');
     DRIVER_STATE.tripStartLat = DRIVER_STATE.lat;
     DRIVER_STATE.tripStartLng = DRIVER_STATE.lng;
     DRIVER_STATE.tripDistanceKm = 0;
@@ -477,6 +766,15 @@ function startTrip() {
     DRIVER_STATE.haltStartTime = null;
     DRIVER_STATE.totalHaltSeconds = 0;
 
+    // Reset mini-map trail & truck position
+    driverBreadcrumbs = [[DRIVER_STATE.lat, DRIVER_STATE.lng]];
+    if (driverRouteLine) driverRouteLine.setLatLngs(driverBreadcrumbs);
+    if (driverMarker) driverMarker.setLatLng([DRIVER_STATE.lat, DRIVER_STATE.lng]);
+    if (driverMap && DRIVER_CONFIG.startCoords && DRIVER_CONFIG.destCoords) {
+        const bounds = L.latLngBounds([DRIVER_CONFIG.startCoords, DRIVER_CONFIG.destCoords]);
+        driverMap.fitBounds(bounds, { padding: [35, 35] });
+    }
+
     // Update UI — Button
     DOM.mainActionBtn.className = 'action-btn end';
     DOM.mainActionBtn.innerHTML = '<span class="action-icon">🛑</span><span class="action-text">END TRIP</span>';
@@ -485,9 +783,12 @@ function startTrip() {
     DOM.dutyStatusPill.className = 'duty-pill on-trip';
     DOM.dutyStatusPill.textContent = 'ON TRIP';
 
-    // Show Trip Panel
+    // Show Trip Panel and hide pre-trip truck card for clean view
     DOM.tripPanel.style.display = 'flex';
     DOM.tripPanel.classList.add('fade-in');
+    const truckCard = document.getElementById('assignedTruckCard');
+    if (truckCard) truckCard.style.display = 'none';
+
     DOM.tripStartDisplay.textContent = `${DRIVER_STATE.tripStartTime} at ${DRIVER_STATE.tripStartLocation}`;
 
     // Hide previous summary if visible
@@ -496,7 +797,7 @@ function startTrip() {
     // Reset speed display
     updateSpeedDisplay(0);
     if (DOM.tripLiveDistance) {
-        DOM.tripLiveDistance.textContent = '0.00 km';
+        DOM.tripLiveDistance.textContent = '0.00';
     }
 
     // Start trip timer
@@ -577,9 +878,11 @@ function endTrip() {
     DOM.dutyStatusPill.className = 'duty-pill off-duty';
     DOM.dutyStatusPill.textContent = 'OFF DUTY';
 
-    // Hide Trip Panel + Halt Card
+    // Hide Trip Panel + Halt Card, restore truck card
     DOM.tripPanel.style.display = 'none';
     DOM.haltCard.style.display = 'none';
+    const truckCard = document.getElementById('assignedTruckCard');
+    if (truckCard) truckCard.style.display = 'block';
 
     // Show Trip Summary
     DOM.tripSummary.style.display = 'block';
@@ -669,41 +972,44 @@ function playOverspeedWarningChime() {
 }
 
 /**
- * Updates the speedometer display with current speed
+ * Updates the speedometer display with current speed (Compact 3-Column Card)
  * @param {number} speed - Speed in km/h
  */
 function updateSpeedDisplay(speed) {
-    const limit = DRIVER_CONFIG.speedLimit;
-    const maxDisplay = 100; // max bar represents 100 km/h
+    const limit = DRIVER_CONFIG.speedLimit || 60;
+    const maxDisplay = 100; // gauge max represents 100 km/h
 
-    // Update number
-    DOM.speedNumber.textContent = Math.round(speed);
+    // Update compact digital number
+    if (DOM.speedNumber) {
+        DOM.speedNumber.textContent = Math.round(speed);
+    }
 
-    // Update bar width (percentage of maxDisplay)
-    const barPercent = Math.min((speed / maxDisplay) * 100, 100);
-    DOM.speedBar.style.width = `${barPercent}%`;
+    // Update modern compact horizontal speed progress bar
+    const gaugeFill = document.getElementById('speedGaugeFill');
+    if (gaugeFill) {
+        const pct = Math.min(Math.max((speed / maxDisplay) * 100, 0), 100);
+        gaugeFill.style.width = `${pct}%`;
 
-    // Update speed limit marker position
-    const limitPercent = (limit / maxDisplay) * 100;
-    DOM.speedLimitMarker.style.left = `${limitPercent}%`;
-
-    // Overspeed check
-    if (speed > limit) {
-        DOM.speedBar.classList.add('overspeed');
-        DOM.speedNumber.style.color = '#dc2626';
-        DOM.overspeedAlert.style.display = 'block';
-        playOverspeedWarningChime();
-    } else {
-        DOM.speedBar.classList.remove('overspeed');
-        DOM.speedNumber.style.color = '#0f172a';
-        DOM.overspeedAlert.style.display = 'none';
+        // Dynamic multi-tier safety coloring
+        if (speed > limit) {
+            gaugeFill.style.backgroundColor = '#ef4444'; // Red overspeed alert
+            if (DOM.speedNumber) DOM.speedNumber.style.color = '#ef4444';
+            if (DOM.overspeedAlert) DOM.overspeedAlert.style.display = 'block';
+            playOverspeedWarningChime();
+        } else if (speed > 45) {
+            gaugeFill.style.backgroundColor = '#f59e0b'; // Amber cruising speed
+            if (DOM.speedNumber) DOM.speedNumber.style.color = '#ffffff';
+            if (DOM.overspeedAlert) DOM.overspeedAlert.style.display = 'none';
+        } else {
+            gaugeFill.style.backgroundColor = '#10b981'; // Emerald safe speed
+            if (DOM.speedNumber) DOM.speedNumber.style.color = '#ffffff';
+            if (DOM.overspeedAlert) DOM.overspeedAlert.style.display = 'none';
+        }
     }
 }
 
-// ─── DISTANCE TRACKING ──────────────────────────────────────
-
 /**
- * Updates trip distance every 1 second based on current speed
+ * Updates trip distance every 1 second based on current speed and advances vehicle position along highway corridor
  */
 function updateDistance() {
     if (!DRIVER_STATE.isTripActive) return;
@@ -717,13 +1023,81 @@ function updateDistance() {
 
         // Live UI update on Driver App
         if (DOM.tripLiveDistance) {
-            DOM.tripLiveDistance.textContent = `${DRIVER_STATE.tripDistanceKm.toFixed(2)} km`;
+            DOM.tripLiveDistance.textContent = DRIVER_STATE.tripDistanceKm.toFixed(2);
         }
         if (DOM.statDistance) {
             DOM.statDistance.textContent = `${DRIVER_STATE.kmToday.toFixed(2)} km`;
         }
+
+        // Live road advance along highway corridor waypoints
+        const pts = DRIVER_CONFIG.corridorPoints;
+        if (pts && pts.length > 1) {
+            if (currentWaypointIndex < pts.length - 1) {
+                const p1 = pts[currentWaypointIndex];
+                const p2 = pts[currentWaypointIndex + 1];
+
+                const legLatKm = (p2[0] - p1[0]) * 111;
+                const legLngKm = (p2[1] - p1[1]) * 111 * Math.cos(p1[0] * Math.PI / 180);
+                const legDistKm = Math.hypot(legLatKm, legLngKm) || 0.5;
+
+                // Step progress along this leg (smooth simulation scale)
+                const stepKm = (currentSpeed / 3600) * 1.5;
+                waypointProgress += (stepKm / legDistKm);
+
+                if (waypointProgress >= 1) {
+                    currentWaypointIndex++;
+                    waypointProgress = 0;
+                    if (currentWaypointIndex >= pts.length - 1) {
+                        // Reached Destination!
+                        DRIVER_STATE.lat = pts[pts.length - 1][0];
+                        DRIVER_STATE.lng = pts[pts.length - 1][1];
+                        DRIVER_STATE.currentLocationName = DRIVER_CONFIG.destName;
+                    } else {
+                        DRIVER_STATE.lat = pts[currentWaypointIndex][0];
+                        DRIVER_STATE.lng = pts[currentWaypointIndex][1];
+                    }
+                } else {
+                    DRIVER_STATE.lat = +(p1[0] + (p2[0] - p1[0]) * waypointProgress).toFixed(5);
+                    DRIVER_STATE.lng = +(p1[1] + (p2[1] - p1[1]) * waypointProgress).toFixed(5);
+                }
+            }
+        }
+
+        // Update driver's mini navigation map
+        if (driverMarker && driverMap) {
+            driverMarker.setLatLng([DRIVER_STATE.lat, DRIVER_STATE.lng]);
+            driverBreadcrumbs.push([DRIVER_STATE.lat, DRIVER_STATE.lng]);
+            if (driverBreadcrumbs.length > 250) driverBreadcrumbs.shift();
+            if (driverRouteLine) driverRouteLine.setLatLngs(driverBreadcrumbs);
+        }
+
+        // Broadcast live location to Admin Dashboard
+        broadcastSync({
+            type: 'DRIVER_ACTION',
+            action: 'LOCATION_UPDATE',
+            vehicleId: DRIVER_CONFIG.vehicleId,
+            lat: DRIVER_STATE.lat,
+            lng: DRIVER_STATE.lng,
+            locationName: DRIVER_STATE.currentLocationName,
+            speed: currentSpeed,
+            distanceKm: DRIVER_STATE.tripDistanceKm
+        });
     }
 }
+
+/**
+ * Quick touch-friendly halt reason selection
+ * @param {HTMLElement} btn
+ * @param {string} reasonVal
+ */
+window.selectHaltPill = function(btn, reasonVal) {
+    document.querySelectorAll('.halt-pill-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    if (DOM.haltReason) {
+        DOM.haltReason.value = reasonVal;
+        broadcastSpeedUpdate();
+    }
+};
 
 // ─── HALT DETECTION ──────────────────────────────────────────
 
@@ -902,14 +1276,4 @@ function formatDurationShort(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-/**
- * Gets a random location name from sample locations
- * @param {'start'|'end'} type - Type of location
- * @returns {string} A random location name
- */
-function getRandomLocation(type) {
-    const locations = SAMPLE_LOCATIONS[type];
-    return locations[Math.floor(Math.random() * locations.length)];
 }

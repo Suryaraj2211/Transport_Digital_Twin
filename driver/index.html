@@ -7,195 +7,280 @@
     <!-- Google Fonts: IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Driver Portal Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for Live Navigation Mini-Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <!-- Driver Portal Modern Cockpit Styles -->
     <link rel="stylesheet" href="driver.css">
 </head>
 <body>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- HEADER                                      -->
-    <!-- ═══════════════════════════════════════════ -->
-    <header class="app-header">
-        <div class="header-top">
-            <div class="company-name">V3 LOGISTICS</div>
-            <div id="dutyStatusPill" class="duty-pill off-duty">OFF DUTY</div>
-        </div>
-        <div class="header-bottom">
-            <div class="driver-info">
-                <span class="driver-avatar">🧑‍✈️</span>
-                <select id="driverSelectDropdown" class="driver-select-input" title="Switch driver profile">
-                    <option value="d1" selected>Murugan K · TN 09 AB 1234</option>
-                    <option value="d2">Selvam R · TN 22 CD 5678</option>
-                </select>
-            </div>
-            <div class="header-time" id="headerClock">--:--</div>
-        </div>
-    </header>
+    <div class="app-shell">
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- MAIN CONTENT WRAPPER                        -->
-    <!-- ═══════════════════════════════════════════ -->
-    <main class="app-content">
-
-        <!-- GPS STATUS BAR (Tap to refresh GPS) -->
-        <div class="gps-bar" id="gpsBar" onclick="initGPS()" style="cursor: pointer;" title="Tap to refresh GPS location">
-            <div class="gps-icon" id="gpsIcon">📡</div>
-            <div class="gps-details">
-                <div class="gps-status" id="gpsStatus">Detecting GPS Location…</div>
-                <div class="gps-coords" id="gpsCoords">Please allow browser location access</div>
-                <div class="gps-accuracy" id="gpsAccuracy">Accuracy: Checking…</div>
-            </div>
-        </div>
-
-        <!-- ASSIGNED TRUCK CARD -->
-        <div class="card truck-card">
-            <div class="card-label">Assigned Vehicle</div>
-            <div class="truck-plate" id="truckPlate">TN 09 AB 1234</div>
-            <div class="truck-model" id="truckModel">Tata Prima 4028.S · Heavy 28T</div>
-        </div>
-
-        <!-- ═══════════════════════════════════════ -->
-        <!-- MAIN ACTION BUTTON                      -->
-        <!-- ═══════════════════════════════════════ -->
-        <button class="action-btn start" id="mainActionBtn" onclick="handleMainAction()">
-            <span class="action-icon">🟢</span>
-            <span class="action-text">START TRIP</span>
-        </button>
-
-        <!-- ═══════════════════════════════════════ -->
-        <!-- ACTIVE TRIP PANEL (hidden by default)   -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="trip-panel" id="tripPanel" style="display:none;">
-
-            <!-- Trip Start Info -->
-            <div class="card trip-info-card">
-                <div class="card-label">Trip Started</div>
-                <div class="trip-start-time" id="tripStartDisplay">--:-- at --</div>
-            </div>
-
-            <!-- Trip Duration & Distance Row -->
-            <div style="display:flex; gap:10px;">
-                <div class="card duration-card" style="flex:1;">
-                    <div class="card-label">Trip Duration</div>
-                    <div class="duration-timer" id="tripDuration">00:00:00</div>
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- HEADER BAR                                  -->
+        <!-- ═══════════════════════════════════════════ -->
+        <header class="app-header">
+            <div class="header-brand-row">
+                <div class="brand-badge">
+                    <span class="brand-dot"></span>
+                    <span>V3 LOGISTICS</span>
                 </div>
-                <div class="card duration-card" style="flex:1;">
-                    <div class="card-label">Trip Distance</div>
-                    <div class="duration-timer" id="tripLiveDistance" style="color:#2563EB;">0.00 km</div>
+                <div class="header-status-cluster">
+                    <div class="header-clock" id="headerClock">--:--:--</div>
+                    <div id="dutyStatusPill" class="duty-pill off-duty">OFF DUTY</div>
                 </div>
             </div>
 
-            <!-- Speedometer -->
-            <div class="card speed-card" id="speedCard">
-                <div class="card-label">Current Speed</div>
-                <div class="speed-display">
-                    <span class="speed-number" id="speedNumber">0</span>
-                    <span class="speed-unit">km/h</span>
-                </div>
-                <div class="speed-bar-container">
-                    <div class="speed-bar" id="speedBar"></div>
-                    <div class="speed-limit-marker" id="speedLimitMarker">
-                        <span>60</span>
+            <!-- Driver & Truck Header Profile Card -->
+            <div class="driver-card-header">
+                <div class="driver-identity">
+                    <div class="driver-avatar">🧑‍✈️</div>
+                    <div class="driver-details-wrap">
+                        <select id="driverSelectDropdown" class="driver-select-input" title="Switch driver profile">
+                            <option value="d1" selected>Murugan K · TN 09 AB 1234</option>
+                            <option value="d2">Selvam R · TN 22 CD 5678</option>
+                            <option value="d3">Imran Pasha · KA 01 EF 9012</option>
+                            <option value="d6">Anbu Selvan · TN 07 LM 2468</option>
+                        </select>
+                        <div class="truck-meta-sub" id="truckMetaSub">Tata Prima 4028.S · Heavy 28T</div>
                     </div>
                 </div>
-                <div class="overspeed-alert" id="overspeedAlert" style="display:none;">
-                    ⚠️ OVERSPEED! Reduce speed immediately
+            </div>
+        </header>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- MAIN APP CONTENT                            -->
+        <!-- ═══════════════════════════════════════════ -->
+        <main class="app-content">
+
+            <!-- GPS STATUS / TELEMETRY PILL -->
+            <div class="gps-bar" id="gpsBar" onclick="initGPS()" title="Tap to refresh live device GPS location">
+                <div class="gps-icon" id="gpsIcon">🛰️</div>
+                <div class="gps-details">
+                    <div class="gps-status" id="gpsStatus">Corridor GPS Ready ✓</div>
+                    <div class="gps-coords" id="gpsCoords">NH 48, Sriperumbudur Logistics Corridor</div>
+                    <div class="gps-accuracy" id="gpsAccuracy">High Precision · Tap to test device GPS</div>
                 </div>
             </div>
 
-            <!-- Halt Detector Card (hidden by default) -->
-            <div class="card halt-card" id="haltCard" style="display:none;">
-                <div class="card-label">⏸️ Vehicle Halted</div>
-                <div class="halt-timer" id="haltTimer">00:00:00</div>
-                <label class="halt-reason-label" for="haltReason">Halt Reason:</label>
-                <select class="halt-reason-select" id="haltReason">
-                    <option value="">-- Select Reason --</option>
-                    <option value="toll">🚧 Toll Plaza</option>
-                    <option value="loading">📦 Loading / Unloading</option>
-                    <option value="food">🍽️ Food Break</option>
-                    <option value="fuel">⛽ Fuel Stop</option>
-                    <option value="mechanical">🔧 Mechanical Issue</option>
-                    <option value="traffic">🚦 Traffic</option>
-                    <option value="rest">😴 Rest Break</option>
-                </select>
+            <!-- ═══════════════════════════════════════ -->
+            <!-- ROUTE CORRIDOR (START & DESTINATION)    -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="route-corridor-card">
+                <div class="route-leg">
+                    <span class="route-dot start"></span>
+                    <div class="route-text">
+                        <span class="route-lbl">START</span>
+                        <span class="route-name" id="routeStartName">Chennai Central Freight Corridor</span>
+                    </div>
+                </div>
+                <div class="route-arrow-icon">➔</div>
+                <div class="route-leg">
+                    <span class="route-dot dest"></span>
+                    <div class="route-text">
+                        <span class="route-lbl">DESTINATION</span>
+                        <span class="route-name" id="routeDestName">Sriperumbudur Logistics Hub</span>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- ═══════════════════════════════════════ -->
-        <!-- TRIP SUMMARY CARD (hidden by default)   -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="card summary-card" id="tripSummary" style="display:none;">
-            <div class="card-label">📋 Trip Summary</div>
-            <div class="summary-row">
-                <span class="summary-label">Start</span>
-                <span class="summary-value" id="summaryStart">--</span>
+            <!-- ═══════════════════════════════════════ -->
+            <!-- LIVE MINI NAVIGATION MAP DOCK           -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="map-card-wrapper">
+                <div class="map-floating-overlay">
+                    <button type="button" class="btn-map-recenter" id="btnRecenterMap" onclick="recenterDriverMap()" title="Recenter on truck / route">
+                        🎯
+                    </button>
+                </div>
+                <div id="driverMap" class="driver-mini-map"></div>
+                <div class="map-route-info-badge" id="mapRouteInfoBadge">
+                    <span class="route-info-icon">🛣️</span>
+                    <span id="mapRouteInfoText">via NH 48 · 29 km</span>
+                </div>
             </div>
-            <div class="summary-row">
-                <span class="summary-label">End</span>
-                <span class="summary-value" id="summaryEnd">--</span>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-row">
-                <span class="summary-label">Duration</span>
-                <span class="summary-value" id="summaryDuration">--</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Distance</span>
-                <span class="summary-value" id="summaryDistance">--</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Avg Speed</span>
-                <span class="summary-value" id="summaryAvgSpeed">--</span>
-            </div>
-        </div>
 
-        <!-- ═══════════════════════════════════════ -->
-        <!-- TODAY'S STATS (Trips & Halt Duration)   -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="stat-box">
-                <div class="stat-value" id="statTrips">0</div>
-                <div class="stat-label">Trips Completed Today</div>
+            <!-- ASSIGNED TRUCK DETAILS (Pre-Trip) -->
+            <div class="truck-card" id="assignedTruckCard">
+                <div class="card-label">Assigned Vehicle</div>
+                <div class="truck-plate" id="truckPlate">TN 09 AB 1234</div>
+                <div class="truck-model" id="truckModel">Tata Prima 4028.S · Heavy 28T</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-value" id="statHalt">00:00</div>
-                <div class="stat-label">Total Halt Time</div>
+
+            <!-- ═══════════════════════════════════════ -->
+            <!-- MAIN ACTION BUTTON                      -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="main-action-wrap">
+                <button class="action-btn start" id="mainActionBtn" onclick="handleMainAction()">
+                    <span class="action-icon">🟢</span>
+                    <span class="action-text">START TRIP</span>
+                </button>
             </div>
-        </div>
 
-        <!-- ═══════════════════════════════════════ -->
-        <!-- DEMO CONTROLS                           -->
-        <!-- ═══════════════════════════════════════ -->
-        <div class="demo-controls">
-            <div class="demo-title">🧪 Demo Controls (Browser Testing)</div>
-            <div class="demo-buttons">
-                <button class="demo-btn drive" onclick="simulateSpeed(55)">🚗 Drive 55 km/h</button>
-                <button class="demo-btn overspeed" onclick="simulateSpeed(72)">⚡ Overspeed 72 km/h</button>
-                <button class="demo-btn stop" onclick="simulateSpeed(0)">🛑 Stop</button>
+            <!-- ═══════════════════════════════════════ -->
+            <!-- ACTIVE TRIP TELEMETRY CLUSTER           -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="trip-panel" id="tripPanel" style="display:none;">
+
+                <!-- Trip Start Info -->
+                <div class="trip-info-card">
+                    <div class="card-label">Trip Started</div>
+                    <div class="trip-start-time" id="tripStartDisplay">--:-- at --</div>
+                </div>
+
+                <!-- ═══════════════════════════════════════ -->
+                <!-- 3-COLUMN METRICS (DURATION · SPEED · DISTANCE) -->
+                <!-- ═══════════════════════════════════════ -->
+                <div class="trip-metrics-grid-3">
+                    <div class="metric-card">
+                        <div class="card-label">Trip Time</div>
+                        <div class="metric-value" id="tripDuration">00:00:00</div>
+                        <div class="metric-sub">⏱️ Active</div>
+                    </div>
+                    <div class="metric-card speed-card-compact" id="speedCard">
+                        <div class="card-label">Current Speed</div>
+                        <div class="speed-compact-val">
+                            <span class="speed-number" id="speedNumber">0</span>
+                            <span class="speed-unit">km/h</span>
+                            <span class="speed-limit-mini" title="Legal Highway Limit: 60 km/h">60</span>
+                        </div>
+                        <div class="speed-bar-track">
+                            <div class="speed-bar-fill" id="speedGaugeFill"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="card-label">Distance</div>
+                        <div class="metric-value" style="color:#2563eb;">
+                            <span id="tripLiveDistance">0.00</span><span class="metric-unit">km</span>
+                        </div>
+                        <div class="metric-sub">🛣️ Odometer</div>
+                    </div>
+                </div>
+
+                <!-- Overspeed Warning Banner -->
+                <div class="overspeed-alert" id="overspeedAlert" style="display:none;">
+                    ⚠️ OVERSPEED! Reduce speed under 60 km/h
+                </div>
+
+                <!-- ═══════════════════════════════════ -->
+                <!-- VEHICLE HALTED / REASON CHIPS       -->
+                <!-- ═══════════════════════════════════ -->
+                <div class="halt-card" id="haltCard" style="display:none;">
+                    <div class="halt-header-row">
+                        <div class="halt-title">⏸️ Vehicle Halted</div>
+                        <div class="halt-timer" id="haltTimer">00:00:00</div>
+                    </div>
+                    <span class="halt-reason-label">Quick select halt reason:</span>
+
+                    <!-- Quick Touch-Friendly Reason Chips -->
+                    <div class="halt-pills-row" id="haltPillsRow">
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'toll')">🚧 Toll Plaza</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'loading')">📦 Loading/Unloading</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'tea')">☕ Tea Break</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'food')">🍱 Food Break</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'fuel')">⛽ Fuel Stop</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'traffic')">🚦 Traffic Jam</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'mechanical')">🔧 Tyre / Mechanical</button>
+                    </div>
+
+                    <!-- Native Select preserved for seamless admin sync -->
+                    <select class="halt-reason-select" id="haltReason">
+                        <option value="">-- Select Reason --</option>
+                        <option value="toll">🚧 Toll Plaza</option>
+                        <option value="loading">📦 Loading / Unloading</option>
+                        <option value="tea">☕ Tea Break</option>
+                        <option value="food">🍽️ Food Break</option>
+                        <option value="fuel">⛽ Fuel Stop</option>
+                        <option value="mechanical">🔧 Mechanical Issue</option>
+                        <option value="traffic">🚦 Traffic</option>
+                        <option value="rest">😴 Rest Break</option>
+                    </select>
+                </div>
             </div>
-            <div class="demo-loc-row">
-                <span class="demo-loc-label">📍 Simulated Location:</span>
-                <select id="demoLocationSelect" onchange="simulateLocation(this.value)" class="demo-loc-select">
-                    <option value="real">🛰️ Auto Device GPS</option>
-                    <option value="chennai_port" selected>⚓ Chennai Port Terminal</option>
-                    <option value="sriperumbudur">🏭 Sriperumbudur Hub</option>
-                    <option value="hosur">📦 Hosur SIPCOT Logistics</option>
-                    <option value="coimbatore">🏢 Coimbatore Depot</option>
-                </select>
+
+            <!-- ═══════════════════════════════════════ -->
+            <!-- TRIP SUMMARY RECEIPT CARD               -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="summary-card" id="tripSummary" style="display:none;">
+                <div class="summary-title">🏁 Trip Completed Summary</div>
+                <div class="summary-row">
+                    <span class="summary-label">Start Point</span>
+                    <span class="summary-value" id="summaryStart">--</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">End Point</span>
+                    <span class="summary-value" id="summaryEnd">--</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Total Duration</span>
+                    <span class="summary-value" id="summaryDuration">--</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Distance Covered</span>
+                    <span class="summary-value" id="summaryDistance" style="color:#2563eb;">--</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Average Speed</span>
+                    <span class="summary-value" id="summaryAvgSpeed">--</span>
+                </div>
             </div>
-        </div>
 
-    </main>
+            <!-- ═══════════════════════════════════════ -->
+            <!-- SHIFT METRICS (Trips & Halt Duration)   -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="statTrips">0</div>
+                    <div class="stat-label">Trips Completed Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statHalt">00:00</div>
+                    <div class="stat-label">Total Halt Time</div>
+                </div>
+            </div>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- FOOTER                                      -->
-    <!-- ═══════════════════════════════════════════ -->
-    <footer class="app-footer">
-        <div class="footer-brand">V3 Logistics · Driver Portal</div>
-        <div class="footer-privacy">🔒 Location shared with Admin only during active trips</div>
-    </footer>
+            <!-- ═══════════════════════════════════════ -->
+            <!-- COLLAPSIBLE DEMO TOOLBAR (Cleaner Look) -->
+            <!-- ═══════════════════════════════════════ -->
+            <details class="demo-drawer">
+                <summary class="demo-summary">
+                    <span>🛠️ Testing & Speed Simulation Controls</span>
+                    <span style="font-size:10px; color:#64748b;">Tap to toggle ▾</span>
+                </summary>
+                <div class="demo-content">
+                    <div class="demo-buttons">
+                        <button type="button" class="demo-btn drive" onclick="simulateSpeed(55)">🚗 Drive 55</button>
+                        <button type="button" class="demo-btn overspeed" onclick="simulateSpeed(72)">⚡ Overspeed 72</button>
+                        <button type="button" class="demo-btn stop" onclick="simulateSpeed(0)">🛑 Stop</button>
+                    </div>
+                    <div class="demo-loc-row">
+                        <span class="demo-loc-label">📍 Test Corridor:</span>
+                        <select id="demoLocationSelect" onchange="simulateLocation(this.value)" class="demo-loc-select">
+                            <option value="real">🛰️ Auto Device GPS</option>
+                            <option value="chennai_port" selected>⚓ Chennai Port Terminal</option>
+                            <option value="sriperumbudur">🏭 Sriperumbudur Hub</option>
+                            <option value="hosur">📦 Hosur SIPCOT Logistics</option>
+                            <option value="coimbatore">🏢 Coimbatore Depot</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
 
+        </main>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- FOOTER                                      -->
+        <!-- ═══════════════════════════════════════════ -->
+        <footer class="app-footer">
+            <div class="footer-brand">V3 Logistics · Commercial Driver Telematics</div>
+            <div class="footer-privacy">🔒 Location shared with Fleet Dispatch only during active trips</div>
+        </footer>
+
+    </div>
+
+    <!-- Leaflet JS for Driver Mini Navigation Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <!-- Driver Portal JavaScript -->
     <script src="driver.js"></script>
 </body>

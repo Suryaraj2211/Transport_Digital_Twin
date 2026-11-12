@@ -30,6 +30,7 @@ const vehicles = {
             [13.0694, 80.1948],
             [13.0450, 80.1500],
             [13.0400, 80.0800],
+            [13.0100, 80.0200],
             [12.9818, 79.9442]
         ]
     },
@@ -42,19 +43,19 @@ const vehicles = {
         driverId: 'd2',
         status: 'driving',
         speed: 46,
-        currentLocation: 'GST Road, Chengalpattu Toll Bay',
-        lat: 12.7200,
+        currentLocation: 'GST Road, Chengalpattu Toll Plaza',
+        lat: 12.7000,
         lng: 79.9800,
         battery: 74,
         accuracy: 15,
         lastSeen: '5 s ago',
         distanceToday: 168.0,
         route: [
-            [13.0067, 80.2025],
             [12.9249, 80.1200],
             [12.8400, 80.0600],
             [12.7900, 80.0200],
-            [12.7200, 79.9800]
+            [12.7450, 80.0000],
+            [12.7000, 79.9800]
         ]
     },
     v3: {
@@ -67,8 +68,8 @@ const vehicles = {
         status: 'driving',
         speed: 52,
         currentLocation: 'NH 48, Kanchipuram Freight Bypass',
-        lat: 12.8450,
-        lng: 79.7400,
+        lat: 12.8350,
+        lng: 79.7000,
         battery: 92,
         accuracy: 8,
         lastSeen: '3 s ago',
@@ -76,7 +77,8 @@ const vehicles = {
         route: [
             [12.9818, 79.9442],
             [12.9150, 79.8400],
-            [12.8450, 79.7400]
+            [12.8700, 79.7700],
+            [12.8350, 79.7000]
         ]
     },
     v4: {
@@ -88,18 +90,18 @@ const vehicles = {
         driverId: 'd4',
         status: 'halted',
         speed: 0,
-        currentLocation: 'Madhavaram Freight Hub, Red Hills',
-        lat: 13.1518,
-        lng: 80.2000,
+        currentLocation: 'NH 716, Tiruvallur Industrial Hub',
+        lat: 13.1400,
+        lng: 79.9100,
         battery: 65,
         accuracy: 20,
         lastSeen: 'Stopped · 2 min ago',
         distanceToday: 98.7,
         route: [
-            [13.0694, 80.1948],
             [13.1000, 80.1600],
-            [13.1400, 80.1800],
-            [13.1518, 80.2000]
+            [13.1150, 80.0900],
+            [13.1250, 80.0200],
+            [13.1400, 79.9100]
         ]
     },
     v5: {
@@ -111,17 +113,17 @@ const vehicles = {
         driverId: 'd5',
         status: 'offline',
         speed: 0,
-        currentLocation: 'NH 16, Minjur / Ponneri Junction',
-        lat: 13.2500,
-        lng: 80.2200,
+        currentLocation: 'Ennore Port Expressway, Minjur Logistics Hub',
+        lat: 13.2900,
+        lng: 80.2600,
         battery: 12,
         accuracy: 35,
         lastSeen: 'No signal · last seen 42 min ago',
         distanceToday: 187.3,
         route: [
-            [13.1518, 80.2000],
-            [13.2100, 80.2050],
-            [13.2500, 80.2200]
+            [13.1700, 80.2600],
+            [13.2300, 80.2600],
+            [13.2900, 80.2600]
         ]
     },
     v6: {
@@ -132,18 +134,19 @@ const vehicles = {
         source: 'app',
         driverId: 'd6',
         status: 'driving',
-        speed: 34,
-        currentLocation: 'Chennai Port Container Bay',
+        speed: 48,
+        currentLocation: 'Chennai Bypass, Ambattur Industrial Estate',
         lat: 13.0900,
-        lng: 80.2900,
+        lng: 80.1600,
         battery: 81,
         accuracy: 14,
         lastSeen: '6 s ago',
-        distanceToday: 76.5,
+        distanceToday: 82.5,
         route: [
-            [13.2100, 80.3150],
-            [13.1600, 80.2900],
-            [13.0900, 80.2900]
+            [13.0350, 80.1550],
+            [13.0550, 80.1580],
+            [13.0650, 80.1600],
+            [13.0900, 80.1600]
         ]
     }
 };
@@ -193,7 +196,7 @@ const drivers = {
         phoneType: 'button',
         device: 'Nokia 105 (Keypad Phone · Airtel SIM)',
         assignedVehicle: 'v4',
-        destination: 'Madhavaram Freight Hub',
+        destination: 'Tiruvallur Industrial Freight Hub',
         licence: 'TN38 20220003456',
         licenceExpiry: '2028-01-10',
         onDutySince: '07:10'
@@ -205,7 +208,7 @@ const drivers = {
         phoneType: 'button',
         device: 'Samsung Guru 1200 (Keypad · Jio SIM)',
         assignedVehicle: 'v5',
-        destination: 'Minjur / Ponneri Freight Junction',
+        destination: 'Ennore / Minjur North Port Hub',
         licence: 'AP39 20210007788',
         licenceExpiry: '2029-06-15',
         onDutySince: '05:40'
@@ -217,7 +220,7 @@ const drivers = {
         phoneType: 'smart',
         device: 'Vivo Y20 (App GPS)',
         assignedVehicle: 'v6',
-        destination: 'Chennai Port Container Bay',
+        destination: 'Ambattur / Madhavaram Freight Hub',
         licence: 'TN07 20200002468',
         licenceExpiry: '2027-11-20',
         onDutySince: '07:45'
@@ -253,9 +256,9 @@ trips.push({
     driverId: 'd1',
     driverName: 'Murugan K',
     startTime: todayAt('06:12'),
-    startLocation: 'Chennai Port',
+    startLocation: 'Koyambedu Logistics Yard',
     endTime: todayAt('08:45'),
-    endLocation: 'Sriperumbudur Hub',
+    endLocation: 'Sriperumbudur Depot',
     duration: '2h 33m',
     haltSeconds: 900,
     haltReason: 'Food Break',
@@ -274,9 +277,9 @@ trips.push({
     driverId: 'd2',
     driverName: 'Selvam R',
     startTime: todayAt('06:40'),
-    startLocation: 'Tambaram',
+    startLocation: 'Tambaram Depot',
     endTime: todayAt('09:10'),
-    endLocation: 'Chengalpattu Toll',
+    endLocation: 'Chengalpattu Toll Plaza',
     duration: '2h 30m',
     haltSeconds: 480,
     haltReason: 'Toll Plaza',
@@ -286,7 +289,49 @@ trips.push({
     speed: 0
 });
 
-// Trip 3: v1/d1 — Active live trip
+// Trip 3: v4/d4 — Completed delivery earlier today (currently halted at hub)
+tripCounter++;
+trips.push({
+    id: tripCounter,
+    vehicleId: 'v4',
+    plate: 'TN 38 GH 3456',
+    driverId: 'd4',
+    driverName: 'Ravi Kumar',
+    startTime: todayAt('07:15'),
+    startLocation: 'Ambattur North Depot',
+    endTime: todayAt('08:50'),
+    endLocation: 'Tiruvallur Industrial Hub',
+    duration: '1h 35m',
+    haltSeconds: 600,
+    haltReason: 'Unloading Bay',
+    avgSpeed: 42,
+    distanceKm: 46.5,
+    status: 'completed',
+    speed: 0
+});
+
+// Trip 4: v5/d5 — Completed delivery earlier today (currently offline / standby)
+tripCounter++;
+trips.push({
+    id: tripCounter,
+    vehicleId: 'v5',
+    plate: 'AP 39 JK 7788',
+    driverId: 'd5',
+    driverName: 'Venkatesh P',
+    startTime: todayAt('05:45'),
+    startLocation: 'Manali Freight Yard',
+    endTime: todayAt('07:20'),
+    endLocation: 'Minjur Logistics Hub',
+    duration: '1h 35m',
+    haltSeconds: 300,
+    haltReason: 'Shift Change',
+    avgSpeed: 45,
+    distanceKm: 48.0,
+    status: 'completed',
+    speed: 0
+});
+
+// Trip 5: v1/d1 — Active live trip (NH 48 Sriperumbudur Corridor)
 tripCounter++;
 trips.push({
     id: tripCounter,
@@ -295,19 +340,19 @@ trips.push({
     driverId: 'd1',
     driverName: 'Murugan K',
     startTime: todayAt('09:30'),
-    startLocation: 'Chennai Central',
+    startLocation: 'Poonamallee Bypass (NH 48)',
     endTime: null,
     endLocation: '',
     duration: '',
     haltSeconds: 0,
     haltReason: '',
-    avgSpeed: 58,
+    avgSpeed: 56,
     distanceKm: 42.5,
     status: 'active',
-    speed: 58
+    speed: 56
 });
 
-// Trip 4: v2/d2 — Active live trip
+// Trip 6: v2/d2 — Active live trip (GST Road Chengalpattu Corridor)
 tripCounter++;
 trips.push({
     id: tripCounter,
@@ -328,7 +373,7 @@ trips.push({
     speed: 46
 });
 
-// Trip 5: v3/d3 — Active live trip
+// Trip 7: v3/d3 — Active live trip (NH 48 Kanchipuram Freight Bypass)
 tripCounter++;
 trips.push({
     id: tripCounter,
@@ -337,7 +382,7 @@ trips.push({
     driverId: 'd3',
     driverName: 'Imran Pasha',
     startTime: todayAt('09:15'),
-    startLocation: 'Sriperumbudur Gate',
+    startLocation: 'Sriperumbudur Gate (NH 48)',
     endTime: null,
     endLocation: '',
     duration: '',
@@ -349,7 +394,7 @@ trips.push({
     speed: 52
 });
 
-// Trip 6: v6/d6 — Active live trip
+// Trip 8: v6/d6 — Active live trip (Chennai Bypass Express Corridor)
 tripCounter++;
 trips.push({
     id: tripCounter,
@@ -358,16 +403,16 @@ trips.push({
     driverId: 'd6',
     driverName: 'Anbu Selvan',
     startTime: todayAt('10:00'),
-    startLocation: 'Ennore Port',
+    startLocation: 'Porur Toll Plaza (Chennai Bypass)',
     endTime: null,
     endLocation: '',
     duration: '',
     haltSeconds: 0,
     haltReason: '',
-    avgSpeed: 34,
-    distanceKm: 21.0,
+    avgSpeed: 48,
+    distanceKm: 24.9,
     status: 'active',
-    speed: 34
+    speed: 48
 });
 
 // ── DOM References ─────────────────────────────────────────
@@ -793,7 +838,7 @@ function renderTripsTable() {
             : `<span class="cell-status-completed">✅ Completed</span>`;
 
         const v = vehicles[trip.vehicleId];
-        const isSim = (v && v.source === 'sim') || (trip.vehicleId === 'v3' || trip.vehicleId === 'v4');
+        const isSim = (v && v.source === 'sim');
         const trackingBadge = isSim
             ? `<span class="source-badge sim" style="font-size:10px; display:inline-block; margin-top:3px;">📞 SIM LBS</span>`
             : `<span class="source-badge app" style="font-size:10px; display:inline-block; margin-top:3px;">📱 Driver App</span>`;
@@ -872,13 +917,16 @@ function renderVehiclesTable() {
             ? '<span class="source-badge app">📱 Driver App GPS</span>'
             : '<span class="source-badge sim">📶 Telecom SIM LBS</span>';
 
+        const cat = getVehicleStatusCategory(v);
         let statusHtml = '';
-        if (v.status === 'driving') {
+        if (cat === 'moving') {
             statusHtml = `<span class="cell-status-active">🟢 Driving</span>`;
-        } else if (v.status === 'stopped') {
-            statusHtml = `<span style="color:#DC2626;font-weight:500;">🔴 Stopped</span>`;
+        } else if (cat === 'halt') {
+            statusHtml = `<span style="color:#d97706;font-weight:600;display:inline-flex;align-items:center;gap:4px;">🟠 Halted</span>`;
+        } else if (cat === 'offline') {
+            statusHtml = `<span style="color:#64748b;font-weight:600;display:inline-flex;align-items:center;gap:4px;">⚪ Offline</span>`;
         } else {
-            statusHtml = `<span style="color:#94A3B8;">⚪ Idle</span>`;
+            statusHtml = `<span style="color:#ef4444;font-weight:600;display:inline-flex;align-items:center;gap:4px;">🔴 Stopped</span>`;
         }
 
         html += `
@@ -1061,9 +1109,9 @@ function populateSimDriverSelector() {
  */
 function saveStateToStorage() {
     try {
-        localStorage.setItem('fleet_admin_vehicles_v5', JSON.stringify(vehicles));
-        localStorage.setItem('fleet_admin_drivers_v5', JSON.stringify(drivers));
-        localStorage.setItem('fleet_admin_trips_v5', JSON.stringify(trips));
+        localStorage.setItem('fleet_admin_vehicles_v9', JSON.stringify(vehicles));
+        localStorage.setItem('fleet_admin_drivers_v9', JSON.stringify(drivers));
+        localStorage.setItem('fleet_admin_trips_v9', JSON.stringify(trips));
     } catch (e) {
         console.warn('[Admin] Failed to save state to localStorage:', e);
     }
@@ -1075,7 +1123,7 @@ function saveStateToStorage() {
 function loadStateFromStorage() {
     try {
         // Clean up legacy storage versions
-        ['v1', 'v2', 'v3', 'v4'].forEach(ver => {
+        ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8'].forEach(ver => {
             try {
                 localStorage.removeItem(`fleet_admin_vehicles_${ver}`);
                 localStorage.removeItem(`fleet_admin_drivers_${ver}`);
@@ -1083,9 +1131,9 @@ function loadStateFromStorage() {
             } catch (_) {}
         });
 
-        const vRaw = localStorage.getItem('fleet_admin_vehicles_v5');
-        const dRaw = localStorage.getItem('fleet_admin_drivers_v5');
-        const tRaw = localStorage.getItem('fleet_admin_trips_v5');
+        const vRaw = localStorage.getItem('fleet_admin_vehicles_v9');
+        const dRaw = localStorage.getItem('fleet_admin_drivers_v9');
+        const tRaw = localStorage.getItem('fleet_admin_trips_v9');
         if (vRaw) {
             const parsed = JSON.parse(vRaw);
             Object.keys(parsed).forEach(k => {
@@ -1101,6 +1149,16 @@ function loadStateFromStorage() {
                     if (parsed[k].speed !== undefined) vehicles[k].speed = parsed[k].speed;
                     if (parsed[k].driverId) vehicles[k].driverId = parsed[k].driverId;
                     if (parsed[k].battery !== undefined) vehicles[k].battery = parsed[k].battery;
+                    if (parsed[k].route && Array.isArray(parsed[k].route) && parsed[k].route.length >= 2) {
+                        vehicles[k].route = parsed[k].route;
+                    }
+                    // Guarantee route last point aligns with vehicle position
+                    if (vehicles[k].lat && vehicles[k].lng && vehicles[k].route && vehicles[k].route.length > 0) {
+                        const last = vehicles[k].route[vehicles[k].route.length - 1];
+                        if (Math.abs(last[0] - vehicles[k].lat) > 0.0001 || Math.abs(last[1] - vehicles[k].lng) > 0.0001) {
+                            vehicles[k].route.push([vehicles[k].lat, vehicles[k].lng]);
+                        }
+                    }
                 }
             });
         }
@@ -1796,38 +1854,60 @@ window.addEventListener('storage', (e) => {
  */
 function handleStartTrip(data) {
     const vehicleId = data.vehicleId;
+    const v = vehicles[vehicleId];
+    if (!v) return;
 
-    // Update vehicle status
-    if (vehicles[vehicleId]) {
-        vehicles[vehicleId].status = 'driving';
-        vehicles[vehicleId].speed = 0;
-        vehicles[vehicleId].currentLocation = data.startLocation || '';
-        vehicles[vehicleId].lat = data.lat || 0;
-        vehicles[vehicleId].lng = data.lng || 0;
+    v.status = 'driving';
+    v.speed = data.speed || 45;
+    v.isHalted = false;
+    v.haltSeconds = 0;
+    v.haltReason = '';
+    if (data.startLocation) v.currentLocation = data.startLocation;
+    if (data.lat && data.lng) {
+        v.lat = data.lat;
+        v.lng = data.lng;
     }
 
-    // Create a new trip entry
-    tripCounter++;
-    const newTrip = {
-        id: tripCounter,
-        vehicleId: vehicleId,
-        plate: data.plate || (vehicles[vehicleId] ? vehicles[vehicleId].plate : 'Unknown'),
-        driverId: vehicles[vehicleId] ? vehicles[vehicleId].driverId : '',
-        driverName: data.driverName || 'Unknown',
-        startTime: parseTimestamp(data.timestamp || data.startTime),
-        startLocation: data.startLocation || 'Unknown',
-        endTime: null,
-        endLocation: '',
-        duration: '',
-        avgSpeed: 0,
-        distanceKm: 0,
-        status: 'active',
-        speed: 0
-    };
+    // Ensure route always has at least 2 points so Leaflet polyline is immediately drawn
+    if (!v.route || !Array.isArray(v.route) || v.route.length < 2) {
+        const startPt = [v.lat - 0.012, v.lng - 0.008];
+        v.route = [startPt, [v.lat, v.lng]];
+    } else {
+        const last = v.route[v.route.length - 1];
+        if (Math.abs(last[0] - v.lat) > 0.00008 || Math.abs(last[1] - v.lng) > 0.00008) {
+            v.route.push([v.lat, v.lng]);
+        }
+    }
 
-    trips.push(newTrip);
+    // Prevent duplicate active trips for the same vehicle
+    let existingActive = getActiveTripForVehicle(vehicleId);
+    if (!existingActive) {
+        tripCounter++;
+        const newTrip = {
+            id: tripCounter,
+            vehicleId: vehicleId,
+            plate: data.plate || v.plate,
+            driverId: v.driverId,
+            driverName: data.driverName || (getDriverForVehicle(vehicleId)?.name || 'Unknown'),
+            startTime: parseTimestamp(data.timestamp || data.startTime || new Date()),
+            startLocation: data.startLocation || v.currentLocation || 'Dispatch Terminal',
+            endTime: null,
+            endLocation: '',
+            duration: '',
+            avgSpeed: v.speed,
+            distanceKm: 0,
+            status: 'active',
+            speed: v.speed
+        };
+        trips.unshift(newTrip);
+        showToast(`🟢 Trip started: ${newTrip.plate} — ${newTrip.driverName}`, 'success');
+    } else {
+        // Just update existing active trip details
+        if (data.driverName) existingActive.driverName = data.driverName;
+        if (data.plate) existingActive.plate = data.plate;
+        if (data.startLocation) existingActive.startLocation = data.startLocation;
+    }
 
-    showToast(`🟢 Trip started: ${newTrip.plate} — ${newTrip.driverName} from ${newTrip.startLocation}`, 'success');
     refreshAll();
 }
 
@@ -1837,22 +1917,20 @@ function handleStartTrip(data) {
  */
 function handleEndTrip(data) {
     const vehicleId = data.vehicleId;
-
-    // Find the active trip for this vehicle
+    const v = vehicles[vehicleId];
     const trip = getActiveTripForVehicle(vehicleId);
 
     if (trip) {
-        const endTime = parseTimestamp(data.timestamp || data.endTime);
+        const endTime = parseTimestamp(data.timestamp || data.endTime || new Date());
         trip.endTime = endTime;
-        trip.endLocation = data.endLocation || 'Unknown';
+        trip.endLocation = data.endLocation || (v ? v.currentLocation : 'Destination Terminal');
         trip.status = 'completed';
         trip.speed = 0;
-        trip.distanceKm = data.distanceKm || trip.distanceKm || 0;
+        if (data.distanceKm) trip.distanceKm = data.distanceKm;
         if (data.haltSeconds !== undefined) trip.haltSeconds = data.haltSeconds;
         if (data.haltReason) trip.haltReason = data.haltReason;
         trip.duration = calcDuration(trip.startTime, trip.endTime);
 
-        // Calculate average speed if we have distance and duration
         const durationHrs = (trip.endTime - trip.startTime) / 3600000;
         if (trip.distanceKm > 0 && durationHrs > 0) {
             trip.avgSpeed = Math.round(trip.distanceKm / durationHrs);
@@ -1860,19 +1938,27 @@ function handleEndTrip(data) {
     }
 
     // Update vehicle status
-    if (vehicles[vehicleId]) {
-        vehicles[vehicleId].status = 'stopped';
-        vehicles[vehicleId].speed = 0;
-        vehicles[vehicleId].isHalted = false;
-        vehicles[vehicleId].currentLocation = data.endLocation || '';
-        vehicles[vehicleId].lat = data.lat || 0;
-        vehicles[vehicleId].lng = data.lng || 0;
-        if (data.haltSeconds !== undefined) vehicles[vehicleId].haltSeconds = data.haltSeconds;
-        if (data.haltReason) vehicles[vehicleId].haltReason = data.haltReason;
+    if (v) {
+        v.status = 'halted';
+        v.speed = 0;
+        v.isHalted = true;
+        if (data.endLocation) v.currentLocation = data.endLocation;
+        if (data.lat && data.lng) {
+            v.lat = data.lat;
+            v.lng = data.lng;
+            // Preserve route history!
+            if (!v.route || !Array.isArray(v.route) || v.route.length < 2) {
+                v.route = [[data.lat - 0.012, data.lng - 0.008], [data.lat, data.lng]];
+            } else {
+                v.route[v.route.length - 1] = [data.lat, data.lng];
+            }
+        }
+        if (data.haltSeconds !== undefined) v.haltSeconds = data.haltSeconds;
+        if (data.haltReason) v.haltReason = data.haltReason;
     }
 
-    const plate = data.plate || (vehicles[vehicleId] ? vehicles[vehicleId].plate : 'Unknown');
-    showToast(`🔴 Trip ended: ${plate} — arrived at ${data.endLocation || 'Unknown'}`, 'info');
+    const plate = data.plate || (v ? v.plate : 'Unknown');
+    showToast(`🔴 Trip ended: ${plate} — arrived at ${data.endLocation || 'Destination'}`, 'info');
     refreshAll();
 }
 
@@ -1913,17 +1999,205 @@ function handleSpeedUpdate(data) {
  */
 function handleLocationUpdate(data) {
     const vehicleId = data.vehicleId;
+    const v = vehicles[vehicleId];
 
-    if (vehicles[vehicleId]) {
-        vehicles[vehicleId].lat = data.lat || 0;
-        vehicles[vehicleId].lng = data.lng || 0;
+    if (v && data.lat && data.lng) {
+        v.lat = data.lat;
+        v.lng = data.lng;
         if (data.locationName) {
-            vehicles[vehicleId].currentLocation = data.locationName;
+            v.currentLocation = data.locationName;
+        }
+        if (data.speed !== undefined) {
+            v.speed = data.speed;
+        }
+
+        // Dynamic route creation from real driver GPS
+        if (!v.route || !Array.isArray(v.route) || v.route.length === 0) {
+            v.route = [[v.lat, v.lng]];
+        }
+        const lastPt = v.route[v.route.length - 1];
+        if (!lastPt) {
+            v.route.push([v.lat, v.lng]);
+        } else {
+            const dist = Math.hypot(v.lat - lastPt[0], v.lng - lastPt[1]);
+            if (dist > 0.00035) {
+                v.route.push([v.lat, v.lng]);
+                if (v.route.length > 250) v.route.shift();
+            } else {
+                v.route[v.route.length - 1] = [v.lat, v.lng];
+            }
+        }
+
+        // Live update marker & route polyline on map immediately
+        if (fleetMap) {
+            if (fleetMarkers[vehicleId]) fleetMarkers[vehicleId].setLatLng([v.lat, v.lng]);
+            if (fleetRouteLayers[vehicleId]) fleetRouteLayers[vehicleId].setLatLngs(v.route);
+            if (fleetRouteCasings[vehicleId]) fleetRouteCasings[vehicleId].setLatLngs(v.route);
         }
     }
 
     // Refresh UI without toast (location updates are frequent)
     refreshAll();
+}
+
+// ── Realistic Fleet Corridor Navigation & Route Auto-Creation ──
+
+/**
+ * Realistic road corridors for live vehicle navigation simulation.
+ * All waypoints lie strictly on regional highways, bypasses, and container bay roads.
+ */
+const FLEET_CORRIDORS = {
+    v1: {
+        points: [
+            [13.0694, 80.1948], // Koyambedu Central Freight Hub
+            [13.0645, 80.1605], // Maduravoyal Flyover
+            [13.0538, 80.1340], // Vanagaram Junction
+            [13.0460, 80.1050], // Poonamallee Entry
+            [13.0440, 80.0880], // Poonamallee Bypass (NH 48)
+            [13.0360, 80.0550], // Nazarathpet Outer Ring
+            [13.0240, 80.0220], // Chembarambakkam North Bypass (NH 48)
+            [13.0125, 79.9950], // Pappanchatram Toll
+            [12.9980, 79.9730], // Irungattukottai SIPCOT
+            [12.9890, 79.9550], // Pennalur Flyover
+            [12.9818, 79.9442]  // Sriperumbudur Logistics Hub
+        ],
+        targetIndex: 8,
+        direction: 1
+    },
+    v2: {
+        points: [
+            [12.9249, 80.1200], // Tambaram GST Road
+            [12.8400, 80.0600], // Maraimalai Nagar Industrial Corridor
+            [12.7900, 80.0200], // Singaperumal Koil Bypass
+            [12.7450, 80.0000], // Paranur Toll Plaza
+            [12.7000, 79.9800], // Chengalpattu Toll Plaza
+            [12.6600, 79.9600], // Palur Bypass NH 32
+            [12.6200, 79.9400]  // Madurantakam North Corridor
+        ],
+        targetIndex: 5,
+        direction: 1
+    },
+    v3: {
+        points: [
+            [12.9818, 79.9442], // Sriperumbudur West
+            [12.9150, 79.8400], // Damal Junction NH 48
+            [12.8700, 79.7700], // Enathur Bypass
+            [12.8350, 79.7000], // Kanchipuram Freight Bypass
+            [12.8050, 79.6200], // Ocheri Highway
+            [12.7750, 79.5400]  // Ranipet Logistics Terminal
+        ],
+        targetIndex: 4,
+        direction: 1
+    },
+    v4: {
+        points: [
+            [13.1400, 79.9100], // Tiruvallur Industrial Hub NH 716
+            [13.1250, 80.0200], // Thirumazhisai Freight Corridor
+            [13.1150, 80.0900], // Poonamallee Bypass
+            [13.1000, 80.1600], // Maduravoyal Cloverleaf Interchange
+            [13.0800, 80.2000]  // Koyambedu Wholesale Terminal
+        ],
+        targetIndex: 1,
+        direction: 1
+    },
+    v5: {
+        points: [
+            [13.2900, 80.2600], // Minjur Logistics Hub (Outer Ring Road)
+            [13.2300, 80.2600], // Ennore North Port Expressway
+            [13.1700, 80.2600], // Manali Oil Refinery & Chemical Bay
+            [13.1300, 80.2100], // Madhavaram Container Terminal
+            [13.0900, 80.1600]  // Ambattur Industrial Corridor
+        ],
+        targetIndex: 1,
+        direction: 1
+    },
+    v6: {
+        points: [
+            [13.0350, 80.1550], // Porur Toll Plaza (Chennai Bypass NH 48)
+            [13.0550, 80.1580], // Vanagaram Industrial Corridor
+            [13.0650, 80.1600], // Maduravoyal Cloverleaf Interchange
+            [13.0900, 80.1600], // Ambattur Industrial Estate North Bay
+            [13.1250, 80.1650]  // Madhavaram / Red Hills Freight Terminal
+        ],
+        targetIndex: 4,
+        direction: 1
+    }
+};
+
+/**
+ * Advance moving vehicles along realistic road corridors and dynamically draw/create the route polyline.
+ * @param {Object} v - vehicle object
+ */
+function advanceVehicleAlongCorridor(v) {
+    if (!v || v.status !== 'driving' || !v.lat || !v.lng) return;
+
+    const corridor = FLEET_CORRIDORS[v.id];
+    if (corridor) {
+        const pts = corridor.points;
+        const targetPt = pts[corridor.targetIndex];
+        if (targetPt) {
+            const dLat = targetPt[0] - v.lat;
+            const dLng = targetPt[1] - v.lng;
+            const dist = Math.hypot(dLat, dLng);
+
+            // Step size corresponds to realistic 40-55 km/h truck speed (~0.00020 deg every 2 sec)
+            const step = Math.min(dist, 0.00020);
+
+            if (dist <= 0.00025) {
+                // Waypoint reached, advance to next waypoint
+                v.lat = targetPt[0];
+                v.lng = targetPt[1];
+                corridor.targetIndex += corridor.direction;
+                if (corridor.targetIndex >= pts.length || corridor.targetIndex < 0) {
+                    corridor.direction = -corridor.direction;
+                    corridor.targetIndex += (corridor.direction * 2);
+                }
+            } else {
+                v.lat = +(v.lat + (dLat / dist) * step).toFixed(5);
+                v.lng = +(v.lng + (dLng / dist) * step).toFixed(5);
+            }
+        }
+    }
+
+    // Dynamic Route Creation: Route line connects directly to vehicle and creates new points as it moves
+    if (!v.route || !Array.isArray(v.route) || v.route.length === 0) {
+        v.route = [[v.lat, v.lng]];
+    }
+
+    const lastPt = v.route[v.route.length - 1];
+    if (!lastPt) {
+        v.route.push([v.lat, v.lng]);
+    } else {
+        const distFromLast = Math.hypot(v.lat - lastPt[0], v.lng - lastPt[1]);
+        if (distFromLast >= 0.00035) {
+            // Append breadcrumb point so route polyline grows dynamically behind vehicle
+            v.route.push([v.lat, v.lng]);
+            if (v.route.length > 200) v.route.shift();
+        } else {
+            // Keep the tip of the route line strictly connected to the vehicle
+            v.route[v.route.length - 1] = [v.lat, v.lng];
+        }
+    }
+
+    // Update distance metric
+    v.distanceToday = +(v.distanceToday + 0.02).toFixed(1);
+    const activeTrip = getActiveTripForVehicle(v.id);
+    if (activeTrip) {
+        activeTrip.distanceKm = +(activeTrip.distanceKm + 0.02).toFixed(2);
+    }
+
+    // Live update Leaflet marker position & route polyline on map
+    if (fleetMap) {
+        if (fleetMarkers[v.id]) {
+            fleetMarkers[v.id].setLatLng([v.lat, v.lng]);
+        }
+        if (fleetRouteLayers[v.id]) {
+            fleetRouteLayers[v.id].setLatLngs(v.route);
+        }
+        if (fleetRouteCasings[v.id]) {
+            fleetRouteCasings[v.id].setLatLngs(v.route);
+        }
+    }
 }
 
 // ── 2-Second Ticker ────────────────────────────────────────
@@ -1932,7 +2206,8 @@ function handleLocationUpdate(data) {
  * Ticker that runs every 2 seconds to:
  *  1. Update the header clock
  *  2. Recalculate running duration for active trips
- *  3. Re-render affected displays
+ *  3. Advance moving vehicles and dynamically create their routes
+ *  4. Re-render affected displays
  */
 function tick() {
     updateClock();
@@ -1945,29 +2220,19 @@ function tick() {
             const activeTrip = getActiveTripForVehicle(v.id);
             if (activeTrip) {
                 activeTrip.speed = v.speed;
-                activeTrip.distanceKm = +(activeTrip.distanceKm + 0.03).toFixed(2);
             }
         }
 
-        // Slight live GPS advancement along corridor for any driving truck
-        if (v.status === 'driving' && v.lat && v.lng) {
-            const latDelta = (Math.random() * 0.0003) - 0.0001;
-            const lngDelta = (Math.random() * 0.0003) - 0.0001;
-            v.lat = +(v.lat + latDelta).toFixed(5);
-            v.lng = +(v.lng + lngDelta).toFixed(5);
+        // Advance moving vehicles along realistic corridors and dynamically create route!
+        if (v.status === 'driving') {
+            advanceVehicleAlongCorridor(v);
         }
     });
 
     // Check if there are active trips — if so, re-render to update durations
-    const hasActiveTrips = trips.some(t => t.status === 'active');
-    if (hasActiveTrips) {
-        renderStatusCards();
-        renderTripsTable();
-        refreshMetrics();
-        if (typeof fleetMap !== 'undefined' && fleetMap) {
-            updateFleetMapMarkers();
-        }
-    }
+    renderStatusCards();
+    renderTripsTable();
+    refreshMetrics();
 
     // Always update selected vehicle details in right panel (speed, halt timers, live duration)
     renderSelectedVehicleDetail();
@@ -1975,8 +2240,10 @@ function tick() {
 
 // ── Admin Button Phone (SIM LBS) Actions ───────────────────
 
+let simTowerPingLayer = null;
+
 /**
- * Admin starts a trip on behalf of a button phone driver.
+ * Admin starts a trip on behalf of a button phone driver (SIM LBS Tracking).
  * @param {string} vehicleId
  */
 window.adminStartSimTrip = function(vehicleId) {
@@ -1984,9 +2251,27 @@ window.adminStartSimTrip = function(vehicleId) {
     if (!v) return;
     const driver = getDriverForVehicle(vehicleId);
 
+    // Prevent duplicate active trips
+    const existingActive = getActiveTripForVehicle(vehicleId);
+    if (existingActive) {
+        showToast(`⚠️ Trip #${existingActive.id} is already ACTIVE for ${v.plate}!`, 'info');
+        return;
+    }
+
+    const carrier = (driver && driver.device && driver.device.toLowerCase().includes('jio')) ? 'Jio' : 'Airtel';
+    const cellId = carrier === 'Jio' ? 'JIO-BTS-8821' : 'AIRTEL-BTS-4819';
+    const startLoc = (vehicleId === 'v5' || carrier === 'Jio')
+        ? 'Minjur Logistics Hub (Outer Ring Road)'
+        : 'Tiruvallur Industrial Hub (NH 716)';
+
     v.status = 'driving';
-    v.speed = 52;
-    v.currentLocation = 'Airtel Tower #4819 - Poonamallee Highway';
+    v.speed = 48;
+    v.currentLocation = `${startLoc} (Linked to ${cellId})`;
+
+    // Ensure route has at least the starting point
+    if (!v.route || !Array.isArray(v.route) || v.route.length === 0) {
+        v.route = [[v.lat, v.lng]];
+    }
 
     tripCounter++;
     const now = new Date();
@@ -1997,17 +2282,23 @@ window.adminStartSimTrip = function(vehicleId) {
         driverId: v.driverId,
         driverName: driver ? driver.name : 'Unknown Driver',
         startTime: now,
-        startLocation: 'Airtel Tower #4819 - Poonamallee Highway',
+        startLocation: `${startLoc} (${cellId})`,
         endTime: null,
         endLocation: '',
         duration: '',
-        avgSpeed: 52,
+        avgSpeed: 48,
         distanceKm: 0,
         status: 'active',
-        speed: 52
+        speed: 48
     };
 
-    trips.push(newTrip);
+    trips.unshift(newTrip);
+
+    // Pan to vehicle and focus it
+    selectedVehicleId = vehicleId;
+    if (fleetMap && v.lat && v.lng) {
+        fleetMap.panTo([v.lat, v.lng], { animate: true });
+    }
 
     showToast(`📶 Telecom SIM LBS Tracking active for ${v.plate}! Driver (${driver ? driver.name : ''}) notified via SMS.`, 'success');
     refreshAll();
@@ -2020,213 +2311,99 @@ window.adminStartSimTrip = function(vehicleId) {
 window.adminEndSimTrip = function(vehicleId) {
     const v = vehicles[vehicleId];
     if (!v) return;
+    const driver = getDriverForVehicle(vehicleId);
+
+    const carrier = (driver && driver.device && driver.device.toLowerCase().includes('jio')) ? 'Jio' : 'Airtel';
+    const cellId = carrier === 'Jio' ? 'JIO-BTS-9104' : 'AIRTEL-BTS-5022';
+    const endLoc = (vehicleId === 'v5' || carrier === 'Jio')
+        ? 'Ennore Port Container Bay'
+        : 'Poonamallee Freight Bay';
 
     const trip = getActiveTripForVehicle(vehicleId);
     if (trip) {
         const now = new Date();
         trip.endTime = now;
-        trip.endLocation = 'Airtel Tower #7204 - Sriperumbudur Hub';
+        trip.endLocation = `${endLoc} (${cellId})`;
         trip.status = 'completed';
         trip.speed = 0;
-        if (!trip.distanceKm || trip.distanceKm < 1) trip.distanceKm = 38.4;
+        if (!trip.distanceKm || trip.distanceKm < 1) trip.distanceKm = +(Math.random() * 8 + 32).toFixed(1);
         trip.duration = calcDuration(trip.startTime, trip.endTime);
         const durationHrs = (trip.endTime - trip.startTime) / 3600000;
         if (durationHrs > 0) {
-            trip.avgSpeed = Math.round(trip.distanceKm / durationHrs) || 50;
+            trip.avgSpeed = Math.round(trip.distanceKm / durationHrs) || 48;
         }
     }
 
-    v.status = 'stopped';
+    v.status = 'halted';
     v.speed = 0;
-    v.currentLocation = 'Airtel Tower #7204 - Sriperumbudur Hub';
+    v.currentLocation = `${endLoc} (Trip Completed)`;
 
     showToast(`🔴 SIM Trip ended for ${v.plate}. Logged in Trip History!`, 'info');
     refreshAll();
 };
 
 /**
- * Admin pings cell tower for immediate BTS signal and location.
+ * Admin pings cell tower for immediate BTS signal and location with interactive Leaflet triangulation circle.
  * @param {string} vehicleId
  */
 window.adminPingSim = function(vehicleId) {
     const v = vehicles[vehicleId];
     if (!v) return;
-    const towerIds = ['AIRTEL-SPR-4819', 'AIRTEL-KCH-9022', 'JIO-BTS-3312'];
-    const randomTower = towerIds[Math.floor(Math.random() * towerIds.length)];
-    const randomRssi = -(60 + Math.floor(Math.random() * 20));
-    showToast(`📡 Cell Tower Ping: ${randomTower} (RSSI: ${randomRssi} dBm) · Lat: 12.9812, Lng: 79.9488 · Signal: Strong`, 'info');
-};
+    const driver = getDriverForVehicle(vehicleId);
 
-// ── Automated Dispatch: Missed Call & Geofencing ───────────
+    const carrier = (driver && driver.device && driver.device.toLowerCase().includes('jio')) ? 'Jio' : 'Airtel';
+    const towerId = carrier === 'Jio' ? 'JIO-BTS-8821' : 'AIRTEL-BTS-4819';
+    const randomRssi = -(64 + Math.floor(Math.random() * 12));
 
-/**
- * Method 1: Simulate Driver Missed Call to Toll-Free Number (1800-419-7890).
- * Zero admin manual intervention — system auto-starts or auto-ends trip by Caller-ID.
- */
-window.simulateDriverMissedCall = function() {
-    const driverSelect = document.getElementById('simDriverSelector');
-    const driverId = driverSelect ? driverSelect.value : 'd3';
-    const driver = drivers[driverId];
-    if (!driver) return;
-
-    const vehicleId = driver.assignedVehicle;
-    const v = vehicles[vehicleId];
-    if (!v) {
-        showToast(`⚠️ ${driver.name}-க்கு லாரி எதுவும் அசைன் செய்யப்படவில்லை!\nகீழே உள்ள 'Drivers' டேபில் 'Assigned Truck' டிராப்டவுனில் உங்கள் லாரியைத் தேர்ந்தெடுக்கவும்.`, 'warning');
-        return;
-    }
-
-    const activeTrip = getActiveTripForVehicle(vehicleId);
-
-    if (!activeTrip) {
-        // Driver gave missed call to START trip!
-        v.status = 'driving';
-        v.speed = 52;
-        v.isHalted = false;
-        v.haltSeconds = 0;
-        v.haltReason = '';
-        v.currentLocation = 'Airtel Tower #4819 - Poonamallee Highway';
-
-        tripCounter++;
-        const now = new Date();
-        const newTrip = {
-            id: tripCounter,
-            vehicleId: vehicleId,
-            plate: v.plate,
-            driverId: driver.id,
-            driverName: driver.name,
-            startTime: now,
-            startLocation: 'Airtel Tower #4819 - Poonamallee Highway',
-            endTime: null,
-            endLocation: '',
-            duration: '',
-            haltSeconds: 0,
-            haltReason: '',
-            avgSpeed: 52,
-            distanceKm: 0,
-            status: 'active',
-            speed: 52
-        };
-
-        trips.push(newTrip);
-
-        showToast(
-            `📞 Incoming Missed Call from ${driver.name} (${driver.phone})!\nTrip #${newTrip.id} AUTO-STARTED for ${v.plate}! Status: 🟢 Driving via Telecom SIM LBS. (Zero Admin Work!)`,
-            'success'
-        );
-        refreshAll();
-    } else {
-        // Driver gave missed call to END trip!
-        const now = new Date();
-        activeTrip.endTime = now;
-        activeTrip.endLocation = 'Jio Tower #1204 - Sriperumbudur Hub';
-        activeTrip.status = 'completed';
-        activeTrip.speed = 0;
-        if (!activeTrip.distanceKm || activeTrip.distanceKm < 1) {
-            activeTrip.distanceKm = 42.8;
-        }
-        activeTrip.duration = calcDuration(activeTrip.startTime, activeTrip.endTime);
-        const durationHrs = (activeTrip.endTime - activeTrip.startTime) / 3600000;
-        if (durationHrs > 0) {
-            activeTrip.avgSpeed = Math.round(activeTrip.distanceKm / durationHrs) || 50;
+    // Interactive Leaflet cellular tower triangulation visualization on the live map
+    if (fleetMap && v.lat && v.lng) {
+        if (simTowerPingLayer && fleetMap.hasLayer(simTowerPingLayer)) {
+            fleetMap.removeLayer(simTowerPingLayer);
         }
 
-        v.status = 'stopped';
-        v.speed = 0;
-        v.isHalted = false;
-        v.currentLocation = 'Sriperumbudur Hub';
+        // Authentic LBS Triangulation Circle (Coverage radius ~850m)
+        const lbsCircle = L.circle([v.lat, v.lng], {
+            radius: 850,
+            color: '#2563eb',
+            weight: 2,
+            fillColor: '#3b82f6',
+            fillOpacity: 0.16,
+            dashArray: '6, 6'
+        });
 
-        showToast(
-            `📞 Incoming Missed Call from ${driver.name} (${driver.phone})!\nTrip #${activeTrip.id} AUTO-COMPLETED! Duration: ${activeTrip.duration}, Distance: ${activeTrip.distanceKm} km. Logged in Trip History!`,
-            'info'
-        );
-        refreshAll();
+        // Cell Tower Marker with pulsating antenna badge
+        const towerIcon = L.divIcon({
+            className: 'sim-bts-pulse-marker',
+            html: `
+                <div style="background:#1e3a8a; color:#fff; border:2px solid #60a5fa; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 18px rgba(37,99,235,0.85); font-size:16px;">
+                    📡
+                </div>
+            `,
+            iconSize: [34, 34],
+            iconAnchor: [17, 17]
+        });
+
+        const towerMarker = L.marker([v.lat, v.lng], { icon: towerIcon })
+            .bindTooltip(`<b>${carrier} Telecom BTS</b><br>Cell ID: ${towerId}<br>Signal: ${randomRssi} dBm`, {
+                permanent: true,
+                direction: 'top',
+                offset: [0, -18],
+                className: 'sim-tower-tooltip'
+            });
+
+        simTowerPingLayer = L.layerGroup([lbsCircle, towerMarker]);
+        simTowerPingLayer.addTo(fleetMap);
+        fleetMap.panTo([v.lat, v.lng], { animate: true });
+
+        // Auto remove visualization after 8 seconds
+        setTimeout(() => {
+            if (simTowerPingLayer && fleetMap && fleetMap.hasLayer(simTowerPingLayer)) {
+                fleetMap.removeLayer(simTowerPingLayer);
+            }
+        }, 8000);
     }
-};
 
-/**
- * Method 2: Simulate Geofence Boundary Crossing (500m Depot Exit / Hub Entry).
- * 100% hands-free: neither driver nor admin presses any button.
- */
-window.simulateGeofenceTrigger = function() {
-    const driverSelect = document.getElementById('simDriverSelector');
-    const driverId = driverSelect ? driverSelect.value : 'd3';
-    const driver = drivers[driverId];
-    if (!driver) return;
-
-    const vehicleId = driver.assignedVehicle;
-    const v = vehicles[vehicleId];
-    if (!v) {
-        showToast(`⚠️ ${driver.name}-க்கு லாரி எதுவும் அசைன் செய்யப்படவில்லை!\nகீழே உள்ள 'Drivers' டேபில் 'Assigned Truck' டிராப்டவுனில் உங்கள் லாரியைத் தேர்ந்தெடுக்கவும்.`, 'warning');
-        return;
-    }
-
-    const activeTrip = getActiveTripForVehicle(vehicleId);
-
-    if (!activeTrip) {
-        // Vehicle exits 500m Depot Geofence (Madhavaram Depot) -> Auto-Starts Trip!
-        v.status = 'driving';
-        v.speed = 48;
-        v.isHalted = false;
-        v.haltSeconds = 0;
-        v.haltReason = '';
-        v.currentLocation = 'Madhavaram Depot Gate (Geofence Exit: Distance > 500m)';
-
-        tripCounter++;
-        const now = new Date();
-        const newTrip = {
-            id: tripCounter,
-            vehicleId: vehicleId,
-            plate: v.plate,
-            driverId: driver.id,
-            driverName: driver.name,
-            startTime: now,
-            startLocation: 'Madhavaram Logistics Depot (Gate Exit)',
-            endTime: null,
-            endLocation: '',
-            duration: '',
-            haltSeconds: 0,
-            haltReason: '',
-            avgSpeed: 48,
-            distanceKm: 0,
-            status: 'active',
-            speed: 48
-        };
-
-        trips.push(newTrip);
-
-        showToast(
-            `🌐 GEOFENCE AUTO-START: ${v.plate} crossed 500m Depot boundary!\nTrip #${newTrip.id} started automatically. (Driver & Admin: 100% Hands-Free)`,
-            'success'
-        );
-        refreshAll();
-    } else {
-        // Vehicle enters 500m Destination Hub Geofence (Sriperumbudur Hub) -> Auto-Ends Trip!
-        const now = new Date();
-        activeTrip.endTime = now;
-        activeTrip.endLocation = 'Sriperumbudur Hub (Geofence Entry: Distance < 500m)';
-        activeTrip.status = 'completed';
-        activeTrip.speed = 0;
-        if (!activeTrip.distanceKm || activeTrip.distanceKm < 1) {
-            activeTrip.distanceKm = 56.2;
-        }
-        activeTrip.duration = calcDuration(activeTrip.startTime, activeTrip.endTime);
-        const durationHrs = (activeTrip.endTime - activeTrip.startTime) / 3600000;
-        if (durationHrs > 0) {
-            activeTrip.avgSpeed = Math.round(activeTrip.distanceKm / durationHrs) || 52;
-        }
-
-        v.status = 'stopped';
-        v.speed = 0;
-        v.isHalted = false;
-        v.currentLocation = 'Sriperumbudur Hub Gate';
-
-        showToast(
-            `🏁 GEOFENCE AUTO-END: ${v.plate} entered Sriperumbudur Hub 500m gate!\nTrip #${activeTrip.id} completed automatically! Duration: ${activeTrip.duration}, Distance: ${activeTrip.distanceKm} km.`,
-            'info'
-        );
-        refreshAll();
-    }
+    showToast(`📡 Cell Tower LBS Triangulation:\nCarrier: ${carrier} Telecom · Tower: ${towerId}\nSignal: ${randomRssi} dBm (Strong) · Coords: ${v.lat.toFixed(4)}, ${v.lng.toFixed(4)}`, 'info');
 };
 
 // ── Live Fleet Tracking (Screenshot Overview Match) ───────────
@@ -2326,34 +2503,38 @@ function initOrRefreshFleetMap() {
             zoomControl: false,
             scrollWheelZoom: true,
             zoomSnap: 0.25,
-            zoomDelta: 0.5
+            zoomDelta: 0.5,
+            minZoom: 4,
+            maxZoom: 19
         }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
 
         // 1. Satellite Base Layer (ESRI World Imagery - Free High Res Aerial)
+        // Note: maxNativeZoom: 18 ensures Leaflet scales zoom-18 tiles up to zoom 19/20 smoothly
+        // without requesting missing zoom-19 tiles that show "Map data not yet available"!
         const satelliteBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            minZoom: 2,
+            maxNativeZoom: 18,
+            maxZoom: 20,
             zIndex: 1,
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP | V3 Logistics'
         });
 
-        // 2. Satellite Road Network Overlay (Highways, bypass corridors, expressways)
-        const satelliteRoads = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+        // 2. Satellite Places Reference Layer (Crisp white city/town names with black halo - No messy road lines!)
+        const satellitePlaces = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+            minZoom: 2,
+            maxNativeZoom: 18,
+            maxZoom: 20,
             zIndex: 2
         });
 
-        // 3. Satellite Places & Towns Reference Layer (Town names: Chennai, Sriperumbudur, Kanchipuram, Chengalpattu, Minjur, etc.)
-        const satellitePlaces = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
-            zIndex: 3
-        });
+        // Bundle into Hybrid Satellite LayerGroup (Pure Satellite + Town Names)
+        satelliteGroup = L.layerGroup([satelliteBase, satellitePlaces]);
 
-        // Bundle into Hybrid Satellite LayerGroup (Satellite imagery + Town/City Names)
-        satelliteGroup = L.layerGroup([satelliteBase, satelliteRoads, satellitePlaces]);
-
-        // 4. Detailed Street View (OpenStreetMap - Alternative option)
+        // 3. Detailed Street View (OpenStreetMap - Alternative option)
         streetsTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            minZoom: 2,
+            maxNativeZoom: 19,
+            maxZoom: 20,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | V3 Logistics'
         });
 
@@ -2564,9 +2745,9 @@ function updateFleetMapMarkers() {
         const customIcon = L.divIcon({
             html: iconHtml,
             className: 'truck-pin-wrapper',
-            iconSize: [96, 64],
-            iconAnchor: [48, 44],
-            popupAnchor: [0, -44]
+            iconSize: [110, 72],
+            iconAnchor: [55, 47],
+            popupAnchor: [0, -47]
         });
 
         const zIndexVal = isSelected ? 3000 : 1500;
@@ -2653,7 +2834,26 @@ function drawAllVehicleRoutes() {
 
     sortedIds.forEach(vid => {
         const v = vehicles[vid];
-        if (!v || !v.route || v.route.length < 2) return;
+        if (!v) return;
+
+        // Ensure route polyline always ends precisely at the vehicle's current live location
+        if (v.lat && v.lng) {
+            if (!v.route || !Array.isArray(v.route) || v.route.length === 0) {
+                v.route = [[v.lat, v.lng]];
+            } else {
+                const last = v.route[v.route.length - 1];
+                if (Math.abs(last[0] - v.lat) > 0.00008 || Math.abs(last[1] - v.lng) > 0.00008) {
+                    v.route.push([v.lat, v.lng]);
+                }
+            }
+        }
+
+        // Guarantee at least 2 points so Leaflet polyline is NEVER skipped
+        if (!v.route || !Array.isArray(v.route) || v.route.length < 2) {
+            const originLat = +(v.lat - 0.015).toFixed(5);
+            const originLng = +(v.lng - 0.012).toFixed(5);
+            v.route = [[originLat, originLng], [v.lat, v.lng]];
+        }
 
         const isSelected = (v.id === selectedVehicleId);
         // In focus mode, only show the selected vehicle's route for an ultra-clean uncluttered look
@@ -2940,12 +3140,12 @@ function renderSelectedVehicleDetail() {
 
     // Freight Corridor & Route Progress Card
     const vehicleCorridorMap = {
-        v1: { name: 'NH 48 Chennai-Bengaluru Highway', checkpoint: 'Sriperumbudur Toll Plaza', pct: 78 },
-        v2: { name: 'NH 32 GST Road Expressway', checkpoint: 'Chengalpattu Toll Plaza', pct: 62 },
+        v1: { name: 'NH 48 Sriperumbudur Logistics Corridor', checkpoint: 'Sriperumbudur Toll Plaza', pct: 78 },
+        v2: { name: 'NH 32 Chengalpattu Express Corridor', checkpoint: 'Chengalpattu Toll Plaza', pct: 62 },
         v3: { name: 'NH 48 Kanchipuram Freight Bypass', checkpoint: 'Kanchipuram Toll Gate', pct: 85 },
-        v4: { name: 'Madhavaram Freight Hub Bypass', checkpoint: 'Madhavaram Ring Gate', pct: 45 },
-        v5: { name: 'NH 16 Chennai-Ponneri Freight Corridor', checkpoint: 'Minjur Toll Plaza', pct: 68 },
-        v6: { name: 'Chennai Port Harbor Corridor', checkpoint: 'Port Gate 2 Terminal', pct: 54 }
+        v4: { name: 'NH 716 Tiruvallur Freight Corridor', checkpoint: 'Tiruvallur Hub Gate', pct: 45 },
+        v5: { name: 'Ennore Port Expressway Corridor', checkpoint: 'Minjur Port Gate', pct: 68 },
+        v6: { name: 'Chennai Bypass Express Corridor', checkpoint: 'Ambattur Toll Plaza', pct: 64 }
     };
     const corridor = vehicleCorridorMap[v.id] || {
         name: v.currentLocation || 'State Freight Corridor',
@@ -2975,7 +3175,10 @@ function renderSelectedVehicleDetail() {
             $sig.textContent = 'Standby (Cell Tower Linked)';
             $sig.style.color = '#64748b';
         } else if (v.source === 'sim') {
-            $sig.textContent = 'BSNL SIM Tower LBS (Cell #4819)';
+            const driver = getDriverForVehicle(v.id);
+            const carrier = (driver && driver.device && driver.device.toLowerCase().includes('jio')) ? 'Jio 4G' : 'Airtel 4G';
+            const cellId = carrier.includes('Jio') ? '#8821' : '#4819';
+            $sig.textContent = `${carrier} Tower LBS (Cell ${cellId} · -72 dBm)`;
             $sig.style.color = '#2563eb';
         } else if (cat === 'moving') {
             $sig.textContent = 'Strong (4G LTE · -74 dBm)';
@@ -3103,29 +3306,6 @@ window.toggleVehicleRoute = function(show) {
     if (selectedVehicleId) {
         drawVehicleRoute(selectedVehicleId);
     }
-};
-
-/**
- * Open Change Driver modal for currently selected vehicle
- */
-window.openChangeDriverForSelected = function() {
-    if (selectedVehicleId) {
-        openEditVehicleModal(selectedVehicleId);
-    }
-};
-
-/**
- * Switch to Map tab, select vehicle, center map, and open details
- * @param {string} vid - Vehicle ID
- */
-window.trackVehicleOnMap = function(vid) {
-    const dashTab = document.querySelector('.sidebar-tab[data-tab="dashboard"]');
-    if (dashTab) {
-        dashTab.click();
-    }
-    setTimeout(() => {
-        selectVehicleOnLiveMap(vid);
-    }, 250);
 };
 
 // ── Initialization ─────────────────────────────────────────

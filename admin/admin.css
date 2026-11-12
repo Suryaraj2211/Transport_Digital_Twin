@@ -780,109 +780,7 @@ body {
     border-color: #2563EB;
 }
 
-/* ── Missed Call & Geofence Auto-Dispatch Gateway ──────────── */
-.missed-call-banner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    background: #0f172a;
-    color: #f8fafc;
-    border-radius: 10px;
-    padding: 14px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-}
-
-.missed-call-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.pulse-icon {
-    font-size: 1.5rem;
-    animation: phone-ring 1.5s infinite;
-}
-
-@keyframes phone-ring {
-    0%, 100% { transform: rotate(0deg); }
-    15% { transform: rotate(-15deg); }
-    30% { transform: rotate(15deg); }
-    45% { transform: rotate(-10deg); }
-    60% { transform: rotate(10deg); }
-    75% { transform: rotate(0deg); }
-}
-
-.toll-free-num {
-    background: #22c55e;
-    color: #0f172a;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.82rem;
-    margin: 0 6px;
-    letter-spacing: 0.5px;
-}
-
-.missed-call-desc {
-    display: block;
-    font-size: 0.78rem;
-    color: #94a3b8;
-    margin-top: 2px;
-}
-
-.missed-call-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-
-.sim-driver-select {
-    background: #1e293b;
-    color: #ffffff;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 0.8rem;
-    font-family: inherit;
-    outline: none;
-    max-width: 310px;
-}
-
-.btn-missed-call {
-    background: #2563eb;
-    color: #ffffff;
-    border: none;
-    padding: 7px 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background 0.2s;
-    white-space: nowrap;
-}
-
-.btn-missed-call:hover {
-    background: #1d4ed8;
-}
-
-.btn-geofence {
-    background: #059669;
-    color: #ffffff;
-    border: none;
-    padding: 7px 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background 0.2s;
-    white-space: nowrap;
-}
-
-.btn-geofence:hover {
-    background: #047857;
-}
+/* ── Live Fleet Map ────────────────────────────────────────── */
 
 /* ── Edit Modal Overlay & Cards ────────────────────────────── */
 .modal-overlay {
@@ -2114,16 +2012,16 @@ input:checked + .slider:before {
 }
 
 .map-pin-icon-circle {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border: 2.5px solid #ffffff;
+    font-size: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    border: 3px solid #ffffff;
     transition: all 0.2s ease;
     position: relative;
 }
@@ -2165,32 +2063,32 @@ input:checked + .slider:before {
 .map-pin-pointer {
     width: 0;
     height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #ffffff;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #ffffff;
     margin-top: -1px;
 }
 
 .map-pin-label {
     background: #090d16;
     color: #ffffff;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 9px;
     border-radius: 6px;
     margin-top: 3px;
     white-space: nowrap;
-    letter-spacing: -0.1px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
 }
 
 .pin-status-dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     display: inline-block;
 }
@@ -2208,6 +2106,7 @@ input:checked + .slider:before {
 .pin-status-dot.offline {
     background: #94a3b8;
 }
+
 
 @media (max-width: 1300px) {
     .live-map-kpis {
@@ -2230,4 +2129,40 @@ input:checked + .slider:before {
         width: 100%;
         max-width: 100%;
     }
+}
+
+/* ── Telecom SIM LBS BTS Tower & Triangulation Ping Styles ── */
+.sim-bts-pulse-marker {
+    animation: btsPulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes btsPulseGlow {
+    0% {
+        transform: scale(0.96);
+        filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.6));
+    }
+    50% {
+        transform: scale(1.12);
+        filter: drop-shadow(0 0 16px rgba(59, 130, 246, 1));
+    }
+    100% {
+        transform: scale(0.96);
+        filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.6));
+    }
+}
+
+.sim-tower-tooltip {
+    background: #0f172a !important;
+    border: 1px solid #3b82f6 !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-family: inherit !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    line-height: 1.4 !important;
+}
+
+.sim-tower-tooltip::before {
+    border-top-color: #0f172a !important;
 }
