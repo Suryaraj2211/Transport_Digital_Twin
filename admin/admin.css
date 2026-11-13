@@ -23,90 +23,21 @@ body {
     background: #F1F5F9;
     color: #1E293B;
     line-height: 1.5;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     display: flex;
-    flex-direction: column;
 }
 
-/* ── Header ────────────────────────────────────────────────── */
-.header {
-    background: #1E293B;
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    height: 60px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 9999;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.header-logo {
-    font-size: 1.6rem;
-}
-
-.header-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-}
-
-.header-badge {
-    background: #2563EB;
-    color: #FFFFFF;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 4px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.header-link {
-    color: #93C5FD;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.header-link:hover {
-    color: #BFDBFE;
-    text-decoration: underline;
-}
-
-.header-clock {
-    font-family: 'IBM Plex Sans', monospace;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #CBD5E1;
-    min-width: 100px;
-    text-align: right;
-}
-
-/* ── Layout (sidebar + content) ────────────────────────────── */
+/* ── Main Layout (sidebar + content) ────────────────────────── */
 .layout {
     display: flex;
     flex: 1;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
 }
 
-/* ── Sidebar ───────────────────────────────────────────────── */
+/* ── Sidebar (With Integrated Brand Header) ─────────────────── */
 .sidebar {
     width: 230px;
     background: #FFFFFF;
@@ -114,6 +45,44 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    height: 100vh;
+}
+
+.sidebar-brand {
+    padding: 20px 22px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebar-brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.sidebar-brand-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.sidebar-admin-badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
 }
 
 .sidebar-nav {
@@ -164,20 +133,78 @@ body {
 
 .sidebar-footer {
     margin-top: auto;
-    padding: 16px 20px;
+    padding: 14px 16px;
     border-top: 1px solid #E2E8F0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8fafc;
 }
 
-.sidebar-footer p {
-    font-size: 0.75rem;
-    color: #94A3B8;
+.sidebar-portal-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #bfdbfe;
+    transition: all 0.15s ease;
+}
+
+.sidebar-portal-btn:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.sidebar-clock-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    font-family: 'IBM Plex Sans', monospace;
+    padding: 2px 4px;
+}
+
+.clock-indicator-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.sidebar-user-tag {
+    font-size: 11px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+}
+
+.user-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #cbd5e1;
 }
 
 /* ── Main Content ──────────────────────────────────────────── */
 .content {
     flex: 1;
-    overflow-y: auto;
+    height: 100vh;
+    overflow: hidden;
     padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ── Tab Panels ────────────────────────────────────────────── */
@@ -192,7 +219,7 @@ body {
 #panel-dashboard.active {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 96px);
+    height: 100%;
     overflow: hidden;
 }
 
@@ -981,63 +1008,145 @@ body {
 }
 
 /* ==========================================================
-   LIVE TRACKING DASHBOARD (SCREENSHOT OVERVIEW MATCH)
+   LIVE TRACKING DASHBOARD
    ========================================================== */
 
-.live-map-header {
-    margin-bottom: 8px;
+/* Sleek Top Header with Natural Breathing Room */
+.dash-top-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
-.live-map-title {
-    font-size: 19px;
-    font-weight: 700;
+.dash-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dash-page-heading {
+    font-size: 20px;
+    font-weight: 800;
     color: #0f172a;
+    letter-spacing: -0.02em;
     margin: 0;
-    letter-spacing: -0.3px;
 }
 
-.live-map-subtitle {
-    font-size: 12px;
+.dash-status-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.dash-sub-note {
+    font-size: 13px;
     color: #64748b;
-    margin: 2px 0 0 0;
+    font-weight: 500;
 }
 
-/* Metric Cards (Image 3 Match) */
+.dash-corridor-tag {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #475569;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 5px 12px;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+/* Unified Metric & Interactive Filter Bar */
 .live-map-kpis {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
 .live-kpi-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px 14px;
+    border-radius: 10px;
+    padding: 12px 16px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     display: flex;
     flex-direction: column;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid #e2e8f0;
+}
+
+.live-kpi-card.live-kpi-filter {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.live-kpi-card.live-kpi-filter:hover,
+.live-kpi-card.live-kpi-completed:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: #f8fafc;
+}
+
+.live-kpi-card.live-kpi-completed {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.live-kpi-card.live-kpi-completed:hover {
+    border-color: #bae6fd;
+    background: #f0f9ff;
+}
+
+.live-kpi-card.live-kpi-filter.active {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.live-kpi-card.active[data-filter="all"] {
+    border-left: 4px solid #2563eb !important;
+    background: #eff6ff !important;
+}
+
+.live-kpi-card.active[data-filter="moving"] {
+    border-left: 4px solid #16a34a !important;
+    background: #f0fdf4 !important;
+}
+
+.live-kpi-card.active[data-filter="halt"] {
+    border-left: 4px solid #f59e0b !important;
+    background: #fefce8 !important;
+}
+
+.live-kpi-card.active[data-filter="offline"] {
+    border-left: 4px solid #64748b !important;
+    background: #f8fafc !important;
 }
 
 .live-kpi-value {
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     color: #0f172a;
     line-height: 1.1;
     margin-bottom: 2px;
+    letter-spacing: -0.02em;
 }
 
 .live-kpi-label {
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 10.5px;
+    font-weight: 700;
     color: #64748b;
     letter-spacing: 0.4px;
     text-transform: uppercase;
 }
 
 .live-kpi-value .unit-km {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: #64748b;
 }
@@ -1067,37 +1176,31 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
-.live-filter-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 8px 10px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #ffffff;
-}
-
-.live-filter-btn {
-    flex: 1;
-    padding: 6px 4px;
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 6px;
-    border: none;
-    background: #f8fafc;
-    color: #475569;
-    cursor: pointer;
+.fleet-list-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: all 0.15s ease;
+    justify-content: space-between;
+    padding: 11px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
 }
 
-.live-filter-btn:hover {
-    background: #f1f5f9;
+.fleet-list-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.live-filter-btn.active {
-    background: #0f172a;
+.fleet-filter-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #2563eb;
+    background: #dbeafe;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
     color: #ffffff;
 }
 
@@ -1294,46 +1397,10 @@ body {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.live-map-legend-bar {
-    position: absolute;
-    bottom: 14px;
-    left: 16px;
-    z-index: 1000;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(4px);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid #e2e8f0;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: #334155;
-}
-
-.legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.legend-dot.moving { background: #0284c7; }
-.legend-dot.halt,
-.legend-dot.idle { background: #d97706; }
-.legend-dot.offline { background: #94a3b8; }
-
-/* ── Map Type Dock (Matches Image 2) ───────────────────── */
+/* ── Map Type Dock ─────────────────────────────────────── */
 .map-type-dock {
     position: absolute;
-    bottom: 50px;
+    bottom: 16px;
     left: 16px;
     z-index: 1000;
     background: rgba(255, 255, 255, 0.96);
@@ -1345,6 +1412,21 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+/* Subtle, single-line Leaflet Attribution */
+.leaflet-control-attribution {
+    font-size: 9px !important;
+    opacity: 0.55 !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    margin: 0 8px 4px 0 !important;
+    max-width: 320px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
 }
 
 .map-type-dock-title {
@@ -1453,20 +1535,20 @@ body {
     margin: 0;
 }
 
-/* ── Right Detail Panel ─────────────────────────────────── */
+/* ── Right Detail Panel (Spacious 2-Tabs Layout) ─────────────── */
 .live-vehicle-detail-panel {
-    width: 330px;
-    min-width: 310px;
-    max-width: 350px;
+    width: 360px;
+    min-width: 330px;
+    max-width: 380px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 14px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     overflow-y: auto;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     height: 100%;
 }
 
@@ -1477,7 +1559,7 @@ body {
 }
 
 .detail-plate {
-    font-size: 17px;
+    font-size: 19px;
     font-weight: 800;
     color: #0f172a;
     margin: 0;
@@ -1485,13 +1567,13 @@ body {
 }
 
 .detail-status-pill {
-    padding: 2px 7px;
-    border-radius: 12px;
-    font-size: 10.5px;
+    padding: 3px 9px;
+    border-radius: 14px;
+    font-size: 11px;
     font-weight: 600;
 }
 
-.detail-status-pill.moving { background: #e0f2fe; color: #0284c7; }
+.detail-status-pill.moving { background: #dcfce7; color: #15803d; }
 .detail-status-pill.halt,
 .detail-status-pill.idle { background: #fef3c7; color: #d97706; }
 .detail-status-pill.offline { background: #f1f5f9; color: #64748b; }
@@ -1500,22 +1582,24 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 2px;
+    margin-top: 3px;
 }
 
 .detail-model {
-    font-size: 11px;
+    font-size: 11.5px;
     color: #64748b;
+    font-weight: 500;
 }
 
 .btn-close-detail {
     background: none;
     border: none;
-    font-size: 14px;
-    color: #64748b;
+    font-size: 16px;
+    color: #94a3b8;
     cursor: pointer;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
 }
 
 .btn-close-detail:hover {
@@ -1523,20 +1607,142 @@ body {
     color: #0f172a;
 }
 
+/* 2-Tabs Segmented Bar */
+.detail-tabs-nav {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    gap: 4px;
+}
+
+.detail-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: 7px;
+    color: #64748b;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: all 0.15s ease;
+}
+
+.detail-tab-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    font-weight: 700;
+}
+
+.detail-tab-btn:hover:not(.active) {
+    color: #0f172a;
+}
+
+.detail-tab-pane {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-tab-pane.active {
+    display: flex;
+}
+
+/* Distance Card */
+.detail-distance-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.distance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #2563eb;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.distance-number-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 2px;
+}
+
+.distance-number {
+    font-size: 30px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.distance-unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    margin-left: 2px;
+}
+
+.distance-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.timeframe-toggle {
+    display: flex;
+    background: #e2e8f0;
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.timeframe-btn {
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: #475569;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.timeframe-btn.active {
+    background: #0f172a;
+    color: #ffffff;
+}
+
 /* Driver Card */
 .detail-driver-card {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 7px 10px;
+    border-radius: 10px;
+    padding: 10px 14px;
     background: #ffffff;
 }
 
 .driver-avatar {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: #0f172a;
     color: #ffffff;
@@ -1544,7 +1750,7 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 11px;
+    font-size: 13px;
     flex-shrink: 0;
 }
 
@@ -1560,7 +1766,7 @@ body {
 }
 
 .driver-name {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: #0f172a;
 }
@@ -1570,35 +1776,35 @@ body {
     font-weight: 600;
     background: #f1f5f9;
     color: #475569;
-    padding: 1px 5px;
+    padding: 2px 6px;
     border-radius: 4px;
 }
 
 .driver-status {
-    font-size: 10.5px;
+    font-size: 11px;
     color: #64748b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 
 .driver-phone-text {
-    font-size: 10.5px;
+    font-size: 11px;
     color: #2563eb;
     font-weight: 600;
 }
 
 .btn-driver-call {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 14px;
     color: #0f172a;
     transition: background 0.15s;
     background: #ffffff;
@@ -1609,220 +1815,81 @@ body {
     background: #f1f5f9;
 }
 
-/* Trip & Operational Status Card */
-.detail-trip-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 7px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.trip-status-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2px;
-}
-
-.trip-badge {
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.trip-badge.active { background: #dcfce7; color: #15803d; }
-.trip-badge.halt { background: #fef3c7; color: #b45309; }
-.trip-badge.completed { background: #e0f2fe; color: #0369a1; }
-.trip-badge.available { background: #f1f5f9; color: #64748b; }
-
-.trip-duration-live {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: #0284c7;
-}
-
-.trip-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-}
-
-.trip-info-row .t-label {
-    color: #64748b;
-    font-weight: 500;
-}
-
-.trip-info-row .t-val {
-    color: #0f172a;
-    font-weight: 600;
-    text-align: right;
-    max-width: 170px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.trip-info-row .t-val.highlight {
-    color: #2563eb;
-}
-
-/* 2x2 Stats Grid */
+/* 3-Column Stats Ribbon */
 .detail-stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 7px 10px;
+    border-radius: 10px;
+    padding: 12px 14px;
     background: #ffffff;
 }
 
 .stat-cell {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 3px;
 }
 
 .stat-label {
-    font-size: 10px;
-    color: #64748b;
-    font-weight: 500;
+    font-size: 10.5px;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .stat-value {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     color: #0f172a;
 }
 
-/* Distance Card */
-.detail-distance-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 7px 10px;
-}
-
-.distance-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 10.5px;
-    font-weight: 600;
-    color: #475569;
-}
-
-.distance-number-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-top: 2px;
-}
-
-.distance-number {
-    font-size: 18px;
-    font-weight: 800;
-    color: #0f172a;
-    line-height: 1;
-}
-
-.distance-unit {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-}
-
-.distance-sub {
-    font-size: 10px;
-    color: #64748b;
-}
-
-.timeframe-toggle {
-    display: flex;
-    background: #e2e8f0;
-    border-radius: 4px;
-    padding: 1px;
-}
-
-.timeframe-btn {
-    padding: 2px 5px;
-    font-size: 9.5px;
-    font-weight: 600;
-    border: none;
-    background: transparent;
-    color: #475569;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.timeframe-btn.active {
-    background: #0f172a;
-    color: #ffffff;
+.stat-value.speed-highlight {
+    color: #0284c7;
 }
 
 /* Location Box */
 .detail-location-box {
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 6px 10px;
+    border-radius: 10px;
+    padding: 10px 14px;
     background: #f8fafc;
 }
 
 .detail-location-box .stat-label {
-    font-size: 9.5px;
-    color: #64748b;
+    font-size: 10px;
+    color: #94a3b8;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .location-value {
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
-    color: #0f172a;
-    margin-top: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* SIM Dispatch & Trip Actions Box */
-.detail-actions-box {
-    margin-top: 1px;
-}
-
-.app-control-notice {
-    font-size: 10.5px;
-    color: #475569;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 5px 8px;
-    text-align: center;
-    font-weight: 500;
+    color: #1e293b;
+    margin-top: 3px;
+    line-height: 1.4;
 }
 
 /* Freight Corridor & Progress Card */
 .detail-corridor-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 7px 10px;
+    border-radius: 10px;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 }
 
 .corridor-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #0f172a;
 }
@@ -1838,23 +1905,23 @@ body {
 }
 
 .corridor-pct {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
-    color: #0284c7;
+    color: #2563eb;
 }
 
 .corridor-progress-bar {
     width: 100%;
-    height: 6px;
+    height: 7px;
     background: #e2e8f0;
-    border-radius: 4px;
+    border-radius: 6px;
     overflow: hidden;
 }
 
 .corridor-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #0284c7, #2563eb);
-    border-radius: 4px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 6px;
     transition: width 0.3s ease;
 }
 
@@ -1862,8 +1929,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 10.5px;
-    margin-top: 1px;
+    font-size: 11px;
 }
 
 .corridor-sub {
@@ -1875,28 +1941,106 @@ body {
     color: #0f172a;
     font-weight: 600;
     text-align: right;
-    max-width: 175px;
+    max-width: 185px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Trip & Operational Status Card */
+.detail-trip-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.trip-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.trip-badge {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.trip-badge.active { background: #dcfce7; color: #15803d; }
+.trip-badge.halt { background: #fef3c7; color: #b45309; }
+.trip-badge.completed { background: #e0f2fe; color: #0369a1; }
+.trip-badge.available { background: #f1f5f9; color: #64748b; }
+
+.trip-duration-live {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0284c7;
+}
+
+.trip-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+}
+
+.trip-info-row .t-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.trip-info-row .t-val {
+    color: #0f172a;
+    font-weight: 600;
+    text-align: right;
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.trip-info-row .t-val.highlight {
+    color: #2563eb;
 }
 
 /* Fleet Telematics Diagnostics Card */
 .detail-diagnostics-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 7px 10px;
+    border-radius: 10px;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
+}
+
+.diag-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+}
+
+.diag-header-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .diag-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 10.5px;
+    font-size: 11.5px;
 }
 
 .diag-label {
@@ -1912,19 +2056,35 @@ body {
 
 .battery-bar-wrapper {
     flex: 1;
-    max-width: 70px;
-    height: 6px;
+    max-width: 90px;
+    height: 7px;
     background: #e2e8f0;
-    border-radius: 3px;
-    margin: 0 6px;
+    border-radius: 4px;
+    margin: 0 8px;
     overflow: hidden;
 }
 
 .battery-bar-fill {
     height: 100%;
     background: #10b981;
-    border-radius: 3px;
+    border-radius: 4px;
     transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* SIM Dispatch & Trip Actions Box */
+.detail-actions-box {
+    margin-top: 4px;
+}
+
+.app-control-notice {
+    font-size: 11px;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    font-weight: 500;
 }
 
 /* Route Visibility Toggle Card */

@@ -2419,7 +2419,7 @@ const fleetRouteCasings = {};
 const fleetOriginMarkers = {};
 const DEFAULT_MAP_CENTER = [12.985, 80.03]; // Exact regional centroid
 const DEFAULT_MAP_ZOOM = 10;
-let selectedVehicleId = 'v5';              // Default to AP 39 JK 7788 (matches screenshot)
+let selectedVehicleId = 'v2';              // Default to TN 22 CD 5678 (Moving Truck)
 let currentFleetFilter = 'all';
 let currentSelectedTimeframe = 'today';
 let showRouteOnMap = true;
@@ -2637,26 +2637,20 @@ function updateLiveMapKpis() {
     const $active = document.getElementById('kpiActiveTrips');
     const $halted = document.getElementById('kpiHaltedCount');
     const $completed = document.getElementById('kpiCompletedToday');
-    const $dTotal = document.getElementById('kpiTotalDrivers');
+    const $offline = document.getElementById('kpiOfflineCount');
     const $dist = document.getElementById('kpiFleetDistance');
 
     if ($total) $total.textContent = total;
     if ($active) $active.textContent = activeTrips;
     if ($halted) $halted.textContent = haltedCount;
     if ($completed) $completed.textContent = completedToday;
-    if ($dTotal) $dTotal.textContent = totalDrivers;
+    if ($offline) $offline.textContent = offline;
     if ($dist) $dist.textContent = totalDist.toFixed(1);
 
-    // Tab counts
-    const $cAll = document.getElementById('countAll');
-    const $cMov = document.getElementById('countMoving');
-    const $cHalt = document.getElementById('countHalt') || document.getElementById('countIdle');
-    const $cOff = document.getElementById('countOffline');
-
-    if ($cAll) $cAll.textContent = total;
-    if ($cMov) $cMov.textContent = moving;
-    if ($cHalt) $cHalt.textContent = halt;
-    if ($cOff) $cOff.textContent = offline;
+    const $badge = document.getElementById('fleetFilterIndicator');
+    if ($badge && currentFleetFilter === 'all') {
+        $badge.textContent = `All (${total})`;
+    }
 }
 
 /**
@@ -3165,7 +3159,6 @@ function renderSelectedVehicleDetail() {
     const $sig = document.getElementById('detailSignalText');
     const $bFill = document.getElementById('detailBatteryFill');
     const $bPct = document.getElementById('detailBatteryPctText');
-    const $ign = document.getElementById('detailIgnitionText');
 
     if ($sig) {
         if (v.status === 'offline') {
@@ -3202,18 +3195,6 @@ function renderSelectedVehicleDetail() {
         }
     }
 
-    if ($ign) {
-        if (cat === 'moving') {
-            $ign.innerHTML = '<span style="color:#16a34a; font-weight:700;">🟢 Engine ON (Driving)</span>';
-        } else if (cat === 'halt' || cat === 'idle') {
-            $ign.innerHTML = '<span style="color:#d97706; font-weight:700;">🟡 Idling / Parked</span>';
-        } else if (v.status === 'stopped') {
-            $ign.innerHTML = '<span style="color:#64748b; font-weight:700;">⚪ Engine OFF (Trip Ended)</span>';
-        } else {
-            $ign.innerHTML = '<span style="color:#64748b; font-weight:700;">⚪ Engine OFF</span>';
-        }
-    }
-
     // SIM Dispatch & Trip Actions Box
     const $actionsBox = document.getElementById('detailActionsBox');
     if ($actionsBox) {
@@ -3244,10 +3225,6 @@ function renderSelectedVehicleDetail() {
             `;
         }
     }
-
-    // Route checkbox
-    const $chk = document.getElementById('toggleRouteCheckbox');
-    if ($chk) $chk.checked = showRouteOnMap;
 }
 
 /**
@@ -3256,14 +3233,27 @@ function renderSelectedVehicleDetail() {
  */
 window.filterLiveFleet = function(fType) {
     currentFleetFilter = (fType === 'idle') ? 'halt' : fType;
-    document.querySelectorAll('.live-filter-btn').forEach(btn => {
-        const bFilter = btn.dataset.filter;
-        if (bFilter === fType || (currentFleetFilter === 'halt' && (bFilter === 'halt' || bFilter === 'idle'))) {
-            btn.classList.add('active');
+    document.querySelectorAll('.live-kpi-filter').forEach(card => {
+        const cFilter = card.dataset.filter;
+        if (cFilter === fType || (currentFleetFilter === 'halt' && (cFilter === 'halt' || cFilter === 'idle'))) {
+            card.classList.add('active');
         } else {
-            btn.classList.remove('active');
+            card.classList.remove('active');
         }
     });
+
+    const $badge = document.getElementById('fleetFilterIndicator');
+    if ($badge) {
+        const total = Object.keys(vehicles).length;
+        const labels = {
+            all: `All (${total})`,
+            moving: 'Moving',
+            halt: 'Halted',
+            offline: 'Offline'
+        };
+        $badge.textContent = labels[currentFleetFilter] || `All (${total})`;
+    }
+
     renderLiveFleetList();
 };
 
@@ -3282,6 +3272,25 @@ window.showAllVehiclesOnMap = function() {
 window.closeVehicleDetailPanel = function() {
     const $panel = document.getElementById('liveVehicleDetailPanel');
     if ($panel) $panel.style.display = 'none';
+};
+
+/**
+ * Switch right vehicle detail tab: 'overview' | 'corridor'
+ * @param {string} tabName
+ */
+let currentDetailTab = 'overview';
+
+window.switchDetailTab = function(tabName) {
+    currentDetailTab = tabName;
+    const btnOverview = document.getElementById('tabBtnOverview');
+    const btnCorridor = document.getElementById('tabBtnCorridor');
+    const paneOverview = document.getElementById('paneDetailOverview');
+    const paneCorridor = document.getElementById('paneDetailCorridor');
+
+    if (btnOverview) btnOverview.classList.toggle('active', tabName === 'overview');
+    if (btnCorridor) btnCorridor.classList.toggle('active', tabName === 'corridor');
+    if (paneOverview) paneOverview.classList.toggle('active', tabName === 'overview');
+    if (paneCorridor) paneCorridor.classList.toggle('active', tabName === 'corridor');
 };
 
 /**

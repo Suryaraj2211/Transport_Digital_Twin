@@ -12,24 +12,22 @@
 </head>
 <body>
 
-    <!-- ===== HEADER BAR ===== -->
-    <header class="header">
-        <div class="header-left">
-            <span class="header-logo">🚛</span>
-            <h1 class="header-title">V3 Logistics</h1>
-            <span class="header-badge">ADMIN DASHBOARD</span>
-        </div>
-        <div class="header-right">
-            <a href="/driver/" target="_blank" class="header-link">📱 Open Driver Portal ↗</a>
-            <span class="header-clock" id="headerClock">--:--:-- --</span>
-        </div>
-    </header>
-
-    <!-- ===== MAIN LAYOUT ===== -->
+    <!-- ===== MAIN FULL-HEIGHT LAYOUT ===== -->
     <div class="layout">
 
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation (With Integrated Brand Header) -->
         <aside class="sidebar">
+            <!-- Integrated Brand Header -->
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-row">
+                    <span class="sidebar-logo">🚛</span>
+                    <div>
+                        <div class="sidebar-brand-name">V3 Logistics</div>
+                        <span class="sidebar-admin-badge">ADMIN DASHBOARD</span>
+                    </div>
+                </div>
+            </div>
+
             <nav class="sidebar-nav">
                 <button class="sidebar-tab active" data-tab="dashboard">
                     <span class="tab-icon">📊</span>
@@ -48,9 +46,17 @@
                     <span class="tab-label">Trip History</span>
                 </button>
             </nav>
+
             <div class="sidebar-footer">
-                <p style="font-weight:700; color:#0f172a; margin:0 0 2px 0;">V3 Logistics</p>
-                <p style="font-size:11px; color:#64748b; margin:0;">Owner account</p>
+                <a href="/driver/" target="_blank" class="sidebar-portal-btn">📱 Open Driver Portal ↗</a>
+                <div class="sidebar-clock-row">
+                    <span class="clock-indicator-dot"></span>
+                    <span class="sidebar-clock" id="headerClock">--:--:-- --</span>
+                </div>
+                <div class="sidebar-user-tag">
+                    <span class="user-status-dot"></span>
+                    <span>Owner Account · V3</span>
+                </div>
             </div>
         </aside>
 
@@ -59,35 +65,42 @@
 
             <!-- ===== UNIFIED DASHBOARD OVERVIEW & LIVE TRACKING TAB ===== -->
             <section class="tab-panel active" id="panel-dashboard">
-                <!-- Header -->
-                <div class="live-map-header">
-                    <h2 class="live-map-title">Fleet Dashboard & Live Tracking</h2>
-                    <p class="live-map-subtitle">Real-time commercial fleet digital twin across Tamil Nadu corridors. Positions refresh every few seconds.</p>
+
+                <!-- Sleek Top Header with Natural Breathing Room -->
+                <div class="dash-top-header">
+                    <div class="dash-title-wrap">
+                        <h2 class="dash-page-heading">Live Tracking</h2>
+                        <span class="dash-status-dot-pulse"></span>
+                        <span class="dash-sub-note">Real-time GPS telematics · Auto-refreshes every 5s</span>
+                    </div>
+                    <div class="dash-header-actions">
+                        <span class="dash-corridor-tag">🛣️ Tamil Nadu Freight Corridors</span>
+                    </div>
                 </div>
 
-                <!-- Metric Cards Bar (Image 3 Match) -->
+                <!-- Interactive Clickable KPI Filter Cards (Unified Metric & Filter Bar) -->
                 <div class="live-map-kpis">
-                    <div class="live-kpi-card">
+                    <div class="live-kpi-card live-kpi-filter active" data-filter="all" onclick="filterLiveFleet('all')" style="border-left: 4px solid #2563eb;" title="Filter: All Vehicles">
                         <span class="live-kpi-value" id="kpiTotalVehicles">6</span>
                         <span class="live-kpi-label">TOTAL VEHICLES</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-active" style="border-left: 4px solid #16a34a;">
+                    <div class="live-kpi-card live-kpi-filter live-kpi-active" data-filter="moving" onclick="filterLiveFleet('moving')" style="border-left: 4px solid #16a34a;" title="Filter: Active Trips (Moving)">
                         <span class="live-kpi-value" id="kpiActiveTrips" style="color: #16a34a;">4</span>
                         <span class="live-kpi-label">ACTIVE TRIPS</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-halted" style="border-left: 4px solid #f59e0b;">
+                    <div class="live-kpi-card live-kpi-filter live-kpi-halted" data-filter="halt" onclick="filterLiveFleet('halt')" style="border-left: 4px solid #f59e0b;" title="Filter: Vehicles Halted">
                         <span class="live-kpi-value" id="kpiHaltedCount" style="color: #d97706;">1</span>
                         <span class="live-kpi-label">VEHICLES HALTED</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-completed" style="border-left: 4px solid #2563eb;">
-                        <span class="live-kpi-value" id="kpiCompletedToday" style="color: #2563eb;">2</span>
+                    <div class="live-kpi-card live-kpi-filter live-kpi-offline" data-filter="offline" onclick="filterLiveFleet('offline')" style="border-left: 4px solid #64748b;" title="Filter: Offline Vehicles">
+                        <span class="live-kpi-value" id="kpiOfflineCount" style="color: #64748b;">1</span>
+                        <span class="live-kpi-label">OFFLINE</span>
+                    </div>
+                    <div class="live-kpi-card live-kpi-completed" onclick="document.querySelector('.sidebar-tab[data-tab=\'trips\']')?.click()" style="border-left: 4px solid #0284c7;" title="Click to view Trip History">
+                        <span class="live-kpi-value" id="kpiCompletedToday" style="color: #0284c7;">4</span>
                         <span class="live-kpi-label">COMPLETED TODAY</span>
                     </div>
-                    <div class="live-kpi-card">
-                        <span class="live-kpi-value" id="kpiTotalDrivers">6</span>
-                        <span class="live-kpi-label">TOTAL DRIVERS</span>
-                    </div>
-                    <div class="live-kpi-card">
+                    <div class="live-kpi-card live-kpi-summary" style="border-left: 4px solid #0f172a; cursor: default;" title="Fleet Total Distance Today">
                         <span class="live-kpi-value"><span id="kpiFleetDistance">981.2</span> <span class="unit-km">km</span></span>
                         <span class="live-kpi-label">FLEET DISTANCE TODAY</span>
                     </div>
@@ -95,21 +108,11 @@
 
                 <!-- 3-Column Workspace -->
                 <div class="live-map-workspace">
-                    <!-- Left: Vehicle Filter & List -->
+                    <!-- Left: Vehicle List (Clean Streamlined Sidebar) -->
                     <aside class="live-fleet-sidebar">
-                        <div class="live-filter-tabs">
-                            <button class="live-filter-btn active" data-filter="all" onclick="filterLiveFleet('all')">
-                                All <span class="filter-count" id="countAll">6</span>
-                            </button>
-                            <button class="live-filter-btn" data-filter="moving" onclick="filterLiveFleet('moving')">
-                                Moving <span class="filter-count" id="countMoving">4</span>
-                            </button>
-                            <button class="live-filter-btn" data-filter="halt" onclick="filterLiveFleet('halt')">
-                                Halt <span class="filter-count" id="countHalt">1</span>
-                            </button>
-                            <button class="live-filter-btn" data-filter="offline" onclick="filterLiveFleet('offline')">
-                                Offline <span class="filter-count" id="countOffline">1</span>
-                            </button>
+                        <div class="fleet-list-header">
+                            <span class="fleet-list-title">🚚 Fleet Vehicles</span>
+                            <span class="fleet-filter-badge" id="fleetFilterIndicator">All (6)</span>
                         </div>
 
                         <!-- Vehicle Items Scrollable Container -->
@@ -155,13 +158,6 @@
                             </div>
                         </div>
 
-                        <!-- Bottom Legend -->
-                        <div class="live-map-legend-bar">
-                            <div class="legend-item"><span class="legend-dot moving"></span> Moving</div>
-                            <div class="legend-item"><span class="legend-dot halt"></span> Halt</div>
-                            <div class="legend-item"><span class="legend-dot offline"></span> Offline</div>
-                        </div>
-
                         <!-- Dedicated Zoom Controls (Bottom Right - Clean & Proper) -->
                         <div class="map-zoom-dock">
                             <button type="button" class="btn-map-zoom-ctrl" onclick="zoomInMap()" title="Zoom in">+</button>
@@ -176,129 +172,128 @@
                         <div class="detail-panel-header">
                             <div>
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <h3 class="detail-plate" id="detailPlate">AP 39 JK 7788</h3>
-                                    <span class="detail-status-pill offline" id="detailStatusPill">● Offline</span>
+                                    <h3 class="detail-plate" id="detailPlate">TN 22 CD 5678</h3>
+                                    <span class="detail-status-pill moving" id="detailStatusPill">● Moving</span>
                                 </div>
                                 <div class="detail-sub-header">
-                                    <span class="detail-model" id="detailModel">BharatBenz 3128 · Truck 28T</span>
-                                    <span class="source-badge sim" id="detailSourceBadge">📶 Telecom SIM LBS</span>
+                                    <span class="detail-model" id="detailModel">Ashok Leyland 2820 · Truck 28T</span>
+                                    <span class="source-badge app" id="detailSourceBadge">📱 Driver App GPS</span>
                                 </div>
                             </div>
                             <button class="btn-close-detail" onclick="closeVehicleDetailPanel()" title="Close details">✕</button>
                         </div>
 
-                        <!-- Driver Card -->
-                        <div class="detail-driver-card">
-                            <div class="driver-avatar" id="detailDriverAvatar">VP</div>
-                            <div class="driver-info">
-                                <div class="driver-name-row">
-                                    <span class="driver-name" id="detailDriverName">Venkatesh P</span>
-                                    <span class="driver-phone-type-badge" id="detailPhoneType">Button Phone</span>
+                        <!-- 2-Tabs Segmented Bar -->
+                        <div class="detail-tabs-nav">
+                            <button type="button" class="detail-tab-btn active" id="tabBtnOverview" onclick="switchDetailTab('overview')">
+                                📊 Live Overview
+                            </button>
+                            <button type="button" class="detail-tab-btn" id="tabBtnCorridor" onclick="switchDetailTab('corridor')">
+                                🛰️ Corridor & Tech
+                            </button>
+                        </div>
+
+                        <!-- TAB 1: LIVE OVERVIEW PANE -->
+                        <div class="detail-tab-pane active" id="paneDetailOverview">
+                            <!-- Distance Covered Card -->
+                            <div class="detail-distance-card">
+                                <div class="distance-header">
+                                    <span>📈 Distance covered</span>
+                                    <div class="timeframe-toggle">
+                                        <button class="timeframe-btn active" data-timeframe="today" onclick="setTimeframe('today')">Today</button>
+                                        <button class="timeframe-btn" data-timeframe="week" onclick="setTimeframe('week')">Week</button>
+                                        <button class="timeframe-btn" data-timeframe="month" onclick="setTimeframe('month')">Month</button>
+                                    </div>
                                 </div>
-                                <div class="driver-status" id="detailDriverStatus">On duty since 05:40 · phone offline</div>
-                                <div class="driver-phone-text" id="detailDriverPhone">+91 98405 67890</div>
-                            </div>
-                            <div class="driver-card-actions">
-                                <a href="tel:+919840567890" id="detailDriverCall" class="btn-driver-call" title="Call Driver">📞</a>
-                            </div>
-                        </div>
-
-                        <!-- Live Trip & Operational Halt Status Card -->
-                        <div class="detail-trip-card" id="detailTripCard">
-                            <!-- Populated dynamically by admin.js with trip info & halt timers -->
-                        </div>
-
-                        <!-- 2x2 Stats Grid -->
-                        <div class="detail-stats-grid">
-                            <div class="stat-cell">
-                                <div class="stat-label">Speed</div>
-                                <div class="stat-value speed-highlight" id="detailSpeed">—</div>
-                            </div>
-                            <div class="stat-cell">
-                                <div class="stat-label">Last update</div>
-                                <div class="stat-value" id="detailLastUpdate">42 min ago</div>
-                            </div>
-                            <div class="stat-cell">
-                                <div class="stat-label">Phone battery</div>
-                                <div class="stat-value" id="detailBattery">12%</div>
-                            </div>
-                            <div class="stat-cell">
-                                <div class="stat-label">GPS accuracy</div>
-                                <div class="stat-value" id="detailAccuracy">35 m</div>
-                            </div>
-                        </div>
-
-                        <!-- Distance Covered Card -->
-                        <div class="detail-distance-card">
-                            <div class="distance-header">
-                                <span>📈 Distance covered</span>
-                                <div class="timeframe-toggle">
-                                    <button class="timeframe-btn active" data-timeframe="today" onclick="setTimeframe('today')">Today</button>
-                                    <button class="timeframe-btn" data-timeframe="week" onclick="setTimeframe('week')">Week</button>
-                                    <button class="timeframe-btn" data-timeframe="month" onclick="setTimeframe('month')">Month</button>
+                                <div class="distance-number-row">
+                                    <span class="distance-number"><span id="detailDistance">187.3</span> <span class="distance-unit">km</span></span>
+                                    <span class="distance-sub" id="detailDistanceSub">Today · since 05:40</span>
                                 </div>
                             </div>
-                            <div class="distance-number-row">
-                                <span class="distance-number"><span id="detailDistance">187.3</span> <span class="distance-unit">km</span></span>
-                                <span class="distance-sub" id="detailDistanceSub">Today · since 05:40</span>
-                            </div>
-                        </div>
 
-                        <!-- Last Known Location -->
-                        <div class="detail-location-box">
-                            <div class="stat-label">Last known location</div>
-                            <div class="location-value" id="detailLocation">NH 16, Minjur Freight Junction</div>
-                        </div>
-
-                        <!-- Freight Corridor & Route Progress -->
-                        <div class="detail-corridor-card" id="detailCorridorCard">
-                            <div class="corridor-header">
-                                <span class="corridor-title">🛣️ <span id="detailCorridorTitle">NH 16 Ponneri Corridor</span></span>
-                                <span class="corridor-pct" id="detailCorridorPct">68%</span>
-                            </div>
-                            <div class="corridor-progress-bar">
-                                <div class="corridor-progress-fill" id="detailCorridorFill" style="width: 68%;"></div>
-                            </div>
-                            <div class="corridor-checkpoint-row">
-                                <span class="corridor-sub">📍 Next Toll / Hub:</span>
-                                <span class="corridor-checkpoint-val" id="detailCheckpoint">Minjur Toll Plaza</span>
-                            </div>
-                        </div>
-
-                        <!-- Fleet Telematics Diagnostics Card -->
-                        <div class="detail-diagnostics-card" id="detailDiagnosticsCard">
-                            <div class="diag-row">
-                                <span class="diag-label">📡 Link Signal:</span>
-                                <span class="diag-val" id="detailSignalText">Strong (4G LTE · -74 dBm)</span>
-                            </div>
-                            <div class="diag-row">
-                                <span class="diag-label">🔋 Battery:</span>
-                                <div class="battery-bar-wrapper">
-                                    <div class="battery-bar-fill" id="detailBatteryFill" style="width: 85%; background: #10b981;"></div>
+                            <!-- Driver Card -->
+                            <div class="detail-driver-card">
+                                <div class="driver-avatar" id="detailDriverAvatar">VP</div>
+                                <div class="driver-info">
+                                    <div class="driver-name-row">
+                                        <span class="driver-name" id="detailDriverName">Venkatesh P</span>
+                                        <span class="driver-phone-type-badge" id="detailPhoneType">Button Phone</span>
+                                    </div>
+                                    <div class="driver-status" id="detailDriverStatus">On duty since 05:40 · phone offline</div>
+                                    <div class="driver-phone-text" id="detailDriverPhone">+91 98405 67890</div>
                                 </div>
-                                <span class="diag-val" id="detailBatteryPctText">85%</span>
+                                <div class="driver-card-actions">
+                                    <a href="tel:+919840567890" id="detailDriverCall" class="btn-driver-call" title="Call Driver">📞</a>
+                                </div>
                             </div>
-                            <div class="diag-row">
-                                <span class="diag-label">🔑 Ignition:</span>
-                                <span class="diag-val" id="detailIgnitionText">🟢 Engine ON (Driving)</span>
+
+                            <!-- 3-Column Stats Row -->
+                            <div class="detail-stats-grid">
+                                <div class="stat-cell">
+                                    <div class="stat-label">Speed</div>
+                                    <div class="stat-value speed-highlight" id="detailSpeed">—</div>
+                                </div>
+                                <div class="stat-cell">
+                                    <div class="stat-label">GPS accuracy</div>
+                                    <div class="stat-value" id="detailAccuracy">35 m</div>
+                                </div>
+                                <div class="stat-cell">
+                                    <div class="stat-label">Last update</div>
+                                    <div class="stat-value" id="detailLastUpdate">42 min ago</div>
+                                </div>
+                            </div>
+
+                            <!-- Last Known Location -->
+                            <div class="detail-location-box">
+                                <div class="stat-label">Last known location</div>
+                                <div class="location-value" id="detailLocation">NH 16, Minjur Freight Junction</div>
                             </div>
                         </div>
 
-                        <!-- SIM Dispatch & Trip Actions Box -->
-                        <div class="detail-actions-box" id="detailActionsBox">
-                            <!-- Populated dynamically with SIM triggers or driver app status -->
-                        </div>
-
-                        <!-- Route Visibility Toggle Card -->
-                        <div class="detail-route-card">
-                            <div class="detail-toggle-row">
-                                <span class="route-icon">🗺️</span>
-                                <span class="toggle-label">Show today's route on map</span>
+                        <!-- TAB 2: CORRIDOR & TELEMATICS TECH PANE -->
+                        <div class="detail-tab-pane" id="paneDetailCorridor">
+                            <!-- Freight Corridor & Route Progress -->
+                            <div class="detail-corridor-card" id="detailCorridorCard">
+                                <div class="corridor-header">
+                                    <span class="corridor-title">🛣️ <span id="detailCorridorTitle">NH 16 Ponneri Corridor</span></span>
+                                    <span class="corridor-pct" id="detailCorridorPct">68%</span>
+                                </div>
+                                <div class="corridor-progress-bar">
+                                    <div class="corridor-progress-fill" id="detailCorridorFill" style="width: 68%;"></div>
+                                </div>
+                                <div class="corridor-checkpoint-row">
+                                    <span class="corridor-sub">📍 Next Toll / Hub:</span>
+                                    <span class="corridor-checkpoint-val" id="detailCheckpoint">Minjur Toll Plaza</span>
+                                </div>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="toggleRouteCheckbox" checked onchange="toggleVehicleRoute(this.checked)">
-                                <span class="slider round"></span>
-                            </label>
+
+                            <!-- Live Trip & Operational Halt Status Card -->
+                            <div class="detail-trip-card" id="detailTripCard">
+                                <!-- Populated dynamically by admin.js with trip info & halt timers -->
+                            </div>
+
+                            <!-- Fleet Telematics Diagnostics Card -->
+                            <div class="detail-diagnostics-card" id="detailDiagnosticsCard">
+                                <div class="diag-card-header">
+                                    <span class="diag-header-title">📡 Network & Diagnostics</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">📡 Link Signal:</span>
+                                    <span class="diag-val" id="detailSignalText">Strong (4G LTE · -74 dBm)</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">🔋 Battery:</span>
+                                    <div class="battery-bar-wrapper">
+                                        <div class="battery-bar-fill" id="detailBatteryFill" style="width: 85%; background: #10b981;"></div>
+                                    </div>
+                                    <span class="diag-val" id="detailBatteryPctText">85%</span>
+                                </div>
+                            </div>
+
+                            <!-- SIM Dispatch & Trip Actions Box -->
+                            <div class="detail-actions-box" id="detailActionsBox">
+                                <!-- Populated dynamically with SIM triggers or driver app status -->
+                            </div>
                         </div>
                     </aside>
                 </div>
