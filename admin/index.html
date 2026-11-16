@@ -20,18 +20,20 @@
             <!-- Integrated Brand Header -->
             <div class="sidebar-brand">
                 <div class="sidebar-brand-row">
-                    <span class="sidebar-logo">🚛</span>
+                    <div class="sidebar-logo-badge">
+                        <span class="sidebar-logo">🚛</span>
+                    </div>
                     <div>
-                        <div class="sidebar-brand-name">V3 Logistics</div>
-                        <span class="sidebar-admin-badge">ADMIN DASHBOARD</span>
+                        <div class="sidebar-brand-name">Fleet Tracker</div>
+                        <span class="sidebar-admin-badge">V3 LOGISTICS</span>
                     </div>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
                 <button class="sidebar-tab active" data-tab="dashboard">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-label">Dashboard Overview</span>
+                    <span class="tab-icon">📍</span>
+                    <span class="tab-label">Live map</span>
                 </button>
                 <button class="sidebar-tab" data-tab="vehicles">
                     <span class="tab-icon">🚚</span>
@@ -66,43 +68,39 @@
             <!-- ===== UNIFIED DASHBOARD OVERVIEW & LIVE TRACKING TAB ===== -->
             <section class="tab-panel active" id="panel-dashboard">
 
-                <!-- Sleek Top Header with Natural Breathing Room -->
+                <!-- Sleek Top Header with Natural Breathing Room (Mockup 1 Style) -->
                 <div class="dash-top-header">
                     <div class="dash-title-wrap">
-                        <h2 class="dash-page-heading">Live Tracking</h2>
-                        <span class="dash-status-dot-pulse"></span>
-                        <span class="dash-sub-note">Real-time GPS telematics · Auto-refreshes every 5s</span>
-                    </div>
-                    <div class="dash-header-actions">
-                        <span class="dash-corridor-tag">🛣️ Tamil Nadu Freight Corridors</span>
+                        <h2 class="dash-page-heading">Live tracking</h2>
+                        <p class="dash-sub-note">Every vehicle reporting from its driver app. Positions refresh every few seconds.</p>
                     </div>
                 </div>
 
-                <!-- Interactive Clickable KPI Filter Cards (Unified Metric & Filter Bar) -->
+                <!-- Interactive Clickable KPI Cards (Spacious, Uncluttered Layout) -->
                 <div class="live-map-kpis">
-                    <div class="live-kpi-card live-kpi-filter active" data-filter="all" onclick="filterLiveFleet('all')" style="border-left: 4px solid #2563eb;" title="Filter: All Vehicles">
+                    <div class="live-kpi-card live-kpi-filter active" data-filter="all" onclick="filterLiveFleet('all')" title="Filter: All Vehicles">
+                        <span class="live-kpi-label"><span class="kpi-status-dot vehicles"></span> Vehicles</span>
                         <span class="live-kpi-value" id="kpiTotalVehicles">6</span>
-                        <span class="live-kpi-label">TOTAL VEHICLES</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-filter live-kpi-active" data-filter="moving" onclick="filterLiveFleet('moving')" style="border-left: 4px solid #16a34a;" title="Filter: Active Trips (Moving)">
-                        <span class="live-kpi-value" id="kpiActiveTrips" style="color: #16a34a;">4</span>
-                        <span class="live-kpi-label">ACTIVE TRIPS</span>
+                    <div class="live-kpi-card live-kpi-filter" data-filter="moving" onclick="filterLiveFleet('moving')" title="Filter: Active Trips (Moving)">
+                        <span class="live-kpi-label"><span class="kpi-status-dot moving"></span> Moving</span>
+                        <span class="live-kpi-value" id="kpiActiveTrips">4</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-filter live-kpi-halted" data-filter="halt" onclick="filterLiveFleet('halt')" style="border-left: 4px solid #f59e0b;" title="Filter: Vehicles Halted">
-                        <span class="live-kpi-value" id="kpiHaltedCount" style="color: #d97706;">1</span>
-                        <span class="live-kpi-label">VEHICLES HALTED</span>
+                    <div class="live-kpi-card live-kpi-filter" data-filter="halt" onclick="filterLiveFleet('halt')" title="Filter: Vehicles Halted">
+                        <span class="live-kpi-label"><span class="kpi-status-dot idle"></span> Idle</span>
+                        <span class="live-kpi-value" id="kpiHaltedCount">1</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-filter live-kpi-offline" data-filter="offline" onclick="filterLiveFleet('offline')" style="border-left: 4px solid #64748b;" title="Filter: Offline Vehicles">
-                        <span class="live-kpi-value" id="kpiOfflineCount" style="color: #64748b;">1</span>
-                        <span class="live-kpi-label">OFFLINE</span>
+                    <div class="live-kpi-card live-kpi-filter" data-filter="offline" onclick="filterLiveFleet('offline')" title="Filter: Offline Vehicles">
+                        <span class="live-kpi-label"><span class="kpi-status-dot offline"></span> Offline</span>
+                        <span class="live-kpi-value" id="kpiOfflineCount">1</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-completed" onclick="document.querySelector('.sidebar-tab[data-tab=\'trips\']')?.click()" style="border-left: 4px solid #0284c7;" title="Click to view Trip History">
-                        <span class="live-kpi-value" id="kpiCompletedToday" style="color: #0284c7;">4</span>
-                        <span class="live-kpi-label">COMPLETED TODAY</span>
+                    <div class="live-kpi-card live-kpi-completed" onclick="document.querySelector('.sidebar-tab[data-tab=\'trips\']')?.click()" title="Click to view Trip History">
+                        <span class="live-kpi-label"><span class="kpi-status-dot completed"></span> Completed today</span>
+                        <span class="live-kpi-value" id="kpiCompletedToday">4</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-summary" style="border-left: 4px solid #0f172a; cursor: default;" title="Fleet Total Distance Today">
+                    <div class="live-kpi-card live-kpi-summary" title="Fleet Total Distance Today">
+                        <span class="live-kpi-label"><span class="kpi-status-dot distance"></span> Fleet distance today</span>
                         <span class="live-kpi-value"><span id="kpiFleetDistance">981.2</span> <span class="unit-km">km</span></span>
-                        <span class="live-kpi-label">FLEET DISTANCE TODAY</span>
                     </div>
                 </div>
 
@@ -110,9 +108,31 @@
                 <div class="live-map-workspace">
                     <!-- Left: Vehicle List (Clean Streamlined Sidebar) -->
                     <aside class="live-fleet-sidebar">
-                        <div class="fleet-list-header">
-                            <span class="fleet-list-title">🚚 Fleet Vehicles</span>
-                            <span class="fleet-filter-badge" id="fleetFilterIndicator">All (6)</span>
+                        <!-- Quick Fleet Search Bar -->
+                        <div class="fleet-search-box">
+                            <span class="fleet-search-icon">🔍</span>
+                            <input type="text" id="fleetSearchInput" placeholder="Search plate, driver, location..." oninput="handleFleetSearch(this.value)" autocomplete="off">
+                            <button type="button" class="btn-clear-fleet-search" id="btnClearFleetSearch" onclick="clearFleetSearch()" title="Clear search">✕</button>
+                        </div>
+
+                        <!-- 4 Filter Pills matching Mockup 1 -->
+                        <div class="fleet-filter-pills-bar">
+                            <button type="button" class="fleet-filter-pill active" data-filter="all" onclick="filterLiveFleet('all')">
+                                <span class="pill-label">All</span>
+                                <span class="pill-count" id="chipAllCount">6</span>
+                            </button>
+                            <button type="button" class="fleet-filter-pill" data-filter="moving" onclick="filterLiveFleet('moving')">
+                                <span class="pill-label">Moving</span>
+                                <span class="pill-count" id="chipMovingCount">4</span>
+                            </button>
+                            <button type="button" class="fleet-filter-pill" data-filter="halt" onclick="filterLiveFleet('halt')">
+                                <span class="pill-label">Idle</span>
+                                <span class="pill-count" id="chipHaltCount">1</span>
+                            </button>
+                            <button type="button" class="fleet-filter-pill" data-filter="offline" onclick="filterLiveFleet('offline')">
+                                <span class="pill-label">Offline</span>
+                                <span class="pill-count" id="chipOfflineCount">1</span>
+                            </button>
                         </div>
 
                         <!-- Vehicle Items Scrollable Container -->
@@ -129,6 +149,7 @@
                                 <span>Live - refreshes every 5 s</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
+                                <button type="button" class="btn-reopen-detail" id="btnReopenDetail" onclick="openVehicleDetailPanel()" style="display:none;" title="Show vehicle details panel">📊 Show Details</button>
                                 <button type="button" class="btn-toggle-route-filter" id="btnToggleRouteFilter" onclick="toggleRouteFilterMode()" title="Toggle between all routes and selected vehicle route only">
                                     <span id="routeFilterIcon">🛣️</span> <span id="routeFilterText">All Routes</span>
                                 </button>
@@ -138,6 +159,15 @@
 
                         <!-- Leaflet Map Container -->
                         <div id="fleetMap" class="live-leaflet-map"></div>
+
+                        <!-- Status Legend Pill (Bottom Left matching Mockup) -->
+                        <div class="map-legend-dock">
+                            <span class="legend-item"><span class="legend-dot moving"></span> Moving</span>
+                            <span class="legend-item"><span class="legend-dot idle"></span> Idle</span>
+                            <span class="legend-item"><span class="legend-dot offline"></span> Offline</span>
+                            <span class="legend-item" style="border-left:1px solid #e2e8f0; padding-left:8px;"><span style="color:#2563eb; font-weight:800; font-size:12px;">┅┅</span> Dest. Way</span>
+                            <span class="legend-item"><span style="font-size:12px;">🏁</span> Destination</span>
+                        </div>
 
                         <!-- Map Type Switcher Dock (Satellite vs Streets) -->
                         <div class="map-type-dock" id="mapTypeDock">
@@ -171,13 +201,13 @@
                         <!-- Header -->
                         <div class="detail-panel-header">
                             <div>
-                                <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
                                     <h3 class="detail-plate" id="detailPlate">TN 22 CD 5678</h3>
                                     <span class="detail-status-pill moving" id="detailStatusPill">● Moving</span>
                                 </div>
                                 <div class="detail-sub-header">
                                     <span class="detail-model" id="detailModel">Ashok Leyland 2820 · Truck 28T</span>
-                                    <span class="source-badge app" id="detailSourceBadge">📱 Driver App GPS</span>
+                                    <span class="source-badge app" id="detailSourceBadge" style="display:none;">📱 Driver App GPS</span>
                                 </div>
                             </div>
                             <button class="btn-close-detail" onclick="closeVehicleDetailPanel()" title="Close details">✕</button>
@@ -197,56 +227,72 @@
                         <div class="detail-tab-pane active" id="paneDetailOverview">
                             <!-- Distance Covered Card -->
                             <div class="detail-distance-card">
-                                <div class="distance-header">
-                                    <span>📈 Distance covered</span>
-                                    <div class="timeframe-toggle">
-                                        <button class="timeframe-btn active" data-timeframe="today" onclick="setTimeframe('today')">Today</button>
-                                        <button class="timeframe-btn" data-timeframe="week" onclick="setTimeframe('week')">Week</button>
-                                        <button class="timeframe-btn" data-timeframe="month" onclick="setTimeframe('month')">Month</button>
-                                    </div>
+                                <div class="distance-title-row">
+                                    <span class="distance-title">📈 Distance covered</span>
                                 </div>
                                 <div class="distance-number-row">
-                                    <span class="distance-number"><span id="detailDistance">187.3</span> <span class="distance-unit">km</span></span>
-                                    <span class="distance-sub" id="detailDistanceSub">Today · since 05:40</span>
+                                    <span class="distance-number"><span id="detailDistance">168.2</span> <span class="distance-unit">km</span></span>
+                                </div>
+                                <div class="distance-sub" id="detailDistanceSub">Today · since 06:40</div>
+                                <div class="timeframe-toggle">
+                                    <button class="timeframe-btn active" data-timeframe="today" onclick="setTimeframe('today')">Today</button>
+                                    <button class="timeframe-btn" data-timeframe="week" onclick="setTimeframe('week')">This week</button>
+                                    <button class="timeframe-btn" data-timeframe="month" onclick="setTimeframe('month')">This month</button>
                                 </div>
                             </div>
 
-                            <!-- Driver Card -->
+                            <!-- Driver Section (Clean, Unboxed) -->
                             <div class="detail-driver-card">
-                                <div class="driver-avatar" id="detailDriverAvatar">VP</div>
+                                <div class="driver-avatar" id="detailDriverAvatar">SR</div>
                                 <div class="driver-info">
                                     <div class="driver-name-row">
-                                        <span class="driver-name" id="detailDriverName">Venkatesh P</span>
-                                        <span class="driver-phone-type-badge" id="detailPhoneType">Button Phone</span>
+                                        <span class="driver-name" id="detailDriverName">Selvam R</span>
+                                        <span class="driver-phone-type-badge" id="detailPhoneType" style="display:none;">Smartphone</span>
                                     </div>
-                                    <div class="driver-status" id="detailDriverStatus">On duty since 05:40 · phone offline</div>
-                                    <div class="driver-phone-text" id="detailDriverPhone">+91 98405 67890</div>
+                                    <div class="driver-status" id="detailDriverStatus">On duty since 06:40</div>
+                                    <div class="driver-phone-text" id="detailDriverPhone" style="display:none;">+91 98450 34567</div>
                                 </div>
                                 <div class="driver-card-actions">
-                                    <a href="tel:+919840567890" id="detailDriverCall" class="btn-driver-call" title="Call Driver">📞</a>
+                                    <a href="tel:+919845034567" id="detailDriverCall" class="btn-driver-call" title="Call Driver">📞</a>
                                 </div>
                             </div>
 
-                            <!-- 3-Column Stats Row -->
-                            <div class="detail-stats-grid">
-                                <div class="stat-cell">
-                                    <div class="stat-label">Speed</div>
-                                    <div class="stat-value speed-highlight" id="detailSpeed">—</div>
+                            <!-- Vehicle Telematics & Route Locations (Unified Section) -->
+                            <div class="detail-stats-section">
+                                <div class="detail-stats-grid">
+                                    <div class="stat-cell">
+                                        <div class="stat-label">Speed</div>
+                                        <div class="stat-value speed-highlight" id="detailSpeed">46 km/h</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="stat-label">Last update</div>
+                                        <div class="stat-value" id="detailLastUpdate">5 s ago</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="stat-label">Driver phone battery</div>
+                                        <div class="stat-value" id="detailBattery">81%</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="stat-label">GPS accuracy</div>
+                                        <div class="stat-value" id="detailAccuracy">6 m</div>
+                                    </div>
                                 </div>
-                                <div class="stat-cell">
-                                    <div class="stat-label">GPS accuracy</div>
-                                    <div class="stat-value" id="detailAccuracy">35 m</div>
-                                </div>
-                                <div class="stat-cell">
-                                    <div class="stat-label">Last update</div>
-                                    <div class="stat-value" id="detailLastUpdate">42 min ago</div>
-                                </div>
-                            </div>
 
-                            <!-- Last Known Location -->
-                            <div class="detail-location-box">
-                                <div class="stat-label">Last known location</div>
-                                <div class="location-value" id="detailLocation">NH 16, Minjur Freight Junction</div>
+                                <!-- Starting Point, Current Location & Destination/ETA (Full Journey Arc) -->
+                                <div class="detail-locations-group">
+                                    <div class="location-cell">
+                                        <div class="stat-label">Starting point · <span id="detailStartTime">06:40</span></div>
+                                        <div class="stat-value location-val" id="detailStartLocation">Tambaram Logistics Depot</div>
+                                    </div>
+                                    <div class="location-cell">
+                                        <div class="stat-label">Current location</div>
+                                        <div class="stat-value location-val" id="detailLocation">NH 32, near Chengalpattu</div>
+                                    </div>
+                                    <div class="location-cell">
+                                        <div class="stat-label">Destination &amp; ETA · <span id="detailEta">11:45 AM</span></div>
+                                        <div class="stat-value location-val destination-val" id="detailDestination">Madhavaram Freight Terminal <span class="eta-rem-dist" id="detailRemainingDist">(38 km left)</span></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

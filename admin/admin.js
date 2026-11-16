@@ -26,6 +26,11 @@ const vehicles = {
         accuracy: 12,
         lastSeen: '8 s ago',
         distanceToday: 214.5,
+        startTime: '06:12',
+        startLocation: 'Koyambedu Logistics Yard',
+        destination: 'Sriperumbudur Logistics Park',
+        eta: '08:30 AM',
+        remainingDist: '18.5 km left',
         route: [
             [13.0694, 80.1948],
             [13.0450, 80.1500],
@@ -50,6 +55,11 @@ const vehicles = {
         accuracy: 15,
         lastSeen: '5 s ago',
         distanceToday: 168.0,
+        startTime: '06:40',
+        startLocation: 'Tambaram Depot',
+        destination: 'Madhavaram Freight Terminal',
+        eta: '11:45 AM',
+        remainingDist: '38.0 km left',
         route: [
             [12.9249, 80.1200],
             [12.8400, 80.0600],
@@ -74,6 +84,11 @@ const vehicles = {
         accuracy: 8,
         lastSeen: '3 s ago',
         distanceToday: 248.4,
+        startTime: '07:15',
+        startLocation: 'Ambattur North Depot',
+        destination: 'Bengaluru Electronic City Depot',
+        eta: '02:15 PM',
+        remainingDist: '142 km left',
         route: [
             [12.9818, 79.9442],
             [12.9150, 79.8400],
@@ -97,6 +112,11 @@ const vehicles = {
         accuracy: 20,
         lastSeen: 'Stopped · 2 min ago',
         distanceToday: 98.7,
+        startTime: '05:45',
+        startLocation: 'Manali Freight Yard',
+        destination: 'Tiruvallur Industrial Hub Gate 2',
+        eta: 'Paused · Halt',
+        remainingDist: '12.0 km left',
         route: [
             [13.1000, 80.1600],
             [13.1150, 80.0900],
@@ -120,6 +140,11 @@ const vehicles = {
         accuracy: 35,
         lastSeen: 'No signal · last seen 42 min ago',
         distanceToday: 187.3,
+        startTime: '09:30',
+        startLocation: 'Poonamallee Bypass (NH 48)',
+        destination: 'Ennore Port Coal Terminal',
+        eta: 'Signal Lost',
+        remainingDist: '24.5 km left',
         route: [
             [13.1700, 80.2600],
             [13.2300, 80.2600],
@@ -142,6 +167,11 @@ const vehicles = {
         accuracy: 14,
         lastSeen: '6 s ago',
         distanceToday: 82.5,
+        startTime: '09:45',
+        startLocation: 'Tambaram Depot',
+        destination: 'Ambattur Industrial Estate Hub',
+        eta: '10:45 AM',
+        remainingDist: '14.0 km left',
         route: [
             [13.0350, 80.1550],
             [13.0550, 80.1580],
@@ -2125,6 +2155,65 @@ const FLEET_CORRIDORS = {
 };
 
 /**
+ * Retrieve comprehensive destination information and forward corridor waypoints for a vehicle
+ * @param {Object} v - Vehicle object
+ * @returns {{ name: string, coords: [number, number], forwardWaypoints: Array<[number, number]>, eta: string, remainingDist: string }|null}
+ */
+function getVehicleDestinationInfo(v) {
+    if (!v) return null;
+    const driver = getDriverForVehicle(v.id);
+    const destName = v.destination || (driver && driver.destination) || 'Logistics Hub';
+    let destCoords = null;
+    let forwardWaypoints = [];
+
+    if (FLEET_CORRIDORS && FLEET_CORRIDORS[v.id]) {
+        const corridor = FLEET_CORRIDORS[v.id];
+        const pts = corridor.points;
+        if (pts && pts.length > 0) {
+            // Destination terminal is the final corridor waypoint
+            destCoords = pts[pts.length - 1];
+
+            // Forward highway path starts strictly at the vehicle's current live location
+            if (v.lat && v.lng) {
+                forwardWaypoints.push([v.lat, v.lng]);
+            }
+
+            // Waypoints ahead of the vehicle along highway corridor
+            let targetIdx = corridor.targetIndex;
+            if (typeof targetIdx !== 'number' || targetIdx < 0) targetIdx = 0;
+
+            if (corridor.direction === 1) {
+                for (let i = targetIdx; i < pts.length; i++) {
+                    forwardWaypoints.push(pts[i]);
+                }
+            } else {
+                for (let i = targetIdx; i >= 0; i--) {
+                    forwardWaypoints.push(pts[i]);
+                }
+            }
+
+            // Ensure destination coordinate is present as final point
+            if (forwardWaypoints.length < 2 && destCoords) {
+                forwardWaypoints.push(destCoords);
+            }
+        }
+    } else if (v.destinationCoords) {
+        destCoords = v.destinationCoords;
+        if (v.lat && v.lng) {
+            forwardWaypoints = [[v.lat, v.lng], destCoords];
+        }
+    }
+
+    return {
+        name: destName,
+        coords: destCoords,
+        forwardWaypoints: forwardWaypoints,
+        eta: v.eta || 'On Schedule',
+        remainingDist: v.remainingDist || 'En Route'
+    };
+}
+
+/**
  * Advance moving vehicles along realistic road corridors and dynamically draw/create the route polyline.
  * @param {Object} v - vehicle object
  */
@@ -2196,6 +2285,17 @@ function advanceVehicleAlongCorridor(v) {
         }
         if (fleetRouteCasings[v.id]) {
             fleetRouteCasings[v.id].setLatLngs(v.route);
+        }
+
+        // Dynamically update forward destination way preview for the selected vehicle as it advances
+        if (v.id === selectedVehicleId && fleetCorridorLayers[v.id]) {
+            const destInfo = getVehicleDestinationInfo(v);
+            if (destInfo && destInfo.forwardWaypoints && destInfo.forwardWaypoints.length >= 2) {
+                fleetCorridorLayers[v.id].setLatLngs(destInfo.forwardWaypoints);
+                if (fleetCorridorCasings[v.id]) {
+                    fleetCorridorCasings[v.id].setLatLngs(destInfo.forwardWaypoints);
+                }
+            }
         }
     }
 }
@@ -2417,6 +2517,10 @@ const fleetMarkers = {};
 const fleetRouteLayers = {};
 const fleetRouteCasings = {};
 const fleetOriginMarkers = {};
+const fleetDestMarkers = {};
+const fleetCorridorLayers = {};
+const fleetCorridorCasings = {};
+let fleetDirectionArrows = [];
 const DEFAULT_MAP_CENTER = [12.985, 80.03]; // Exact regional centroid
 const DEFAULT_MAP_ZOOM = 10;
 let selectedVehicleId = 'v2';              // Default to TN 22 CD 5678 (Moving Truck)
@@ -2647,6 +2751,15 @@ function updateLiveMapKpis() {
     if ($offline) $offline.textContent = offline;
     if ($dist) $dist.textContent = totalDist.toFixed(1);
 
+    const $chipAll = document.getElementById('chipAllCount');
+    const $chipMov = document.getElementById('chipMovingCount');
+    const $chipHalt = document.getElementById('chipHaltCount');
+    const $chipOff = document.getElementById('chipOfflineCount');
+    if ($chipAll) $chipAll.textContent = total;
+    if ($chipMov) $chipMov.textContent = activeTrips;
+    if ($chipHalt) $chipHalt.textContent = haltedCount;
+    if ($chipOff) $chipOff.textContent = offline;
+
     const $badge = document.getElementById('fleetFilterIndicator');
     if ($badge && currentFleetFilter === 'all') {
         $badge.textContent = `All (${total})`;
@@ -2654,7 +2767,66 @@ function updateLiveMapKpis() {
 }
 
 /**
- * Render Left Sidebar Vehicle List
+ * Global quick search query for the live fleet sidebar
+ */
+let fleetSearchQuery = '';
+
+window.handleFleetSearch = function(query) {
+    fleetSearchQuery = (query || '').trim().toLowerCase();
+    const $clearBtn = document.getElementById('btnClearFleetSearch');
+    if ($clearBtn) {
+        $clearBtn.style.display = fleetSearchQuery ? 'inline-flex' : 'none';
+    }
+    renderLiveFleetList();
+};
+
+window.clearFleetSearch = function() {
+    fleetSearchQuery = '';
+    const $input = document.getElementById('fleetSearchInput');
+    if ($input) $input.value = '';
+    const $clearBtn = document.getElementById('btnClearFleetSearch');
+    if ($clearBtn) $clearBtn.style.display = 'none';
+    renderLiveFleetList();
+};
+
+/**
+ * Return proactive exceptions/alerts for a vehicle (low battery, long halt, signal loss)
+ * @param {Object} v
+ * @returns {Array<{type: string, icon: string, text: string}>}
+ */
+function getVehicleAlerts(v) {
+    const alerts = [];
+    if (v.battery && v.battery < 20) {
+        alerts.push({ type: 'danger', icon: '🔋', text: `${v.battery}% Battery` });
+    }
+    if (v.status === 'halted' || (v.status === 'driving' && v.speed === 0)) {
+        alerts.push({ type: 'warning', icon: '⏸️', text: 'Halted 2m' });
+    }
+    if (v.status === 'offline') {
+        alerts.push({ type: 'neutral', icon: '📶', text: 'No Signal · 42m' });
+    }
+    return alerts;
+}
+
+/**
+ * Calculate geographical heading angle (0-360 deg) between two coordinates
+ * @param {Array<number>} p1 [lat, lng]
+ * @param {Array<number>} p2 [lat, lng]
+ * @returns {number}
+ */
+function calculateHeading(p1, p2) {
+    if (!p1 || !p2) return 0;
+    const lat1 = p1[0] * Math.PI / 180;
+    const lat2 = p2[0] * Math.PI / 180;
+    const dLng = (p2[1] - p1[1]) * Math.PI / 180;
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    const brng = Math.atan2(y, x) * 180 / Math.PI;
+    return Math.round((brng + 360) % 360);
+}
+
+/**
+ * Render Left Sidebar Vehicle List with Quick Search & Proactive Alert Badges
  */
 function renderLiveFleetList() {
     const $container = document.getElementById('liveVehicleList');
@@ -2674,17 +2846,37 @@ function renderLiveFleetList() {
             const driverName = driver ? driver.name : 'Unassigned';
             const isSelected = (v.id === selectedVehicleId);
 
+            // Filter by search query if active
+            if (fleetSearchQuery) {
+                const q = fleetSearchQuery;
+                const plate = v.plate.toLowerCase();
+                const dName = driverName.toLowerCase();
+                const model = (v.model || '').toLowerCase();
+                const loc = (v.currentLocation || '').toLowerCase();
+                const startLoc = (v.startLocation || '').toLowerCase();
+                const dest = (v.destination || '').toLowerCase();
+                const match = plate.includes(q) || dName.includes(q) || model.includes(q) || loc.includes(q) || startLoc.includes(q) || dest.includes(q);
+                if (!match) return;
+            }
+
             let pillText = '● Moving';
-            if (cat === 'halt' || cat === 'idle') pillText = '● Halt';
+            if (cat === 'halt' || cat === 'idle') pillText = '● Idle';
             else if (cat === 'offline') pillText = '● Offline';
 
             let subText = '';
             if (cat === 'moving') {
                 subText = `${v.speed} km/h · ${v.lastSeen || '8 s ago'}`;
             } else if (cat === 'halt' || cat === 'idle') {
-                subText = v.lastSeen || 'Halted · 2 min ago';
+                subText = v.lastSeen || 'Stopped · 2 min ago';
             } else {
                 subText = v.lastSeen || 'No signal · last seen 42 min ago';
+            }
+
+            // Proactive Exception Alerts
+            const alerts = getVehicleAlerts(v);
+            let alertsHtml = '';
+            if (alerts.length > 0) {
+                alertsHtml = `<div class="vehicle-alert-row">${alerts.map(a => `<span class="fleet-alert-chip ${a.type}">${a.icon} ${escHtml(a.text)}</span>`).join('')}</div>`;
             }
 
             html += `
@@ -2693,6 +2885,7 @@ function renderLiveFleetList() {
                         <span class="item-plate">${escHtml(v.plate)}</span>
                         <span class="item-driver">${escHtml(driverName)}</span>
                         <span class="item-sub">${escHtml(subText)}</span>
+                        ${alertsHtml}
                     </div>
                     <span class="item-pill ${cat}">${pillText}</span>
                 </div>
@@ -2703,15 +2896,26 @@ function renderLiveFleetList() {
     });
 
     if (html === '') {
-        const filterName = currentFleetFilter === 'halt' ? 'Halt' : currentFleetFilter;
-        html = `<div style="padding:24px; text-align:center; color:#94a3b8; font-size:12px;">No vehicles in "${filterName}" status.</div>`;
+        if (fleetSearchQuery) {
+            html = `
+                <div class="fleet-search-empty">
+                    <div style="font-size:24px; margin-bottom:6px;">🔍</div>
+                    <div style="font-weight:700; color:#0f172a; margin-bottom:4px; font-size:14px;">No vehicles found</div>
+                    <div style="font-size:12px; color:#64748b; margin-bottom:8px;">No matches for "${escHtml(fleetSearchQuery)}"</div>
+                    <button type="button" class="btn-reset-search" onclick="clearFleetSearch()">Reset search</button>
+                </div>
+            `;
+        } else {
+            const filterName = currentFleetFilter === 'halt' ? 'Halt' : currentFleetFilter;
+            html = `<div style="padding:24px; text-align:center; color:#94a3b8; font-size:12px;">No vehicles in "${filterName}" status.</div>`;
+        }
     }
 
     $container.innerHTML = html;
 }
 
 /**
- * Update Leaflet Map Markers for all vehicles
+ * Update Leaflet Map Markers for all vehicles with Directional Heading Arrow
  */
 function updateFleetMapMarkers() {
     if (!fleetMap || typeof L === 'undefined') return;
@@ -2722,14 +2926,28 @@ function updateFleetMapMarkers() {
         const lat = v.lat || 13.0827;
         const lng = v.lng || 80.2707;
 
-        // Custom divIcon with pin pointer and high-contrast status dot
+        // Heading Direction Bezel for Moving Vehicles
+        let headingBezelHtml = '';
+        if (cat === 'moving' && v.route && v.route.length >= 2) {
+            const p1 = v.route[v.route.length - 2];
+            const p2 = v.route[v.route.length - 1];
+            const heading = calculateHeading(p1, p2);
+            headingBezelHtml = `
+                <div class="heading-bezel" style="transform: rotate(${heading}deg);">
+                    <span class="heading-arrow-marker">▲</span>
+                </div>
+            `;
+        }
+
+        // Custom divIcon with pin pointer, high-contrast status dot, and directional heading
         const iconHtml = `
             <div class="custom-map-pin">
                 <div class="map-pin-icon-circle ${cat} ${isSelected ? 'selected' : ''}">
                     <span>🚚</span>
+                    ${headingBezelHtml}
                 </div>
                 <div class="map-pin-pointer"></div>
-                <div class="map-pin-label">
+                <div class="map-pin-label ${isSelected ? 'selected' : ''}">
                     <span class="pin-status-dot ${cat}"></span>
                     <span>${escHtml(v.plate)}</span>
                 </div>
@@ -2787,6 +3005,57 @@ function updateFleetMarkerZIndex() {
 }
 
 /**
+ * Helper to retrieve formatted start time for a vehicle (e.g. "06:40" or "06:12")
+ * @param {Object} v
+ * @returns {string}
+ */
+function getVehicleStartTimeStr(v) {
+    if (!v) return '06:00';
+    if (v.startTime) return v.startTime;
+    const activeTrip = getActiveTripForVehicle(v.id);
+    if (activeTrip && activeTrip.startTime) return fmtTimeShort(activeTrip.startTime);
+    const lastTrip = getLastCompletedTripForVehicle(v.id);
+    if (lastTrip && lastTrip.startTime) return fmtTimeShort(lastTrip.startTime);
+    const driver = getDriverForVehicle(v.id);
+    if (driver && driver.onDutySince) return driver.onDutySince;
+    return '06:12';
+}
+
+/**
+ * Helper to retrieve starting location name for a vehicle
+ * @param {Object} v
+ * @returns {string}
+ */
+function getVehicleStartLocStr(v) {
+    if (!v) return 'Dispatch Hub';
+    if (v.startLocation) return v.startLocation;
+    const activeTrip = getActiveTripForVehicle(v.id);
+    if (activeTrip && activeTrip.startLocation) return activeTrip.startLocation;
+    const lastTrip = getLastCompletedTripForVehicle(v.id);
+    if (lastTrip && lastTrip.startLocation) return lastTrip.startLocation;
+    return 'Main Logistics Terminal';
+}
+
+/**
+ * Format a Date or timestamp string into "HH:MM" 24h string
+ * @param {*} dateVal
+ * @returns {string}
+ */
+function fmtTimeShort(dateVal) {
+    if (!dateVal) return '06:00';
+    if (typeof dateVal === 'string') {
+        const m = dateVal.match(/(\d{1,2}:\d{2})/);
+        if (m) return m[1];
+        return dateVal;
+    }
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '06:00';
+    const hours = String(d.getHours()).padStart(2, '0');
+    const mins = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${mins}`;
+}
+
+/**
  * Draw all fleet routes on the live map simultaneously.
  * The currently selected vehicle's route is highlighted with a bold solid Royal Blue stroke (#1d4ed8),
  * while all other fleet routes are rendered as crisp high-contrast dashed lines (#0284c7).
@@ -2819,6 +3088,38 @@ function drawAllVehicleRoutes() {
         }
     });
     for (let key in fleetOriginMarkers) delete fleetOriginMarkers[key];
+
+    // Remove existing destination pin markers
+    Object.keys(fleetDestMarkers).forEach(vid => {
+        if (fleetDestMarkers[vid]) {
+            fleetMap.removeLayer(fleetDestMarkers[vid]);
+        }
+    });
+    for (let key in fleetDestMarkers) delete fleetDestMarkers[key];
+
+    // Remove existing forward corridor preview layers
+    Object.keys(fleetCorridorLayers).forEach(vid => {
+        if (fleetCorridorLayers[vid]) {
+            fleetMap.removeLayer(fleetCorridorLayers[vid]);
+        }
+    });
+    for (let key in fleetCorridorLayers) delete fleetCorridorLayers[key];
+
+    // Remove existing forward corridor casings
+    Object.keys(fleetCorridorCasings).forEach(vid => {
+        if (fleetCorridorCasings[vid]) {
+            fleetMap.removeLayer(fleetCorridorCasings[vid]);
+        }
+    });
+    for (let key in fleetCorridorCasings) delete fleetCorridorCasings[key];
+
+    // Remove existing directional chevrons
+    if (fleetDirectionArrows && fleetDirectionArrows.length > 0) {
+        fleetDirectionArrows.forEach(m => {
+            if (fleetMap && fleetMap.hasLayer(m)) fleetMap.removeLayer(m);
+        });
+        fleetDirectionArrows = [];
+    }
 
     if (!showRouteOnMap) return;
 
@@ -2868,7 +3169,7 @@ function drawAllVehicleRoutes() {
 
         fleetRouteCasings[v.id] = casing;
 
-        // 2. Main polyline
+        // 2. Main polyline (traveled trail up to current vehicle position)
         const polyline = L.polyline(v.route, {
             color: routeColor,
             weight: routeWeight,
@@ -2893,35 +3194,175 @@ function drawAllVehicleRoutes() {
 
         fleetRouteLayers[v.id] = polyline;
 
-        // Origin checkpoint dot marker
+        // Origin checkpoint dot marker with "Start HH:MM" Badge
         const originCoord = v.route[0];
         if (originCoord && originCoord.length >= 2) {
-            const originDot = L.circleMarker(originCoord, {
-                radius: isSelected ? 5.5 : 4,
-                color: routeColor,
-                fillColor: '#ffffff',
-                fillOpacity: 1.0,
-                weight: 2.5
-            }).addTo(fleetMap);
+            const startTimeStr = getVehicleStartTimeStr(v);
+            const startLocStr = getVehicleStartLocStr(v);
 
-            originDot.bindTooltip(`📍 Origin: ${escHtml(v.plate)} dispatch point`, {
-                direction: 'top',
-                offset: [0, -6]
-            });
+            if (isSelected) {
+                // Prominent Starting Point Marker with "Start HH:MM" Badge matching user's mockup
+                const startDivIcon = L.divIcon({
+                    className: 'map-start-pin-wrapper',
+                    html: `
+                        <div class="map-start-pin">
+                            <div class="map-start-badge">Start ${escHtml(startTimeStr)}</div>
+                            <div class="map-start-dot"></div>
+                        </div>
+                    `,
+                    iconSize: [84, 38],
+                    iconAnchor: [42, 34]
+                });
 
-            originDot.on('click', (e) => {
-                if (L.DomEvent) L.DomEvent.stopPropagation(e);
-                selectVehicleOnLiveMap(v.id);
-            });
+                const startMarker = L.marker(originCoord, {
+                    icon: startDivIcon,
+                    zIndexOffset: 2800
+                }).addTo(fleetMap);
 
-            fleetOriginMarkers[v.id] = originDot;
+                startMarker.bindTooltip(`📍 <b>Starting Point:</b> ${escHtml(startLocStr)}<br>⏱️ <b>Departed:</b> ${escHtml(startTimeStr)}`, {
+                    direction: 'top',
+                    offset: [0, -32]
+                });
+
+                startMarker.on('click', (e) => {
+                    if (L.DomEvent) L.DomEvent.stopPropagation(e);
+                    selectVehicleOnLiveMap(v.id);
+                });
+
+                fleetOriginMarkers[v.id] = startMarker;
+            } else {
+                // Subtle origin dot for unselected routes
+                const originDot = L.circleMarker(originCoord, {
+                    radius: 4,
+                    color: '#64748b',
+                    fillColor: '#ffffff',
+                    fillOpacity: 1.0,
+                    weight: 2
+                }).addTo(fleetMap);
+
+                originDot.bindTooltip(`📍 Origin: ${escHtml(v.plate)} dispatch point (${escHtml(startTimeStr)})`, {
+                    direction: 'top',
+                    offset: [0, -6]
+                });
+
+                originDot.on('click', (e) => {
+                    if (L.DomEvent) L.DomEvent.stopPropagation(e);
+                    selectVehicleOnLiveMap(v.id);
+                });
+
+                fleetOriginMarkers[v.id] = originDot;
+            }
+        }
+
+        // ── 3. DESTINATION WAY PREVIEW & DESTINATION PIN (For Selected Vehicle) ──
+        if (isSelected) {
+            const destInfo = getVehicleDestinationInfo(v);
+            if (destInfo && destInfo.coords) {
+                // A. Forward Highway Corridor Polyline (Destination Way Preview)
+                if (destInfo.forwardWaypoints && destInfo.forwardWaypoints.length >= 2) {
+                    // Underlay white casing for forward corridor preview
+                    const forwardCasing = L.polyline(destInfo.forwardWaypoints, {
+                        color: '#ffffff',
+                        weight: 8,
+                        opacity: 0.92,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(fleetMap);
+                    fleetCorridorCasings[v.id] = forwardCasing;
+
+                    // Forward Electric Blue navigation polyline (dashed to preview planned destination way)
+                    const forwardLine = L.polyline(destInfo.forwardWaypoints, {
+                        color: '#2563eb',
+                        weight: 4.5,
+                        opacity: 0.95,
+                        dashArray: '8, 8',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(fleetMap);
+
+                    forwardLine.bindTooltip(`🛣️ <b>Destination Way Preview:</b> To ${escHtml(destInfo.name)}<br>⏱️ <b>ETA:</b> ${escHtml(destInfo.eta)} · <b>Remaining:</b> ${escHtml(destInfo.remainingDist)}`, {
+                        sticky: true,
+                        direction: 'top',
+                        offset: [0, -10]
+                    });
+
+                    fleetCorridorLayers[v.id] = forwardLine;
+
+                    // Render directional chevrons (➤) along forward route segments
+                    for (let i = 0; i < destInfo.forwardWaypoints.length - 1; i++) {
+                        const p1 = destInfo.forwardWaypoints[i];
+                        const p2 = destInfo.forwardWaypoints[i + 1];
+                        const midLat = (p1[0] + p2[0]) / 2;
+                        const midLng = (p1[1] + p2[1]) / 2;
+
+                        const dLat = (p2[0] - p1[0]);
+                        const dLng = (p2[1] - p1[1]) * Math.cos(p1[0] * Math.PI / 180);
+                        const bearing = Math.round(Math.atan2(dLng, dLat) * 180 / Math.PI);
+
+                        const arrowIcon = L.divIcon({
+                            className: 'route-dir-arrow-wrap',
+                            html: `<div class="route-dir-arrow" style="transform: rotate(${bearing - 90}deg);">➤</div>`,
+                            iconSize: [16, 16],
+                            iconAnchor: [8, 8]
+                        });
+
+                        const arrowMarker = L.marker([midLat, midLng], {
+                            icon: arrowIcon,
+                            interactive: false,
+                            zIndexOffset: 1500
+                        }).addTo(fleetMap);
+
+                        fleetDirectionArrows.push(arrowMarker);
+                    }
+                }
+
+                // B. Destination Pin Marker (Compact, Sleek Google Maps Pin)
+                const shortDestName = (destInfo.name || 'Destination')
+                    .replace(/logistics\s*(park|hub|yard|terminal)?/i, '')
+                    .replace(/industrial\s*(hub|estate|bay)?/i, '')
+                    .replace(/freight\s*(hub|terminal|bay|bypass)?/i, '')
+                    .trim()
+                    .split(/[\s·,/]+/)[0] || 'Destination';
+
+                const destDivIcon = L.divIcon({
+                    className: 'map-dest-pin-wrapper',
+                    html: `
+                        <div class="map-dest-pin">
+                            <div class="map-dest-badge">🏁 ${escHtml(shortDestName)}</div>
+                            <div class="map-dest-dot"></div>
+                        </div>
+                    `,
+                    iconSize: [88, 30],
+                    iconAnchor: [44, 26]
+                });
+
+                const destMarker = L.marker(destInfo.coords, {
+                    icon: destDivIcon,
+                    zIndexOffset: 2900
+                }).addTo(fleetMap);
+
+                destMarker.bindTooltip(`🏁 <b>Destination:</b> ${escHtml(destInfo.name)}<br>⏱️ <b>ETA:</b> ${escHtml(destInfo.eta)}<br>🛣️ <b>Remaining Distance:</b> ${escHtml(destInfo.remainingDist)}<br>🚚 <b>Assigned Truck:</b> ${escHtml(v.plate)}`, {
+                    direction: 'top',
+                    offset: [0, -28]
+                });
+
+                destMarker.on('click', (e) => {
+                    if (L.DomEvent) L.DomEvent.stopPropagation(e);
+                    selectVehicleOnLiveMap(v.id);
+                });
+
+                fleetDestMarkers[v.id] = destMarker;
+            }
         }
     });
 
-    // Bring selected vehicle's casing and route layer to front so it is crisp on top
+    // Bring selected vehicle's casings, route lines, forward corridor, and destination pin to front
     if (selectedVehicleId) {
+        if (fleetCorridorCasings[selectedVehicleId]) fleetCorridorCasings[selectedVehicleId].bringToFront();
+        if (fleetCorridorLayers[selectedVehicleId]) fleetCorridorLayers[selectedVehicleId].bringToFront();
         if (fleetRouteCasings[selectedVehicleId]) fleetRouteCasings[selectedVehicleId].bringToFront();
         if (fleetRouteLayers[selectedVehicleId]) fleetRouteLayers[selectedVehicleId].bringToFront();
+        if (fleetDestMarkers[selectedVehicleId]) fleetDestMarkers[selectedVehicleId].bringToFront();
     }
 
     // Ensure truck markers always float above route polylines
@@ -2945,9 +3386,8 @@ window.selectVehicleOnLiveMap = function(vid) {
     const v = vehicles[vid];
     if (!v) return;
 
-    // Show panel if it was closed
-    const $panel = document.getElementById('liveVehicleDetailPanel');
-    if ($panel) $panel.style.display = 'flex';
+    // Show panel smoothly if it was closed
+    openVehicleDetailPanel();
 
     // Update list selection highlight
     renderLiveFleetList();
@@ -2955,12 +3395,24 @@ window.selectVehicleOnLiveMap = function(vid) {
     // Update marker halo
     updateFleetMapMarkers();
 
-    // Pan map to vehicle
+    // Pan or fit map bounds to show full vehicle journey (Origin -> Vehicle -> Destination)
     if (fleetMap && v.lat && v.lng) {
-        fleetMap.panTo([v.lat, v.lng], { animate: true, duration: 0.5 });
+        const destInfo = getVehicleDestinationInfo(v);
+        if (destInfo && destInfo.coords && destInfo.coords.length >= 2) {
+            const journeyBounds = L.latLngBounds([[v.lat, v.lng], destInfo.coords]);
+            if (v.route && v.route[0]) journeyBounds.extend(v.route[0]);
+            fleetMap.fitBounds(journeyBounds, {
+                padding: [55, 55],
+                maxZoom: 12,
+                animate: true,
+                duration: 0.6
+            });
+        } else {
+            fleetMap.panTo([v.lat, v.lng], { animate: true, duration: 0.5 });
+        }
     }
 
-    // Redraw all routes (selected route highlighted as solid, others dashed)
+    // Redraw all routes (selected route highlighted as solid, others dashed, plus forward destination way preview!)
     drawAllVehicleRoutes();
 
     // Render details
@@ -2988,7 +3440,7 @@ function renderSelectedVehicleDetail() {
     if ($plate) $plate.textContent = v.plate;
     if ($pill) {
         $pill.className = `detail-status-pill ${cat}`;
-        $pill.textContent = cat === 'moving' ? '● Moving' : ((cat === 'halt' || cat === 'idle') ? '● Halt' : '● Offline');
+        $pill.textContent = cat === 'moving' ? '● Moving' : ((cat === 'halt' || cat === 'idle') ? '● Idle' : '● Offline');
     }
     if ($model) $model.textContent = `${v.model} · ${v.type}`;
     if ($sourceBadge) {
@@ -3007,19 +3459,15 @@ function renderSelectedVehicleDetail() {
     const dName = driver ? driver.name : 'Unassigned';
     const initials = dName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'TR';
 
+    const startTimeStr = getVehicleStartTimeStr(v);
+    const startLocStr = getVehicleStartLocStr(v);
+
     if ($avatar) $avatar.textContent = initials;
     if ($dName) $dName.textContent = dName;
     if ($pType) $pType.textContent = driver ? phoneTypeDisplay(driver.phoneType) : 'Unassigned';
     if ($dPhone) $dPhone.textContent = driver ? `${driver.phone}` : 'No phone linked';
     if ($dStatus) {
-        const onDuty = driver ? driver.onDutySince || '05:40' : '05:40';
-        if (cat === 'moving') {
-            $dStatus.textContent = `On duty since ${onDuty} · Moving ${v.speed} km/h`;
-        } else if (cat === 'halt' || cat === 'idle') {
-            $dStatus.textContent = `On duty since ${onDuty} · Halted / Stopped`;
-        } else {
-            $dStatus.textContent = `On duty since ${onDuty} · phone offline`;
-        }
+        $dStatus.textContent = `On duty since ${startTimeStr}`;
     }
     if ($dCall) {
         $dCall.href = `tel:${driver ? driver.phone : ''}`;
@@ -3103,7 +3551,7 @@ function renderSelectedVehicleDetail() {
         $tripCard.innerHTML = tripHtml;
     }
 
-    // 2x2 stats grid
+    // 2x2 stats grid with Proactive Exception Alerts
     const $speed = document.getElementById('detailSpeed');
     const $lastUp = document.getElementById('detailLastUpdate');
     const $batt = document.getElementById('detailBattery');
@@ -3111,8 +3559,28 @@ function renderSelectedVehicleDetail() {
 
     if ($speed) $speed.textContent = (cat === 'moving') ? `${v.speed} km/h` : '—';
     if ($lastUp) $lastUp.textContent = v.lastSeen || (cat === 'offline' ? '42 min ago' : '8 s ago');
-    if ($batt) $batt.textContent = `${v.battery || 85}%`;
-    if ($acc) $acc.textContent = `${v.accuracy || 15} m`;
+
+    // Battery with Low Battery exception alert (< 20%)
+    if ($batt) {
+        if (v.battery && v.battery < 20) {
+            $batt.innerHTML = `${v.battery}% <span class="telematics-alert-badge danger">⚠️ Low</span>`;
+            $batt.classList.add('alert-danger');
+        } else {
+            $batt.innerHTML = `${v.battery || 85}%`;
+            $batt.classList.remove('alert-danger');
+        }
+    }
+
+    // GPS accuracy with Poor GPS alert (> 30 m)
+    if ($acc) {
+        if (v.accuracy && v.accuracy > 30) {
+            $acc.innerHTML = `${v.accuracy} m <span class="telematics-alert-badge warning">Poor GPS</span>`;
+            $acc.classList.add('alert-warning');
+        } else {
+            $acc.innerHTML = `${v.accuracy || 15} m`;
+            $acc.classList.remove('alert-warning');
+        }
+    }
 
     // Distance covered with timeframe
     const $dist = document.getElementById('detailDistance');
@@ -3124,13 +3592,29 @@ function renderSelectedVehicleDetail() {
         $dist.textContent = d;
     }
     if ($distSub) {
-        const onDuty = driver ? driver.onDutySince || '05:40' : '05:40';
-        $distSub.textContent = `Today · since ${onDuty}`;
+        $distSub.textContent = `Today · since ${startTimeStr}`;
     }
+
+    // Trip route: starting location & time + current location + Destination & ETA
+    const $startLoc = document.getElementById('detailStartLocation');
+    const $startTime = document.getElementById('detailStartTime');
+    if ($startLoc) $startLoc.textContent = startLocStr;
+    if ($startTime) $startTime.textContent = startTimeStr;
 
     // Last known location
     const $loc = document.getElementById('detailLocation');
     if ($loc) $loc.textContent = v.currentLocation || 'NH 16, Minjur / Ponneri Junction';
+
+    // Destination & ETA
+    const $dest = document.getElementById('detailDestination');
+    const $eta = document.getElementById('detailEta');
+    const destStr = v.destination || 'Madhavaram Freight Terminal';
+    const etaStr = v.eta || '11:45 AM';
+    const remDistStr = v.remainingDist || '38 km left';
+    if ($dest) {
+        $dest.innerHTML = `${escHtml(destStr)} <span class="eta-rem-dist" id="detailRemainingDist">(${escHtml(remDistStr)})</span>`;
+    }
+    if ($eta) $eta.textContent = etaStr;
 
     // Freight Corridor & Route Progress Card
     const vehicleCorridorMap = {
@@ -3242,6 +3726,15 @@ window.filterLiveFleet = function(fType) {
         }
     });
 
+    document.querySelectorAll('.fleet-filter-pill').forEach(pill => {
+        const pFilter = pill.dataset.filter;
+        if (pFilter === fType || (currentFleetFilter === 'halt' && (pFilter === 'halt' || pFilter === 'idle'))) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
     const $badge = document.getElementById('fleetFilterIndicator');
     if ($badge) {
         const total = Object.keys(vehicles).length;
@@ -3267,11 +3760,29 @@ window.showAllVehiclesOnMap = function() {
 };
 
 /**
- * Close right vehicle detail panel
+ * Close right vehicle detail panel and smoothly expand the map
  */
 window.closeVehicleDetailPanel = function() {
     const $panel = document.getElementById('liveVehicleDetailPanel');
-    if ($panel) $panel.style.display = 'none';
+    const $reopenBtn = document.getElementById('btnReopenDetail');
+    if ($panel) $panel.classList.add('closed');
+    if ($reopenBtn) $reopenBtn.style.display = 'inline-flex';
+    setTimeout(() => {
+        if (fleetMap) fleetMap.invalidateSize();
+    }, 280);
+};
+
+/**
+ * Open right vehicle detail panel smoothly
+ */
+window.openVehicleDetailPanel = function() {
+    const $panel = document.getElementById('liveVehicleDetailPanel');
+    const $reopenBtn = document.getElementById('btnReopenDetail');
+    if ($panel) $panel.classList.remove('closed');
+    if ($reopenBtn) $reopenBtn.style.display = 'none';
+    setTimeout(() => {
+        if (fleetMap) fleetMap.invalidateSize();
+    }, 280);
 };
 
 /**
