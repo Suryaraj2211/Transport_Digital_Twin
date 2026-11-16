@@ -137,36 +137,22 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Clean trailing slashes & normalize
-  if (reqUrl === '/') {
-    res.writeHead(302, { 'Location': '/admin/' });
+  // ── Serve React Single-Page Application (dist/) ───────────
+  const distDir = path.join(ROOT_DIR, 'dist');
+  const indexHtmlPath = path.join(distDir, 'index.html');
+
+  if (reqUrl === '/admin' || reqUrl === '/admin/') {
+    res.writeHead(302, { 'Location': '/' });
     return res.end();
   }
 
-  if (reqUrl === '/admin') {
-    res.writeHead(301, { 'Location': '/admin/' });
-    return res.end();
-  }
+  // Resolve requested file inside dist/
+  let filePath = path.join(distDir, reqUrl === '/' ? 'index.html' : reqUrl);
 
-  if (reqUrl === '/driver') {
-    res.writeHead(301, { 'Location': '/driver/' });
-    return res.end();
+  // If path doesn't exist or is an SPA route (/driver), fallback to index.html
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    filePath = indexHtmlPath;
   }
-
-  if (reqUrl === '/admin/') {
-    reqUrl = '/admin/index.html';
-  } else if (reqUrl === '/driver/') {
-    reqUrl = '/driver/index.html';
-  }
-
-  // Handle direct file requests from subdirs if requested without prefix
-  if (reqUrl === '/admin.css' || reqUrl === '/admin.js') {
-    reqUrl = '/admin' + reqUrl;
-  } else if (reqUrl === '/driver.css' || reqUrl === '/driver.js') {
-    reqUrl = '/driver' + reqUrl;
-  }
-
-  let filePath = path.join(ROOT_DIR, reqUrl);
 
   // Security check: ensure path stays within ROOT_DIR
   if (!filePath.startsWith(ROOT_DIR)) {
@@ -179,8 +165,8 @@ const server = http.createServer((req, res) => {
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(`
         <div style="font-family:sans-serif; text-align:center; padding:50px;">
-          <h2>404 — Not Found: ${reqUrl}</h2>
-          <p><a href="/admin/">Go to Admin Dashboard</a> | <a href="/driver/">Go to Driver Portal</a></p>
+          <h2>React build not found</h2>
+          <p>Run <code>npm run build</code> to generate the production bundle, or use <code>npm run dev</code> for local development at <a href="http://localhost:3001/">http://localhost:3001/</a>.</p>
         </div>
       `);
     }
@@ -190,7 +176,7 @@ const server = http.createServer((req, res) => {
 
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Cache-Control': ext === '.html' ? 'no-cache, no-store, must-revalidate' : 'public, max-age=31536000',
       'Access-Control-Allow-Origin': '*'
     });
 
@@ -202,14 +188,14 @@ const server = http.createServer((req, res) => {
 function startServer(portToTry) {
   server.listen(portToTry, () => {
     console.log(`=======================================================`);
-    console.log(`  🚛 V3 Logistics — Fleet Platform is Running!`);
+    console.log(`  🚛 V3 Logistics — Fleet Management Platform (React)`);
     console.log(`     (Varatharajan · Surya · Akash)`);
     console.log(`  -----------------------------------------------------`);
     console.log(`  🏢 Admin Operations Dashboard:`);
-    console.log(`     👉 http://localhost:${portToTry}/admin/`);
+    console.log(`     👉 http://localhost:${portToTry}/`);
     console.log(``);
     console.log(`  🚚 Driver Mobile Portal (One-Tap Start/Stop):`);
-    console.log(`     👉 http://localhost:${portToTry}/driver/`);
+    console.log(`     👉 http://localhost:${portToTry}/driver`);
     console.log(`=======================================================`);
   });
 

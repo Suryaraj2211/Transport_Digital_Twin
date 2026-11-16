@@ -4,8 +4,11 @@
   "description": "V3 Logistics (Varatharajan, Surya, Akash) — Smart Fleet Operations Platform with Real-Time Start/End Trip Tracking",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "server": "node server.js",
+    "start": "node server.js"
   },
   "keywords": [
     "fleet-management",
@@ -16,5 +19,18 @@
     "gps-tracking"
   ],
   "author": "V3 Logistics (Varatharajan, Surya, Akash)",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.22",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
 }
