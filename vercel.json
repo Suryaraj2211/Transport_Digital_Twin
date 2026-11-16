@@ -1,21 +1,11 @@
 {
-  "version": 2,
   "cleanUrls": true,
+  "trailingSlash": true,
   "redirects": [
     {
       "source": "/",
       "destination": "/admin/",
       "permanent": false
-    },
-    {
-      "source": "/admin",
-      "destination": "/admin/",
-      "permanent": true
-    },
-    {
-      "source": "/driver",
-      "destination": "/driver/",
-      "permanent": true
     }
   ],
   "rewrites": [
@@ -37,4 +27,3 @@
     }
   ]
 }
-

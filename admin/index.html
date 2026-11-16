@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard — V3 Logistics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="/admin/admin.css">
 </head>
+
 <body>
 
     <!-- ===== MAIN FULL-HEIGHT LAYOUT ===== -->
@@ -72,35 +75,45 @@
                 <div class="dash-top-header">
                     <div class="dash-title-wrap">
                         <h2 class="dash-page-heading">Live tracking</h2>
-                        <p class="dash-sub-note">Every vehicle reporting from its driver app. Positions refresh every few seconds.</p>
+                        <p class="dash-sub-note">Every vehicle reporting from its driver app. Positions refresh every
+                            few seconds.</p>
                     </div>
                 </div>
 
                 <!-- Interactive Clickable KPI Cards (Spacious, Uncluttered Layout) -->
                 <div class="live-map-kpis">
-                    <div class="live-kpi-card live-kpi-filter active" data-filter="all" onclick="filterLiveFleet('all')" title="Filter: All Vehicles">
+                    <div class="live-kpi-card live-kpi-filter active" data-filter="all" onclick="filterLiveFleet('all')"
+                        title="Filter: All Vehicles">
                         <span class="live-kpi-label"><span class="kpi-status-dot vehicles"></span> Vehicles</span>
                         <span class="live-kpi-value" id="kpiTotalVehicles">6</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-filter" data-filter="moving" onclick="filterLiveFleet('moving')" title="Filter: Active Trips (Moving)">
+                    <div class="live-kpi-card live-kpi-filter" data-filter="moving" onclick="filterLiveFleet('moving')"
+                        title="Filter: Active Trips (Moving)">
                         <span class="live-kpi-label"><span class="kpi-status-dot moving"></span> Moving</span>
                         <span class="live-kpi-value" id="kpiActiveTrips">4</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-filter" data-filter="halt" onclick="filterLiveFleet('halt')" title="Filter: Vehicles Halted">
+                    <div class="live-kpi-card live-kpi-filter" data-filter="halt" onclick="filterLiveFleet('halt')"
+                        title="Filter: Vehicles Halted">
                         <span class="live-kpi-label"><span class="kpi-status-dot idle"></span> Idle</span>
                         <span class="live-kpi-value" id="kpiHaltedCount">1</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-filter" data-filter="offline" onclick="filterLiveFleet('offline')" title="Filter: Offline Vehicles">
+                    <div class="live-kpi-card live-kpi-filter" data-filter="offline"
+                        onclick="filterLiveFleet('offline')" title="Filter: Offline Vehicles">
                         <span class="live-kpi-label"><span class="kpi-status-dot offline"></span> Offline</span>
                         <span class="live-kpi-value" id="kpiOfflineCount">1</span>
                     </div>
-                    <div class="live-kpi-card live-kpi-completed" onclick="document.querySelector('.sidebar-tab[data-tab=\'trips\']')?.click()" title="Click to view Trip History">
-                        <span class="live-kpi-label"><span class="kpi-status-dot completed"></span> Completed today</span>
+                    <div class="live-kpi-card live-kpi-completed"
+                        onclick="document.querySelector('.sidebar-tab[data-tab=\'trips\']')?.click()"
+                        title="Click to view Trip History">
+                        <span class="live-kpi-label"><span class="kpi-status-dot completed"></span> Completed
+                            today</span>
                         <span class="live-kpi-value" id="kpiCompletedToday">4</span>
                     </div>
                     <div class="live-kpi-card live-kpi-summary" title="Fleet Total Distance Today">
-                        <span class="live-kpi-label"><span class="kpi-status-dot distance"></span> Fleet distance today</span>
-                        <span class="live-kpi-value"><span id="kpiFleetDistance">981.2</span> <span class="unit-km">km</span></span>
+                        <span class="live-kpi-label"><span class="kpi-status-dot distance"></span> Fleet distance
+                            today</span>
+                        <span class="live-kpi-value"><span id="kpiFleetDistance">981.2</span> <span
+                                class="unit-km">km</span></span>
                     </div>
                 </div>
 
@@ -111,25 +124,31 @@
                         <!-- Quick Fleet Search Bar -->
                         <div class="fleet-search-box">
                             <span class="fleet-search-icon">🔍</span>
-                            <input type="text" id="fleetSearchInput" placeholder="Search plate, driver, location..." oninput="handleFleetSearch(this.value)" autocomplete="off">
-                            <button type="button" class="btn-clear-fleet-search" id="btnClearFleetSearch" onclick="clearFleetSearch()" title="Clear search">✕</button>
+                            <input type="text" id="fleetSearchInput" placeholder="Search plate, driver, location..."
+                                oninput="handleFleetSearch(this.value)" autocomplete="off">
+                            <button type="button" class="btn-clear-fleet-search" id="btnClearFleetSearch"
+                                onclick="clearFleetSearch()" title="Clear search">✕</button>
                         </div>
 
                         <!-- 4 Filter Pills matching Mockup 1 -->
                         <div class="fleet-filter-pills-bar">
-                            <button type="button" class="fleet-filter-pill active" data-filter="all" onclick="filterLiveFleet('all')">
+                            <button type="button" class="fleet-filter-pill active" data-filter="all"
+                                onclick="filterLiveFleet('all')">
                                 <span class="pill-label">All</span>
                                 <span class="pill-count" id="chipAllCount">6</span>
                             </button>
-                            <button type="button" class="fleet-filter-pill" data-filter="moving" onclick="filterLiveFleet('moving')">
+                            <button type="button" class="fleet-filter-pill" data-filter="moving"
+                                onclick="filterLiveFleet('moving')">
                                 <span class="pill-label">Moving</span>
                                 <span class="pill-count" id="chipMovingCount">4</span>
                             </button>
-                            <button type="button" class="fleet-filter-pill" data-filter="halt" onclick="filterLiveFleet('halt')">
+                            <button type="button" class="fleet-filter-pill" data-filter="halt"
+                                onclick="filterLiveFleet('halt')">
                                 <span class="pill-label">Idle</span>
                                 <span class="pill-count" id="chipHaltCount">1</span>
                             </button>
-                            <button type="button" class="fleet-filter-pill" data-filter="offline" onclick="filterLiveFleet('offline')">
+                            <button type="button" class="fleet-filter-pill" data-filter="offline"
+                                onclick="filterLiveFleet('offline')">
                                 <span class="pill-label">Offline</span>
                                 <span class="pill-count" id="chipOfflineCount">1</span>
                             </button>
@@ -149,11 +168,16 @@
                                 <span>Live - refreshes every 5 s</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <button type="button" class="btn-reopen-detail" id="btnReopenDetail" onclick="openVehicleDetailPanel()" style="display:none;" title="Show vehicle details panel">📊 Show Details</button>
-                                <button type="button" class="btn-toggle-route-filter" id="btnToggleRouteFilter" onclick="toggleRouteFilterMode()" title="Toggle between all routes and selected vehicle route only">
+                                <button type="button" class="btn-reopen-detail" id="btnReopenDetail"
+                                    onclick="openVehicleDetailPanel()" style="display:none;"
+                                    title="Show vehicle details panel">📊 Show Details</button>
+                                <button type="button" class="btn-toggle-route-filter" id="btnToggleRouteFilter"
+                                    onclick="toggleRouteFilterMode()"
+                                    title="Toggle between all routes and selected vehicle route only">
                                     <span id="routeFilterIcon">🛣️</span> <span id="routeFilterText">All Routes</span>
                                 </button>
-                                <button type="button" class="btn-show-all-vehicles" onclick="showAllVehiclesOnMap()">Show all vehicles</button>
+                                <button type="button" class="btn-show-all-vehicles"
+                                    onclick="showAllVehiclesOnMap()">Show all vehicles</button>
                             </div>
                         </div>
 
@@ -165,7 +189,8 @@
                             <span class="legend-item"><span class="legend-dot moving"></span> Moving</span>
                             <span class="legend-item"><span class="legend-dot idle"></span> Idle</span>
                             <span class="legend-item"><span class="legend-dot offline"></span> Offline</span>
-                            <span class="legend-item" style="border-left:1px solid #e2e8f0; padding-left:8px;"><span style="color:#2563eb; font-weight:800; font-size:12px;">┅┅</span> Dest. Way</span>
+                            <span class="legend-item" style="border-left:1px solid #e2e8f0; padding-left:8px;"><span
+                                    style="color:#2563eb; font-weight:800; font-size:12px;">┅┅</span> Dest. Way</span>
                             <span class="legend-item"><span style="font-size:12px;">🏁</span> Destination</span>
                         </div>
 
@@ -173,15 +198,28 @@
                         <div class="map-type-dock" id="mapTypeDock">
                             <span class="map-type-dock-title">Map type</span>
                             <div class="map-type-cards-row">
-                                <button type="button" class="map-type-card active" id="cardMapSatellite" onclick="setMapType('satellite')" title="Satellite Aerial View (ESRI World Imagery)">
+                                <button type="button" class="map-type-card active" id="cardMapSatellite"
+                                    onclick="setMapType('satellite')"
+                                    title="Satellite Aerial View (ESRI World Imagery)">
                                     <div class="map-card-thumb thumb-satellite">
-                                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="6" fill="#1e293b"/><path d="M0 16L36 24" stroke="#64748b" stroke-width="4"/><path d="M10 0L24 36" stroke="#475569" stroke-width="3"/><circle cx="18" cy="18" r="10" fill="#14532d" opacity="0.6"/></svg>
+                                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
+                                            <rect width="36" height="36" rx="6" fill="#1e293b" />
+                                            <path d="M0 16L36 24" stroke="#64748b" stroke-width="4" />
+                                            <path d="M10 0L24 36" stroke="#475569" stroke-width="3" />
+                                            <circle cx="18" cy="18" r="10" fill="#14532d" opacity="0.6" />
+                                        </svg>
                                     </div>
                                     <span class="map-card-name">Satellite</span>
                                 </button>
-                                <button type="button" class="map-type-card" id="cardMapStreets" onclick="setMapType('streets')" title="Detailed Street View (OpenStreetMap)">
+                                <button type="button" class="map-type-card" id="cardMapStreets"
+                                    onclick="setMapType('streets')" title="Detailed Street View (OpenStreetMap)">
                                     <div class="map-card-thumb thumb-default">
-                                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="6" fill="#bae6fd"/><path d="M0 20C10 20 14 14 24 16C30 17 33 11 36 8V36H0V20Z" fill="#86efac"/><path d="M0 26C10 22 18 28 36 22" stroke="#0284c7" stroke-width="3"/></svg>
+                                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
+                                            <rect width="36" height="36" rx="6" fill="#bae6fd" />
+                                            <path d="M0 20C10 20 14 14 24 16C30 17 33 11 36 8V36H0V20Z"
+                                                fill="#86efac" />
+                                            <path d="M0 26C10 22 18 28 36 22" stroke="#0284c7" stroke-width="3" />
+                                        </svg>
                                     </div>
                                     <span class="map-card-name">Streets</span>
                                 </button>
@@ -190,9 +228,11 @@
 
                         <!-- Dedicated Zoom Controls (Bottom Right - Clean & Proper) -->
                         <div class="map-zoom-dock">
-                            <button type="button" class="btn-map-zoom-ctrl" onclick="zoomInMap()" title="Zoom in">+</button>
+                            <button type="button" class="btn-map-zoom-ctrl" onclick="zoomInMap()"
+                                title="Zoom in">+</button>
                             <div class="zoom-divider"></div>
-                            <button type="button" class="btn-map-zoom-ctrl" onclick="zoomOutMap()" title="Zoom out">−</button>
+                            <button type="button" class="btn-map-zoom-ctrl" onclick="zoomOutMap()"
+                                title="Zoom out">−</button>
                         </div>
                     </div>
 
@@ -207,18 +247,22 @@
                                 </div>
                                 <div class="detail-sub-header">
                                     <span class="detail-model" id="detailModel">Ashok Leyland 2820 · Truck 28T</span>
-                                    <span class="source-badge app" id="detailSourceBadge" style="display:none;">📱 Driver App GPS</span>
+                                    <span class="source-badge app" id="detailSourceBadge" style="display:none;">📱
+                                        Driver App GPS</span>
                                 </div>
                             </div>
-                            <button class="btn-close-detail" onclick="closeVehicleDetailPanel()" title="Close details">✕</button>
+                            <button class="btn-close-detail" onclick="closeVehicleDetailPanel()"
+                                title="Close details">✕</button>
                         </div>
 
                         <!-- 2-Tabs Segmented Bar -->
                         <div class="detail-tabs-nav">
-                            <button type="button" class="detail-tab-btn active" id="tabBtnOverview" onclick="switchDetailTab('overview')">
+                            <button type="button" class="detail-tab-btn active" id="tabBtnOverview"
+                                onclick="switchDetailTab('overview')">
                                 📊 Live Overview
                             </button>
-                            <button type="button" class="detail-tab-btn" id="tabBtnCorridor" onclick="switchDetailTab('corridor')">
+                            <button type="button" class="detail-tab-btn" id="tabBtnCorridor"
+                                onclick="switchDetailTab('corridor')">
                                 🛰️ Corridor & Tech
                             </button>
                         </div>
@@ -231,13 +275,17 @@
                                     <span class="distance-title">📈 Distance covered</span>
                                 </div>
                                 <div class="distance-number-row">
-                                    <span class="distance-number"><span id="detailDistance">168.2</span> <span class="distance-unit">km</span></span>
+                                    <span class="distance-number"><span id="detailDistance">168.2</span> <span
+                                            class="distance-unit">km</span></span>
                                 </div>
                                 <div class="distance-sub" id="detailDistanceSub">Today · since 06:40</div>
                                 <div class="timeframe-toggle">
-                                    <button class="timeframe-btn active" data-timeframe="today" onclick="setTimeframe('today')">Today</button>
-                                    <button class="timeframe-btn" data-timeframe="week" onclick="setTimeframe('week')">This week</button>
-                                    <button class="timeframe-btn" data-timeframe="month" onclick="setTimeframe('month')">This month</button>
+                                    <button class="timeframe-btn active" data-timeframe="today"
+                                        onclick="setTimeframe('today')">Today</button>
+                                    <button class="timeframe-btn" data-timeframe="week"
+                                        onclick="setTimeframe('week')">This week</button>
+                                    <button class="timeframe-btn" data-timeframe="month"
+                                        onclick="setTimeframe('month')">This month</button>
                                 </div>
                             </div>
 
@@ -247,13 +295,16 @@
                                 <div class="driver-info">
                                     <div class="driver-name-row">
                                         <span class="driver-name" id="detailDriverName">Selvam R</span>
-                                        <span class="driver-phone-type-badge" id="detailPhoneType" style="display:none;">Smartphone</span>
+                                        <span class="driver-phone-type-badge" id="detailPhoneType"
+                                            style="display:none;">Smartphone</span>
                                     </div>
                                     <div class="driver-status" id="detailDriverStatus">On duty since 06:40</div>
-                                    <div class="driver-phone-text" id="detailDriverPhone" style="display:none;">+91 98450 34567</div>
+                                    <div class="driver-phone-text" id="detailDriverPhone" style="display:none;">+91
+                                        98450 34567</div>
                                 </div>
                                 <div class="driver-card-actions">
-                                    <a href="tel:+919845034567" id="detailDriverCall" class="btn-driver-call" title="Call Driver">📞</a>
+                                    <a href="tel:+919845034567" id="detailDriverCall" class="btn-driver-call"
+                                        title="Call Driver">📞</a>
                                 </div>
                             </div>
 
@@ -281,16 +332,22 @@
                                 <!-- Starting Point, Current Location & Destination/ETA (Full Journey Arc) -->
                                 <div class="detail-locations-group">
                                     <div class="location-cell">
-                                        <div class="stat-label">Starting point · <span id="detailStartTime">06:40</span></div>
-                                        <div class="stat-value location-val" id="detailStartLocation">Tambaram Logistics Depot</div>
+                                        <div class="stat-label">Starting point · <span id="detailStartTime">06:40</span>
+                                        </div>
+                                        <div class="stat-value location-val" id="detailStartLocation">Tambaram Logistics
+                                            Depot</div>
                                     </div>
                                     <div class="location-cell">
                                         <div class="stat-label">Current location</div>
-                                        <div class="stat-value location-val" id="detailLocation">NH 32, near Chengalpattu</div>
+                                        <div class="stat-value location-val" id="detailLocation">NH 32, near
+                                            Chengalpattu</div>
                                     </div>
                                     <div class="location-cell">
-                                        <div class="stat-label">Destination &amp; ETA · <span id="detailEta">11:45 AM</span></div>
-                                        <div class="stat-value location-val destination-val" id="detailDestination">Madhavaram Freight Terminal <span class="eta-rem-dist" id="detailRemainingDist">(38 km left)</span></div>
+                                        <div class="stat-label">Destination &amp; ETA · <span id="detailEta">11:45
+                                                AM</span></div>
+                                        <div class="stat-value location-val destination-val" id="detailDestination">
+                                            Madhavaram Freight Terminal <span class="eta-rem-dist"
+                                                id="detailRemainingDist">(38 km left)</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -301,11 +358,13 @@
                             <!-- Freight Corridor & Route Progress -->
                             <div class="detail-corridor-card" id="detailCorridorCard">
                                 <div class="corridor-header">
-                                    <span class="corridor-title">🛣️ <span id="detailCorridorTitle">NH 16 Ponneri Corridor</span></span>
+                                    <span class="corridor-title">🛣️ <span id="detailCorridorTitle">NH 16 Ponneri
+                                            Corridor</span></span>
                                     <span class="corridor-pct" id="detailCorridorPct">68%</span>
                                 </div>
                                 <div class="corridor-progress-bar">
-                                    <div class="corridor-progress-fill" id="detailCorridorFill" style="width: 68%;"></div>
+                                    <div class="corridor-progress-fill" id="detailCorridorFill" style="width: 68%;">
+                                    </div>
                                 </div>
                                 <div class="corridor-checkpoint-row">
                                     <span class="corridor-sub">📍 Next Toll / Hub:</span>
@@ -330,7 +389,8 @@
                                 <div class="diag-row">
                                     <span class="diag-label">🔋 Battery:</span>
                                     <div class="battery-bar-wrapper">
-                                        <div class="battery-bar-fill" id="detailBatteryFill" style="width: 85%; background: #10b981;"></div>
+                                        <div class="battery-bar-fill" id="detailBatteryFill"
+                                            style="width: 85%; background: #10b981;"></div>
                                     </div>
                                     <span class="diag-val" id="detailBatteryPctText">85%</span>
                                 </div>
@@ -350,7 +410,10 @@
                 <div class="panel-header-row" style="flex-wrap: wrap; gap: 12px;">
                     <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
                         <h2 class="panel-title" style="margin:0;">Trip History</h2>
-                        <input type="text" id="tripSearchInput" placeholder="🔍 Search truck plate, driver, location, status..." style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 300px; outline:none;" oninput="filterTripsTable(this.value)">
+                        <input type="text" id="tripSearchInput"
+                            placeholder="🔍 Search truck plate, driver, location, status..."
+                            style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 300px; outline:none;"
+                            oninput="filterTripsTable(this.value)">
                     </div>
                     <button class="btn btn-outline" id="btnExportCSV">📥 Export CSV</button>
                 </div>
@@ -486,7 +549,8 @@
                         </div>
                         <div class="form-group">
                             <label for="dDestination">Trip Destination</label>
-                            <input type="text" id="dDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot" value="Sriperumbudur Logistics Hub">
+                            <input type="text" id="dDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot"
+                                value="Sriperumbudur Logistics Hub">
                         </div>
                         <div class="form-group">
                             <label for="dLicence">Licence Number</label>
@@ -612,7 +676,8 @@
                 </div>
                 <div class="form-group">
                     <label for="editDriverDestination">Trip Destination</label>
-                    <input type="text" id="editDriverDestination" placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot">
+                    <input type="text" id="editDriverDestination"
+                        placeholder="e.g. Sriperumbudur Hub, Coimbatore Depot">
                 </div>
                 <div class="form-group">
                     <label for="editDriverLicence">Licence Number</label>
@@ -635,6 +700,7 @@
 
     <!-- Leaflet Interactive Maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <script src="admin.js"></script>
+    <script src="/admin/admin.js"></script>
 </body>
+
 </html>

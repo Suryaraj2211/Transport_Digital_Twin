@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,12 +8,14 @@
     <!-- Google Fonts: IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <!-- Leaflet CSS for Live Navigation Mini-Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <!-- Driver Portal Modern Cockpit Styles -->
-    <link rel="stylesheet" href="driver.css">
+    <link rel="stylesheet" href="/driver/driver.css">
 </head>
+
 <body>
 
     <div class="app-shell">
@@ -90,7 +93,8 @@
             <!-- ═══════════════════════════════════════ -->
             <div class="map-card-wrapper">
                 <div class="map-floating-overlay">
-                    <button type="button" class="btn-map-recenter" id="btnRecenterMap" onclick="recenterDriverMap()" title="Recenter on truck / route">
+                    <button type="button" class="btn-map-recenter" id="btnRecenterMap" onclick="recenterDriverMap()"
+                        title="Recenter on truck / route">
                         🎯
                     </button>
                 </div>
@@ -175,13 +179,20 @@
 
                     <!-- Quick Touch-Friendly Reason Chips -->
                     <div class="halt-pills-row" id="haltPillsRow">
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'toll')">🚧 Toll Plaza</button>
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'loading')">📦 Loading/Unloading</button>
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'tea')">☕ Tea Break</button>
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'food')">🍱 Food Break</button>
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'fuel')">⛽ Fuel Stop</button>
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'traffic')">🚦 Traffic Jam</button>
-                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'mechanical')">🔧 Tyre / Mechanical</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'toll')">🚧 Toll
+                            Plaza</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'loading')">📦
+                            Loading/Unloading</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'tea')">☕ Tea
+                            Break</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'food')">🍱 Food
+                            Break</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'fuel')">⛽ Fuel
+                            Stop</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'traffic')">🚦 Traffic
+                            Jam</button>
+                        <button type="button" class="halt-pill-btn" onclick="selectHaltPill(this, 'mechanical')">🔧 Tyre
+                            / Mechanical</button>
                     </div>
 
                     <!-- Native Select preserved for seamless admin sync -->
@@ -251,7 +262,8 @@
                 <div class="demo-content">
                     <div class="demo-buttons">
                         <button type="button" class="demo-btn drive" onclick="simulateSpeed(55)">🚗 Drive 55</button>
-                        <button type="button" class="demo-btn overspeed" onclick="simulateSpeed(72)">⚡ Overspeed 72</button>
+                        <button type="button" class="demo-btn overspeed" onclick="simulateSpeed(72)">⚡ Overspeed
+                            72</button>
                         <button type="button" class="demo-btn stop" onclick="simulateSpeed(0)">🛑 Stop</button>
                     </div>
                     <div class="demo-loc-row">
@@ -282,6 +294,7 @@
     <!-- Leaflet JS for Driver Mini Navigation Map -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <!-- Driver Portal JavaScript -->
-    <script src="driver.js"></script>
+    <script src="/driver/driver.js"></script>
 </body>
+
 </html>
