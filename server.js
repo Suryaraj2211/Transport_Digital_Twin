@@ -166,7 +166,8 @@ const server = http.createServer((req, res) => {
     reqUrl = '/driver' + reqUrl;
   }
 
-  let filePath = path.join(ROOT_DIR, reqUrl);
+  let cleanReqPath = reqUrl.replace(/^\/+/, '');
+  let filePath = path.resolve(ROOT_DIR, cleanReqPath);
 
   // Security check: ensure path stays within ROOT_DIR
   if (!filePath.startsWith(ROOT_DIR)) {
@@ -224,3 +225,5 @@ function startServer(portToTry) {
 }
 
 startServer(PORT);
+
+module.exports = server;

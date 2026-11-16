@@ -1,6 +1,17 @@
 {
   "cleanUrls": true,
   "trailingSlash": true,
+  "functions": {
+    "index.js": {
+      "includeFiles": "admin/**,driver/**"
+    },
+    "server.js": {
+      "includeFiles": "admin/**,driver/**"
+    },
+    "api/*.js": {
+      "includeFiles": "admin/**,driver/**"
+    }
+  },
   "redirects": [
     {
       "source": "/",
