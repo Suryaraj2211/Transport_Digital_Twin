@@ -1,40 +1,12 @@
 {
+  "framework": null,
   "cleanUrls": true,
   "trailingSlash": true,
-  "functions": {
-    "index.js": {
-      "includeFiles": "admin/**,driver/**"
-    },
-    "server.js": {
-      "includeFiles": "admin/**,driver/**"
-    },
-    "api/*.js": {
-      "includeFiles": "admin/**,driver/**"
-    }
-  },
   "redirects": [
     {
       "source": "/",
       "destination": "/admin/",
       "permanent": false
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/admin.css",
-      "destination": "/admin/admin.css"
-    },
-    {
-      "source": "/admin.js",
-      "destination": "/admin/admin.js"
-    },
-    {
-      "source": "/driver.css",
-      "destination": "/driver/driver.css"
-    },
-    {
-      "source": "/driver.js",
-      "destination": "/driver/driver.js"
     }
   ]
 }

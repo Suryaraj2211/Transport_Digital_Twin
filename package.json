@@ -2,10 +2,8 @@
   "name": "v3-fleet-logistics",
   "version": "1.0.0",
   "description": "V3 Logistics (Varatharajan, Surya, Akash) — Smart Fleet Operations Platform with Real-Time Start/End Trip Tracking",
-  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node local-server.js"
   },
   "keywords": [
     "fleet-management",
