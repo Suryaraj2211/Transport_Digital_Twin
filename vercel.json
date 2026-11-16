@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/admin/",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin/",
+      "permanent": true
+    },
+    {
+      "source": "/driver",
+      "destination": "/driver/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/admin.css",
+      "destination": "/admin/admin.css"
+    },
+    {
+      "source": "/admin.js",
+      "destination": "/admin/admin.js"
+    },
+    {
+      "source": "/driver.css",
+      "destination": "/driver/driver.css"
+    },
+    {
+      "source": "/driver.js",
+      "destination": "/driver/driver.js"
+    }
+  ]
+}
+

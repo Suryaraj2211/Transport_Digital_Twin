@@ -9,6 +9,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.vercel/
 
 # Operating System & IDE Files
 .DS_Store
