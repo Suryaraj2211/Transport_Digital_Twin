@@ -247,8 +247,7 @@
                                 </div>
                                 <div class="detail-sub-header">
                                     <span class="detail-model" id="detailModel">Ashok Leyland 2820 · Truck 28T</span>
-                                    <span class="source-badge app" id="detailSourceBadge" style="display:none;">📱
-                                        Driver App GPS</span>
+                                    <span class="source-badge app" id="detailSourceBadge" onclick="switchDetailTab('corridor')" title="Click to view tracking and consent options" style="cursor: pointer;">📱 Driver App GPS</span>
                                 </div>
                             </div>
                             <button class="btn-close-detail" onclick="closeVehicleDetailPanel()"
@@ -691,6 +690,47 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-ghost" onclick="closeEditDriverModal()">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="saveEditedDriver()">💾 Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== INTERACTIVE DRIVER HANDSET SIMULATOR DRAWER ===== -->
+    <div class="driver-phone-sim-drawer" id="driverPhoneSimDrawer" style="display: none;">
+        <div class="sim-drawer-header">
+            <div class="sim-drawer-title">
+                <span class="phone-screen-dot"></span>
+                <span>📱 Driver Handset · Feature Phone (Nokia 105)</span>
+            </div>
+            <button type="button" class="btn-close-sim-drawer" onclick="closeDriverPhoneSimDrawer()" title="Close Phone Simulator">✕</button>
+        </div>
+        <div class="phone-screen-body">
+            <div class="phone-status-bar">
+                <span id="phoneSimCarrier">📶 Jio 4G</span>
+                <span id="phoneSimTime">12:15 PM</span>
+                <span>🔋 85%</span>
+            </div>
+            <div class="phone-sms-bubble">
+                <div class="sms-sender-row">
+                    <span class="sms-sender">💬 56161 (DoT Consent Gateway)</span>
+                    <span class="sms-time" id="phoneSimSmsTime">Just now</span>
+                </div>
+                <div class="sms-body-text" id="phoneSimSmsText">
+                    "Vanakkam! V3 Logistics requests consent to track mobile for vehicle. Reply YES to 56161 to approve."
+                </div>
+            </div>
+            <div class="phone-actions-prompt" id="phoneSimActionsPrompt">
+                <div class="phone-actions-title">Driver Action: Send Reply SMS</div>
+                <div class="phone-reply-buttons">
+                    <button type="button" class="btn-reply-yes" onclick="driverSimReply('YES')">
+                        🟢 Send Reply "YES" (Approve)
+                    </button>
+                    <button type="button" class="btn-reply-no" onclick="driverSimReply('NO')">
+                        🔴 Send Reply "NO" (Decline)
+                    </button>
+                </div>
+            </div>
+            <div class="phone-reply-sent-note" id="phoneSimReplySentNote" style="display: none;">
+                <!-- Updated dynamically when reply sent -->
             </div>
         </div>
     </div>

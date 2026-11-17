@@ -31,6 +31,8 @@ const vehicles = {
         destination: 'Sriperumbudur Logistics Park',
         eta: '08:30 AM',
         remainingDist: '18.5 km left',
+        simConsentStatus: 'none',
+        simPhone: '+91 98401 23456',
         route: [
             [13.0694, 80.1948],
             [13.0450, 80.1500],
@@ -60,6 +62,8 @@ const vehicles = {
         destination: 'Madhavaram Freight Terminal',
         eta: '11:45 AM',
         remainingDist: '38.0 km left',
+        simConsentStatus: 'none',
+        simPhone: '+91 98402 34567',
         route: [
             [12.9249, 80.1200],
             [12.8400, 80.0600],
@@ -89,6 +93,8 @@ const vehicles = {
         destination: 'Bengaluru Electronic City Depot',
         eta: '02:15 PM',
         remainingDist: '142 km left',
+        simConsentStatus: 'none',
+        simPhone: '+91 98403 45678',
         route: [
             [12.9818, 79.9442],
             [12.9150, 79.8400],
@@ -117,6 +123,8 @@ const vehicles = {
         destination: 'Tiruvallur Industrial Hub Gate 2',
         eta: 'Paused · Halt',
         remainingDist: '12.0 km left',
+        simConsentStatus: 'approved',
+        simPhone: '+91 98404 56789',
         route: [
             [13.1000, 80.1600],
             [13.1150, 80.0900],
@@ -145,6 +153,8 @@ const vehicles = {
         destination: 'Ennore Port Coal Terminal',
         eta: 'Signal Lost',
         remainingDist: '24.5 km left',
+        simConsentStatus: 'pending',
+        simPhone: '+91 98405 67890',
         route: [
             [13.1700, 80.2600],
             [13.2300, 80.2600],
@@ -172,6 +182,8 @@ const vehicles = {
         destination: 'Ambattur Industrial Estate Hub',
         eta: '10:45 AM',
         remainingDist: '14.0 km left',
+        simConsentStatus: 'none',
+        simPhone: '+91 98406 78901',
         route: [
             [13.0350, 80.1550],
             [13.0550, 80.1580],
@@ -943,9 +955,17 @@ function renderVehiclesTable() {
         });
         driverSelectHtml += `</select>`;
 
-        const sourceDisplay = v.source === 'app'
-            ? '<span class="source-badge app">📱 Driver App GPS</span>'
-            : '<span class="source-badge sim">📶 Telecom SIM LBS</span>';
+        let sourceDisplay = '';
+        if (v.source === 'app') {
+            sourceDisplay = '<span class="source-badge app">📱 Driver App GPS</span>';
+        } else {
+            const consentPill = v.simConsentStatus === 'approved'
+                ? '<span style="color:#059669; font-weight:700;">🟢</span>'
+                : (v.simConsentStatus === 'pending'
+                    ? '<span style="color:#d97706; font-weight:700;">🟡</span>'
+                    : '<span style="color:#64748b; font-weight:700;">⚪</span>');
+            sourceDisplay = `<span class="source-badge sim" title="Consent: ${v.simConsentStatus || 'none'}">📶 SIM LBS ${consentPill}</span>`;
+        }
 
         const cat = getVehicleStatusCategory(v);
         let statusHtml = '';
@@ -2506,6 +2526,282 @@ window.adminPingSim = function(vehicleId) {
     showToast(`📡 Cell Tower LBS Triangulation:\nCarrier: ${carrier} Telecom · Tower: ${towerId}\nSignal: ${randomRssi} dBm (Strong) · Coords: ${v.lat.toFixed(4)}, ${v.lng.toFixed(4)}`, 'info');
 };
 
+// ── Telecom SIM LBS Consent & Tracking Mode Management ───────────
+
+window.currentSimDrawerVehicleId = null;
+
+/**
+ * Switch vehicle tracking source between 'app' (Smartphone App GPS) and 'sim' (Telecom SIM LBS)
+ * @param {string} vid
+ * @param {'app'|'sim'} mode
+ */
+window.switchVehicleTrackingMode = function(vid, mode) {
+    const v = vehicles[vid];
+    if (!v) return;
+
+    v.source = mode;
+    const driver = getDriverForVehicle(vid);
+
+    if (mode === 'sim') {
+        if (!v.simConsentStatus) {
+            v.simConsentStatus = (driver && driver.phoneType === 'button') ? 'pending' : 'none';
+        }
+        if (!v.simPhone && driver && driver.phone) {
+            v.simPhone = driver.phone;
+        }
+        showToast(`📶 Switched ${v.plate} to Telecom SIM LBS Tracking.\nEnter driver phone and initiate DoT consent.`, 'info');
+    } else {
+        showToast(`📱 Switched ${v.plate} to Smartphone Driver App GPS Tracking.`, 'info');
+    }
+
+    const $actionsBox = document.getElementById('detailActionsBox');
+    if ($actionsBox) {
+        delete $actionsBox.dataset.renderedSource;
+    }
+
+    renderSelectedVehicleDetail();
+    renderVehiclesTable();
+    updateMapMarkers();
+};
+
+/**
+ * Update the temporary phone draft as user types
+ * @param {string} vid
+ * @param {string} phone
+ */
+window.updateSimPhoneDraft = function(vid, phone) {
+    if (vehicles[vid]) {
+        vehicles[vid].simPhone = phone.trim();
+    }
+};
+
+/**
+ * Initiate DoT SIM LBS Consent via SMS (56161 Gateway)
+ * Matches reference workflow from commercial freight tracker
+ * @param {string} vid
+ */
+window.initiateSimConsent = function(vid) {
+    const v = vehicles[vid];
+    if (!v) return;
+
+    const driver = getDriverForVehicle(vid);
+    const inputEl = document.getElementById('simPhoneInput_' + vid);
+    const enteredPhone = inputEl ? inputEl.value.trim() : (v.simPhone || (driver ? driver.phone : ''));
+
+    // Extract digits and validate Indian mobile (10 digits, starts with 6-9)
+    const rawDigits = (enteredPhone || '').replace(/\D/g, '');
+    const clean10 = rawDigits.slice(-10);
+
+    if (!clean10 || clean10.length !== 10 || !/^[6-9]\d{9}$/.test(clean10)) {
+        showToast('⚠️ Please enter a valid 10-digit Indian mobile number (e.g. 98401 23456).', 'warning');
+        if (inputEl) inputEl.focus();
+        return;
+    }
+
+    const formattedPhone = '+91 ' + clean10.slice(0, 5) + ' ' + clean10.slice(5);
+    v.simPhone = formattedPhone;
+    v.simConsentStatus = 'pending';
+    v.simConsentRequestedAt = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    // Call local server / serverless API to dispatch SMS
+    fetch('/api/send-driver-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            vehicleId: vid,
+            driverPhone: formattedPhone,
+            type: 'sim_consent',
+            plate: v.plate
+        })
+    }).then(res => res.json()).then(data => {
+        console.log('SIM Consent SMS API Response:', data);
+    }).catch(err => {
+        console.warn('SMS dispatch network notice:', err);
+    });
+
+    showToast(`📩 DoT Consent SMS dispatched to ${formattedPhone}!\nWaiting for driver reply "YES" to 56161.`, 'info');
+
+    // Automatically open the interactive Driver Handset Simulator Drawer for one-click testing
+    openDriverPhoneSimDrawer(vid);
+
+    const $actionsBox = document.getElementById('detailActionsBox');
+    if ($actionsBox) {
+        delete $actionsBox.dataset.renderedConsent;
+    }
+
+    renderSelectedVehicleDetail();
+    renderVehiclesTable();
+};
+
+/**
+ * Check telecom LBS consent status (matching "Check Status" button in reference screenshot)
+ * @param {string} vid
+ */
+window.checkSimConsentStatus = function(vid) {
+    const v = vehicles[vid];
+    if (!v) return;
+
+    const status = v.simConsentStatus || 'none';
+    const phone = v.simPhone || 'driver mobile';
+
+    if (status === 'approved') {
+        showToast(`🟢 DoT/Telecom LBS Status: CONSENT APPROVED & ACTIVE\nCarrier triangulation active for ${phone}.`, 'success');
+    } else if (status === 'pending') {
+        showToast(`🟡 DoT/Telecom LBS Status: PENDING\nWaiting for subscriber SMS reply "YES" to shortcode 56161.\n💡 Tip: Open the handset simulator drawer below to test the reply!`, 'warning');
+    } else if (status === 'denied') {
+        showToast(`🔴 DoT/Telecom LBS Status: CONSENT DECLINED\nDriver replied "NO" to 56161. Re-enter number and click Initiate Consent.`, 'danger');
+    } else {
+        showToast(`⚪ DoT/Telecom LBS Status: NOT INITIATED\nEnter 10-digit mobile number and click "Initiate Consent".`, 'info');
+    }
+};
+
+/**
+ * Handle driver reply in the on-screen Phone Simulator Drawer
+ * @param {'YES'|'NO'} reply
+ */
+window.driverSimReply = function(reply) {
+    const vid = window.currentSimDrawerVehicleId || selectedVehicleId;
+    const v = vehicles[vid];
+    if (!v) return;
+
+    const actionsPrompt = document.getElementById('phoneSimActionsPrompt');
+    const sentNote = document.getElementById('phoneSimReplySentNote');
+
+    if (reply === 'YES') {
+        v.simConsentStatus = 'approved';
+        v.simConsentApprovedAt = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+        if (actionsPrompt) actionsPrompt.style.display = 'none';
+        if (sentNote) {
+            sentNote.style.display = 'block';
+            sentNote.innerHTML = `
+                <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:10px; text-align:center;">
+                    <div style="color:#059669; font-weight:700; font-size:12px;">✅ Sent "YES" to 56161</div>
+                    <div style="color:#065f46; font-size:11px; margin-top:2px;">DoT Telecom Consent Granted! Tower LBS enabled.</div>
+                </div>
+            `;
+        }
+
+        showToast(`🟢 Subscriber Consent Confirmed via DoT 56161!\nTelecom LBS Cellular Triangulation is now active for ${v.plate}.`, 'success');
+
+        // Trigger cellular tower triangulation ring on the map
+        adminPingSim(vid);
+
+        const $actionsBox = document.getElementById('detailActionsBox');
+        if ($actionsBox) {
+            delete $actionsBox.dataset.renderedConsent;
+        }
+
+        renderSelectedVehicleDetail();
+        renderVehiclesTable();
+
+        setTimeout(() => {
+            closeDriverPhoneSimDrawer();
+        }, 2200);
+    } else {
+        v.simConsentStatus = 'denied';
+
+        if (actionsPrompt) actionsPrompt.style.display = 'none';
+        if (sentNote) {
+            sentNote.style.display = 'block';
+            sentNote.innerHTML = `
+                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px; text-align:center;">
+                    <div style="color:#dc2626; font-weight:700; font-size:12px;">❌ Sent "NO" to 56161</div>
+                    <div style="color:#991b1b; font-size:11px; margin-top:2px;">Consent declined by driver. Triangulation blocked.</div>
+                </div>
+            `;
+        }
+
+        showToast(`🔴 Driver replied NO to 56161. Tracking consent was declined for ${v.plate}.`, 'warning');
+        renderSelectedVehicleDetail();
+
+        setTimeout(() => {
+            closeDriverPhoneSimDrawer();
+        }, 2200);
+    }
+};
+
+/**
+ * Open the interactive Driver Handset Simulator Drawer
+ * @param {string} [vid]
+ */
+window.openDriverPhoneSimDrawer = function(vid) {
+    window.currentSimDrawerVehicleId = vid || selectedVehicleId;
+    const v = vehicles[window.currentSimDrawerVehicleId];
+    if (!v) return;
+
+    const driver = getDriverForVehicle(v.id);
+    const carrier = (driver && driver.device && driver.device.toLowerCase().includes('airtel')) ? '📶 Airtel 4G' : '📶 Jio 4G';
+    const currentTimeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const targetPhone = v.simPhone || (driver ? driver.phone : '+91 98401 23456');
+
+    const $carrier = document.getElementById('phoneSimCarrier');
+    const $time = document.getElementById('phoneSimTime');
+    const $smsTime = document.getElementById('phoneSimSmsTime');
+    const $smsText = document.getElementById('phoneSimSmsText');
+    const $actionsPrompt = document.getElementById('phoneSimActionsPrompt');
+    const $sentNote = document.getElementById('phoneSimReplySentNote');
+
+    if ($carrier) $carrier.textContent = carrier;
+    if ($time) $time.textContent = currentTimeStr;
+    if ($smsTime) $smsTime.textContent = 'Just now';
+    if ($smsText) {
+        $smsText.textContent = `"Vanakkam! V3 Logistics requests consent to track mobile ${targetPhone} for vehicle ${v.plate}. Reply YES to 56161 to approve."`;
+    }
+
+    if ($actionsPrompt) $actionsPrompt.style.display = 'flex';
+    if ($sentNote) $sentNote.style.display = 'none';
+
+    const drawer = document.getElementById('driverPhoneSimDrawer');
+    if (drawer) {
+        drawer.style.display = 'block';
+        drawer.classList.add('open');
+    }
+};
+
+/**
+ * Close the Driver Handset Simulator Drawer
+ */
+window.closeDriverPhoneSimDrawer = function() {
+    const drawer = document.getElementById('driverPhoneSimDrawer');
+    if (drawer) {
+        drawer.classList.remove('open');
+        setTimeout(() => {
+            drawer.style.display = 'none';
+        }, 200);
+    }
+};
+
+/**
+ * Send Driver Mobile App Link via SMS (for Smartphone users)
+ * @param {string} vid
+ */
+window.sendDriverPortalLinkSms = function(vid) {
+    const v = vehicles[vid];
+    if (!v) return;
+
+    const driver = getDriverForVehicle(vid);
+    const targetPhone = (driver && driver.phone) || v.simPhone || '+91 98401 23456';
+
+    fetch('/api/send-driver-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            vehicleId: vid,
+            driverPhone: targetPhone,
+            type: 'driver_link',
+            plate: v.plate
+        })
+    }).then(res => res.json()).then(data => {
+        console.log('Driver Link SMS API Response:', data);
+    }).catch(err => {
+        console.warn('SMS dispatch network notice:', err);
+    });
+
+    showToast(`📲 Driver App Link dispatched via SMS to ${targetPhone}!\nDriver can tap the link to open GPS tracker.`, 'success');
+};
+
+
 // ── Live Fleet Tracking (Screenshot Overview Match) ───────────
 
 let fleetMap = null;
@@ -3445,7 +3741,16 @@ function renderSelectedVehicleDetail() {
     if ($model) $model.textContent = `${v.model} · ${v.type}`;
     if ($sourceBadge) {
         $sourceBadge.className = `source-badge ${v.source}`;
-        $sourceBadge.innerHTML = v.source === 'sim' ? '📶 Telecom SIM LBS' : '📱 Driver App GPS';
+        if (v.source === 'sim') {
+            const consentPill = v.simConsentStatus === 'approved'
+                ? '🟢 Active'
+                : (v.simConsentStatus === 'pending' ? '🟡 Pending' : '⚪ Setup');
+            $sourceBadge.innerHTML = `📶 Telecom SIM LBS <span style="font-size:10px; opacity:0.9; margin-left:3px;">(${consentPill})</span>`;
+            $sourceBadge.title = 'Telecom SIM LBS mode - Click to configure DoT consent & phone';
+        } else {
+            $sourceBadge.innerHTML = '📱 Driver App GPS';
+            $sourceBadge.title = 'Smartphone App mode - Click to manage app tracking';
+        }
     }
 
     // Driver Card
@@ -3679,34 +3984,185 @@ function renderSelectedVehicleDetail() {
         }
     }
 
-    // SIM Dispatch & Trip Actions Box
+    // Tracking Mode & SIM Consent Management (Matches Reference Freight Tracker)
     const $actionsBox = document.getElementById('detailActionsBox');
     if ($actionsBox) {
-        if (v.source === 'sim') {
-            if (v.status !== 'driving') {
-                $actionsBox.innerHTML = `
-                    <button class="btn btn-sm btn-primary" style="width:100%; justify-content:center; padding:7px 10px; font-weight:600;" onclick="adminStartSimTrip('${v.id}')">
-                        ▶️ Admin: Start SIM Trip
-                    </button>
+        const isSim = (v.source === 'sim');
+        const simConsent = v.simConsentStatus || 'none';
+        const isDriving = (v.status === 'driving');
+        const driverId = v.driverId || '';
+
+        // Check if user is currently focused or typing in the mobile input
+        const currentInput = document.getElementById(`simPhoneInput_${v.id}`);
+        const isInputFocused = (document.activeElement && (document.activeElement === currentInput || (currentInput && currentInput.contains(document.activeElement))));
+
+        // Check if actions box is already rendered with identical vehicle and state
+        const isSameState = ($actionsBox.dataset.renderedVid === v.id) &&
+                            ($actionsBox.dataset.renderedSource === v.source) &&
+                            ($actionsBox.dataset.renderedConsent === simConsent) &&
+                            ($actionsBox.dataset.renderedDriving === String(isDriving)) &&
+                            ($actionsBox.dataset.renderedDriver === driverId);
+
+        // DO NOT destroy/recreate DOM if state hasn't changed or if user is currently typing!
+        if (!isSameState && !isInputFocused) {
+            $actionsBox.dataset.renderedVid = v.id;
+            $actionsBox.dataset.renderedSource = v.source;
+            $actionsBox.dataset.renderedConsent = simConsent;
+            $actionsBox.dataset.renderedDriving = String(isDriving);
+            $actionsBox.dataset.renderedDriver = driverId;
+
+            const rawPhone = v.simPhone || (driver ? driver.phone : '');
+            const cleanDigits = rawPhone.replace(/\D/g, '').slice(-10);
+
+            let html = `
+                <!-- Tracking Mode Segmented Switcher -->
+                <div class="tracking-mode-toggle-wrap" style="margin-bottom: 12px;">
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                        Tracking Mode
+                    </div>
+                    <div class="tracking-mode-segmented" style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:4px;">
+                        <button type="button" class="mode-segment-btn ${!isSim ? 'active' : ''}"
+                            style="flex:1; border:none; padding:7px 10px; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer; background:${!isSim ? '#ffffff' : 'transparent'}; color:${!isSim ? '#0f172a' : '#64748b'}; box-shadow:${!isSim ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'}; transition:all 0.15s ease;"
+                            onclick="switchVehicleTrackingMode('${v.id}', 'app')">
+                            📱 Smartphone App
+                        </button>
+                        <button type="button" class="mode-segment-btn ${isSim ? 'active' : ''}"
+                            style="flex:1; border:none; padding:7px 10px; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer; background:${isSim ? '#ffffff' : 'transparent'}; color:${isSim ? '#0f172a' : '#64748b'}; box-shadow:${isSim ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'}; transition:all 0.15s ease;"
+                            onclick="switchVehicleTrackingMode('${v.id}', 'sim')">
+                            📶 Telecom SIM LBS
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            if (isSim) {
+                // SIM Consent Card Matching Screenshot Exactly
+                html += `
+                    <div class="sim-consent-card">
+                        <div class="sim-consent-header">
+                            <div class="sim-consent-title-wrap">
+                                <span class="sim-consent-icon">📶</span>
+                                <span class="sim-consent-title">Telecom SIM LBS Consent</span>
+                            </div>
+                            <span class="sim-carrier-pill">DoT 56161</span>
+                        </div>
+
+                        <div class="sim-phone-input-wrap">
+                            <span class="sim-country-prefix">+91</span>
+                            <input type="tel" id="simPhoneInput_${v.id}" class="sim-phone-input"
+                                placeholder="Mobile Number"
+                                value="${cleanDigits}"
+                                maxlength="14"
+                                autocomplete="off"
+                                oninput="updateSimPhoneDraft('${v.id}', this.value)"
+                                onkeydown="if(event.key==='Enter') initiateSimConsent('${v.id}')">
+                        </div>
+
+                        <div class="sim-consent-btn-row">
+                            <button type="button" class="btn-initiate-consent ${simConsent === 'pending' ? 'resend' : ''}"
+                                onclick="initiateSimConsent('${v.id}')">
+                                ${simConsent === 'pending' ? '🔄 Resend Consent' : 'Initiate Consent'}
+                            </button>
+                            <button type="button" class="btn-check-status" onclick="checkSimConsentStatus('${v.id}')">
+                                Check Status
+                            </button>
+                        </div>
+
+                        <!-- Live Status Banner -->
+                        ${simConsent === 'approved' ? `
+                            <div class="sim-status-banner approved">
+                                <div class="status-badge-row">
+                                    <span class="status-badge-title">🟢 Consent Approved & Active</span>
+                                    <span style="font-size: 10.5px; color: #047857; font-weight: 600;">SMS 'YES' Verified</span>
+                                </div>
+                                <div style="font-size: 11px; color: #065f46;">
+                                    Cellular tower triangulation active for <strong>${v.simPhone || 'driver handset'}</strong>.
+                                </div>
+                                <div style="display:flex; gap:6px; margin-top:4px;">
+                                    <button type="button" class="btn btn-sm btn-outline" style="flex:1; justify-content:center; padding:6px 8px; font-size:11.5px; font-weight:600;" onclick="adminPingSim('${v.id}')">
+                                        📡 Ping Tower LBS
+                                    </button>
+                                    ${v.status !== 'driving' ? `
+                                        <button type="button" class="btn btn-sm btn-primary" style="flex:1; justify-content:center; padding:6px 8px; font-size:11.5px; font-weight:600;" onclick="adminStartSimTrip('${v.id}')">
+                                            ▶️ Start SIM Trip
+                                        </button>
+                                    ` : `
+                                        <button type="button" class="btn btn-sm btn-danger" style="flex:1; justify-content:center; padding:6px 8px; font-size:11.5px; font-weight:600;" onclick="adminEndSimTrip('${v.id}')">
+                                            🛑 End Trip
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        ` : simConsent === 'pending' ? `
+                            <div class="sim-status-banner pending">
+                                <div class="status-badge-row">
+                                    <span class="status-badge-title">🟡 Consent Pending</span>
+                                    <button type="button" class="btn-open-sim-drawer" onclick="openDriverPhoneSimDrawer('${v.id}')" title="Test SMS reply on simulator">
+                                        📱 Open Phone Sim
+                                    </button>
+                                </div>
+                                <div style="font-size: 11px; color: #92400e;">
+                                    DoT SMS sent to <strong>${v.simPhone || 'driver'}</strong>. Waiting for reply <code>YES</code> to <strong>56161</strong>.
+                                </div>
+                                <div style="font-size: 10.5px; color: #78350f;">
+                                    💡 Click <strong>"Open Phone Sim"</strong> above to simulate driver receiving SMS and tapping "Reply YES".
+                                </div>
+                            </div>
+                        ` : simConsent === 'denied' ? `
+                            <div class="sim-status-banner denied">
+                                <div class="status-badge-row">
+                                    <span class="status-badge-title">🔴 Consent Declined</span>
+                                </div>
+                                <div style="font-size: 11px; color: #991b1b;">
+                                    Driver sent reply "NO" to 56161. Triangulation blocked per DoT privacy guidelines. Re-initiate if needed.
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="sim-status-banner none">
+                                <div class="status-badge-row">
+                                    <span class="status-badge-title">⚪ Consent Not Initiated</span>
+                                    <button type="button" class="btn-open-sim-drawer" onclick="openDriverPhoneSimDrawer('${v.id}')" title="Preview handset simulator">
+                                        📱 Test Sim
+                                    </button>
+                                </div>
+                                <div style="font-size: 11px; color: #64748b;">
+                                    Enter 10-digit mobile number and click <strong>Initiate Consent</strong> to dispatch the DoT telecom verification SMS.
+                                </div>
+                            </div>
+                        `}
+                    </div>
                 `;
             } else {
-                $actionsBox.innerHTML = `
-                    <div style="display:flex; gap:6px;">
-                        <button class="btn btn-sm btn-danger" style="flex:1; justify-content:center; padding:7px 10px; font-weight:600;" onclick="adminEndSimTrip('${v.id}')">
-                            🛑 Admin: End Trip
-                        </button>
-                        <button class="btn btn-sm btn-outline" style="padding:7px 10px; font-weight:600;" onclick="adminPingSim('${v.id}')">
-                            📡 Ping Tower
-                        </button>
+                // Smartphone App GPS Card
+                html += `
+                    <div class="app-tracking-card">
+                        <div class="app-card-header">
+                            <div class="app-card-title-wrap">
+                                <span style="font-size: 14px;">📱</span>
+                                <span class="app-card-title">Smartphone Driver App</span>
+                            </div>
+                            <span class="app-status-badge">🟢 Satellite GPS</span>
+                        </div>
+                        <div style="font-size: 11.5px; color: #475569; line-height: 1.4;">
+                            Tracking uses device satellite GPS via Driver Web/PWA Portal. <em>No DoT telecom SMS consent required</em> because driver approves browser GPS permissions directly.
+                        </div>
+                        <div class="app-phone-row" style="background:#f8fafc; padding:8px 10px; border-radius:6px; border:1px solid #e2e8f0;">
+                            <span style="color:#64748b; font-size:11.5px;">Driver Phone:</span>
+                            <span style="font-weight:600; font-size:12px; color:#0f172a;">${(driver && driver.phone) || v.simPhone || 'Not assigned'}</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="btn btn-sm btn-primary" style="flex:1; justify-content:center; padding:7px 10px; font-weight:600; font-size:11.5px;" onclick="sendDriverPortalLinkSms('${v.id}')">
+                                📲 Send App Link via SMS
+                            </button>
+                            <a href="/driver/" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding:7px 10px; font-weight:600; font-size:11.5px;">
+                                ↗️ Open Portal
+                            </a>
+                        </div>
                     </div>
                 `;
             }
-        } else {
-            $actionsBox.innerHTML = `
-                <div class="app-control-notice">
-                    🔒 Driver controls trip via Smartphone Mobile App
-                </div>
-            `;
+
+            $actionsBox.innerHTML = html;
         }
     }
 }

@@ -63,11 +63,19 @@ module.exports = async (req, res) => {
     const truckPlate = payload.truckPlate || 'Assigned Truck';
     const tollFree = payload.tollFree || '1800-419-7890';
     const destination = payload.destination || 'Sriperumbudur Logistics Hub';
+    const type = payload.type || 'dispatch';
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const smsContent = `Vanakkam ${driverName}! Ungal Vandi: ${truckPlate} | Enga Ponum: ${destination}. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: ${tollFree} (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - V3 Logistics`;
+    let smsContent = '';
+    if (type === 'sim_consent') {
+      smsContent = payload.customMessage || `Vanakkam ${driverName}! V3 Logistics requests consent to track mobile ${phone} for vehicle ${truckPlate}. Reply YES to 56161 to approve (DoT LBS Gateway). Standard SMS rates apply.`;
+    } else if (type === 'driver_link') {
+      smsContent = payload.customMessage || `Vanakkam ${driverName}! Your trip for ${truckPlate} is ready. Open Driver App to start GPS tracking: http://${req.headers.host || 'localhost:5000'}/driver/ - V3 Logistics`;
+    } else {
+      smsContent = `Vanakkam ${driverName}! Ungal Vandi: ${truckPlate} | Enga Ponum: ${destination}. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: ${tollFree} (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - V3 Logistics`;
+    }
 
     const cleanNumber = phone.replace(/\D/g, '').slice(-10);
     const apiKey = process.env.FAST2SMS_API_KEY || '';
