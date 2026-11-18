@@ -1,0 +1,90 @@
+const https = require('https');
+
+function sendLiveFast2Sms(apiKey, numbers, message, callback) {
+  const postData = JSON.stringify({
+    route: 'q',
+    message: message,
+    language: 'english',
+    flash: 0,
+    numbers: numbers
+  });
+
+  const options = {
+    hostname: 'www.fast2sms.com',
+    port: 443,
+    path: '/dev/bulkV2',
+    method: 'POST',
+    headers: {
+      'authorization': apiKey,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    let data = '';
+    res.on('data', chunk => { data += chunk; });
+    res.on('end', () => {
+      if (callback) callback(null, data);
+    });
+  });
+
+  req.on('error', (e) => {
+    if (callback) callback(e);
+  });
+
+  req.write(postData);
+  req.end();
+}
+
+module.exports = (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const payload = req.body || {};
+  const driverName = payload.driverName || 'Driver';
+  const phone = payload.phone || payload.driverPhone || '';
+  const truckPlate = payload.truckPlate || payload.plate || 'Assigned Truck';
+  const tollFree = payload.tollFree || '1800-419-7890';
+  const destination = payload.destination || 'Sriperumbudur Logistics Hub';
+  const type = payload.type || 'dispatch';
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  let smsContent = '';
+  if (type === 'sim_consent') {
+    smsContent = payload.customMessage || `Vanakkam ${driverName}! V3 Logistics requests consent to track mobile ${phone} for vehicle ${truckPlate}. Reply YES to 56161 to approve (DoT LBS Gateway). Standard SMS rates apply.`;
+  } else if (type === 'driver_link') {
+    smsContent = payload.customMessage || `Vanakkam ${driverName}! Your trip for ${truckPlate} is ready. Open Driver App to start GPS tracking: https://${req.headers.host || 'transport-digital-twin.vercel.app'}/driver/ - V3 Logistics`;
+  } else {
+    smsContent = `Vanakkam ${driverName}! Ungal Vandi: ${truckPlate} | Enga Ponum: ${destination}. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: ${tollFree} (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - V3 Logistics`;
+  }
+
+  const apiKey = process.env.FAST2SMS_API_KEY || '';
+  const cleanNumber = phone.replace(/\D/g, '').slice(-10);
+  let liveSent = false;
+
+  if (apiKey && cleanNumber.length === 10) {
+    sendLiveFast2Sms(apiKey, cleanNumber, smsContent);
+    liveSent = true;
+  }
+
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  return res.status(200).json({
+    success: true,
+    phone: phone,
+    message: smsContent,
+    time: timeStr,
+    liveSent: liveSent
+  });
+};
