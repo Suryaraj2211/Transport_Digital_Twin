@@ -177,6 +177,9 @@ export const FleetMap: React.FC<FleetMapProps> = ({ onSelectVehicle }) => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
+    // Force Leaflet to recognize full container dimensions before computing bounds
+    map.invalidateSize({ pan: false });
+
     const coords: [number, number][] = [];
     Object.values(vehicles).forEach((v) => {
       if (v.lat && v.lng && v.lat >= 12.90 && v.lat <= 13.20 && v.lng >= 80.00 && v.lng <= 80.25) {
@@ -271,13 +274,41 @@ export const FleetMap: React.FC<FleetMapProps> = ({ onSelectVehicle }) => {
     map.on('zoomend', handleZoomChange);
     handleZoomChange();
 
-    // Initial bounds fit
-    setTimeout(() => {
-      fitMapToAllVehicles(false);
-      handleZoomChange();
-    }, 150);
+    // Continuous staged invalidateSize calls to guarantee tile loading across all screen sizes and CDN latency
+    const timers = [50, 150, 300, 600, 1200].map((delay) =>
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize({ pan: false });
+          if (delay === 150 || delay === 600) {
+            fitMapToAllVehicles(false);
+            handleZoomChange();
+          }
+        }
+      }, delay)
+    );
+
+    // Automatic ResizeObserver: guarantees map tiles automatically re-render and fill 100% on any container size change
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize({ pan: false });
+        }
+      });
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
+    const handleWindowResize = () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize({ pan: false });
+      }
+    };
+    window.addEventListener('resize', handleWindowResize);
 
     return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('resize', handleWindowResize);
+      if (resizeObserver) resizeObserver.disconnect();
       map.off('zoomend', handleZoomChange);
       Object.keys(markersRef.current).forEach((vid) => {
         map.removeLayer(markersRef.current[vid]);
@@ -340,6 +371,8 @@ export const FleetMap: React.FC<FleetMapProps> = ({ onSelectVehicle }) => {
     } else {
       if (satGroup) satGroup.addTo(map);
     }
+
+    map.invalidateSize({ pan: false });
   }, [mapType]);
 
   // Handle authentic LBS Cell Tower Ping Visualization
