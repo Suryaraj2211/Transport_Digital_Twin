@@ -2893,6 +2893,21 @@ function getVehicleStatusCategory(v) {
 }
 
 /**
+ * Fit the desktop dashboard to the screen.
+ * A full HD layout stays at 100%. Narrower screens scale down so the
+ * same layout fits instead of looking zoomed in.
+ */
+const DASHBOARD_DESIGN_WIDTH = 1920;
+
+function fitDashboardToScreen() {
+    const width = window.innerWidth || document.documentElement.clientWidth || DASHBOARD_DESIGN_WIDTH;
+    const fit = width < 1280 ? 1 : Math.min(1, width / DASHBOARD_DESIGN_WIDTH);
+    const rounded = Math.round(fit * 1000) / 1000;
+    document.documentElement.style.setProperty('--page-fit', String(rounded));
+    document.documentElement.style.zoom = String(rounded);
+}
+
+/**
  * Initialize or resize the Leaflet interactive map on the Live Fleet Map tab.
  */
 function initOrRefreshFleetMap() {
@@ -4274,6 +4289,8 @@ window.toggleVehicleRoute = function(show) {
  * Initialize the admin dashboard.
  */
 function init() {
+    fitDashboardToScreen();
+
     try {
         loadStateFromStorage();
     } catch (e) {
@@ -4311,6 +4328,7 @@ function init() {
             if (fleetMap) fleetMap.invalidateSize();
         });
         window.addEventListener('resize', () => {
+            fitDashboardToScreen();
             if (fleetMap) fleetMap.invalidateSize();
         });
     }
