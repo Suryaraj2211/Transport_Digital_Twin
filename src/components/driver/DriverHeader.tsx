@@ -3,7 +3,7 @@ import { useDriver } from '../../context/DriverContext';
 import { HeaderClock } from '../common/HeaderClock';
 
 export const DriverHeader: React.FC = () => {
-  const { selectedProfileId, setSelectedProfileId, profile, isOnTrip } = useDriver();
+  const { profiles, selectedProfileId, setSelectedProfileId, profile, isOnTrip } = useDriver();
 
   return (
     <header className="app-header">
@@ -40,10 +40,11 @@ export const DriverHeader: React.FC = () => {
               onChange={(e) => setSelectedProfileId(e.target.value)}
               disabled={isOnTrip}
             >
-              <option value="d1">Murugan K · TN 09 AB 1234</option>
-              <option value="d2">Selvam R · TN 22 CD 5678</option>
-              <option value="d3">Imran Pasha · KA 01 EF 9012</option>
-              <option value="d6">Anbu Selvan · TN 07 LM 2468</option>
+              {Object.values(profiles).map((p) => (
+                <option key={p.driverId} value={p.driverId}>
+                  {p.driverName} · {p.plate}
+                </option>
+              ))}
             </select>
             <div className="truck-meta-sub" id="truckMetaSub">
               {profile.truckModel}

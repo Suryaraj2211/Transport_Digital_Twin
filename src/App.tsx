@@ -30,7 +30,7 @@ export const App: React.FC = () => {
     }
     styleTag.textContent = view === 'admin' ? adminCss : driverCss;
     document.body.className = view === 'driver' ? 'view-driver' : 'view-admin';
-  }, [view]);
+  }, [view, adminCss, driverCss]);
 
   // Handle browser back/forward or hash changes
   useEffect(() => {

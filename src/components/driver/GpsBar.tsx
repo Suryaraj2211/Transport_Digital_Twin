@@ -21,10 +21,7 @@ export const GpsBar: React.FC = () => {
     }
   };
 
-  const coordsDisplay =
-    profile.driverId === 'd1'
-      ? 'Chennai Central Freight Corridor (13.0827°N, 80.2707°E)'
-      : `${currentLocationName} (${currentLat.toFixed(4)}°N, ${currentLng.toFixed(4)}°E)`;
+  const coordsDisplay = `${currentLocationName || 'Corridor GPS'} (${currentLat.toFixed(4)}°N, ${currentLng.toFixed(4)}°E)`;
 
   return (
     <div className="gps-bar locked" id="gpsBar" onClick={handleTestGps} title="Tap to refresh live device GPS location">

@@ -15,10 +15,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
       {/* Integrated Brand Header */}
       <div className="sidebar-brand">
         <div className="sidebar-brand-row">
-          <span className="sidebar-logo">🚛</span>
+          <div className="sidebar-logo-box">
+            <span className="sidebar-logo">🚚</span>
+          </div>
           <div>
-            <div className="sidebar-brand-name">V3 Logistics</div>
-            <span className="sidebar-admin-badge">ADMIN DASHBOARD</span>
+            <div className="sidebar-brand-name">Fleet Tracker</div>
+            <span className="sidebar-admin-badge">V3 LOGISTICS</span>
           </div>
         </div>
       </div>
@@ -30,8 +32,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           data-tab="dashboard"
           onClick={() => onSelectTab('dashboard')}
         >
-          <span className="tab-icon">📊</span>
-          <span className="tab-label">Dashboard Overview</span>
+          <span className="tab-icon">📍</span>
+          <span className="tab-label">Live map</span>
         </button>
         <button
           type="button"

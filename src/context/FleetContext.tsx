@@ -9,6 +9,8 @@ import {
   VehicleType,
   TrackingSource,
   PhoneType,
+  SimConsentStatus,
+  SimTowerPing,
 } from '../types/fleet';
 import { INITIAL_VEHICLES, INITIAL_DRIVERS, INITIAL_TRIPS, FLEET_CORRIDORS } from '../data/initialData';
 import { sendDriverSms } from '../services/smsService';
@@ -39,6 +41,7 @@ interface FleetContextType {
     type: VehicleType;
     source: TrackingSource;
     driverId: string;
+    simPhone?: string;
   }) => void;
   editVehicle: (id: string, updates: Partial<Vehicle>) => void;
   deleteVehicle: (id: string) => boolean;
@@ -54,31 +57,139 @@ interface FleetContextType {
   }) => Promise<void>;
   editDriver: (id: string, updates: Partial<Driver>) => void;
   deleteDriver: (id: string) => void;
+  adminStartSimTrip: (vehicleId: string) => void;
+  adminEndSimTrip: (vehicleId: string) => void;
   simulateMissedCall: (driverId: string) => void;
   simulateGeofence: (vehicleId: string) => void;
   broadcastEvent: (msg: SyncMessage) => void;
+  activeSimDrawerVehicleId: string | null;
+  openSimDrawer: (vehicleId: string) => void;
+  closeSimDrawer: () => void;
+  switchVehicleTrackingMode: (vehicleId: string, mode: TrackingSource) => void;
+  updateVehicleSimPhone: (vehicleId: string, phone: string) => void;
+  initiateSimConsent: (vehicleId: string, customPhone?: string) => void;
+  updateSimConsentStatus: (vehicleId: string, status: SimConsentStatus) => void;
+  pingSimLbs: (vehicleId: string) => void;
+  sendAppPortalLinkSms: (vehicleId: string) => void;
+  simTowerPing: SimTowerPing | null;
 }
 
 const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
 const SYNC_CHANNEL_NAME = 'fleet-tracker-sync';
+export const FLEET_STORAGE_VERSION = 'v6_distinct_routes_chennai';
+
+const loadInitialDrivers = (): Record<string, Driver> => {
+  if (typeof window !== 'undefined') {
+    try {
+      const ver = localStorage.getItem('fleet_data_version');
+      if (ver !== FLEET_STORAGE_VERSION) {
+        return INITIAL_DRIVERS;
+      }
+      const stored = localStorage.getItem('fleet_drivers_data');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+  }
+  return INITIAL_DRIVERS;
+};
+
+export function cleanVehicleRoute(v: Vehicle): Array<[number, number]> {
+  if (!v) return [];
+  const corridor = FLEET_CORRIDORS[v.id];
+  if (!corridor || !corridor.points || corridor.points.length === 0) {
+    return v.route || [[v.lat, v.lng]];
+  }
+  const pts = corridor.points;
+
+  // Find index of the corridor waypoint closest to truck's current position
+  let closestIdx = 0;
+  let minD = Infinity;
+  for (let i = 0; i < pts.length; i++) {
+    const d = Math.hypot(pts[i][0] - v.lat, pts[i][1] - v.lng);
+    if (d < minD) {
+      minD = d;
+      closestIdx = i;
+    }
+  }
+
+  // Build clean sequential route from origin up to closest waypoint
+  const cleanRoute: Array<[number, number]> = [];
+  for (let i = 0; i <= closestIdx; i++) {
+    cleanRoute.push(pts[i]);
+  }
+
+  // Append live truck position if not directly on top of the last waypoint
+  const lastPt = cleanRoute[cleanRoute.length - 1];
+  if (!lastPt || Math.hypot(lastPt[0] - v.lat, lastPt[1] - v.lng) > 0.0002) {
+    cleanRoute.push([v.lat, v.lng]);
+  }
+
+  return cleanRoute;
+}
+
+const loadInitialVehicles = (): Record<string, Vehicle> => {
+  if (typeof window !== 'undefined') {
+    try {
+      const ver = localStorage.getItem('fleet_data_version');
+      if (ver !== FLEET_STORAGE_VERSION) {
+        localStorage.removeItem('fleet_vehicles_data');
+        localStorage.removeItem('fleet_drivers_data');
+        localStorage.setItem('fleet_data_version', FLEET_STORAGE_VERSION);
+        return INITIAL_VEHICLES;
+      }
+      const stored = localStorage.getItem('fleet_vehicles_data');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          const firstV = Object.values(parsed)[0] as Vehicle;
+          if (firstV && firstV.lat && (firstV.lat < 12.98 || firstV.lat > 13.15 || firstV.lng < 80.00 || firstV.lng > 80.25)) {
+            // Outdated distant coordinates detected — purge and reset
+            localStorage.removeItem('fleet_vehicles_data');
+            localStorage.removeItem('fleet_drivers_data');
+            localStorage.setItem('fleet_data_version', FLEET_STORAGE_VERSION);
+            return INITIAL_VEHICLES;
+          }
+          // Sanitize every vehicle's route to guarantee no loops
+          Object.keys(parsed).forEach((k) => {
+            parsed[k].route = cleanVehicleRoute(parsed[k]);
+          });
+          return parsed;
+        }
+      }
+    } catch (e) {}
+  }
+  return INITIAL_VEHICLES;
+};
 
 export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [vehicles, setVehicles] = useState<Record<string, Vehicle>>(INITIAL_VEHICLES);
-  const [drivers, setDrivers] = useState<Record<string, Driver>>(INITIAL_DRIVERS);
+  const [vehicles, setVehicles] = useState<Record<string, Vehicle>>(loadInitialVehicles);
+  const [drivers, setDrivers] = useState<Record<string, Driver>>(loadInitialDrivers);
   const [trips, setTrips] = useState<Trip[]>(INITIAL_TRIPS);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('v2');
   const [filter, setFilter] = useState<FilterCategory>('all');
   const [mapType, setMapType] = useState<MapTileType>('satellite');
   const [routeFilterMode, setRouteFilterMode] = useState<'all' | 'selected'>('all');
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [activeSimDrawerVehicleId, setActiveSimDrawerVehicleId] = useState<string | null>(null);
+  const [simTowerPing, setSimTowerPing] = useState<SimTowerPing | null>(null);
 
   const addToast = useCallback((text: string, type: 'info' | 'success' | 'alert' = 'info') => {
-    const id = 'toast_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-    setToasts((prev) => [...prev, { id, text, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
+    setToasts((prev) => {
+      // Prevent duplicate toasts with the identical message
+      if (prev.some((t) => t.text === text)) {
+        return prev;
+      }
+      const id = 'toast_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+      setTimeout(() => {
+        setToasts((curr) => curr.filter((t) => t.id !== id));
+      }, 4000);
+      return [...prev, { id, text, type }];
+    });
   }, []);
 
   const broadcastEvent = useCallback((msg: any) => {
@@ -101,9 +212,35 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
+  // Sync drivers & vehicles to localStorage & notify driver portal
+  useEffect(() => {
+    try {
+      localStorage.setItem('fleet_drivers_data', JSON.stringify(drivers));
+      broadcastEvent({ type: 'DRIVERS_UPDATED', drivers });
+    } catch (e) {}
+  }, [drivers, broadcastEvent]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('fleet_vehicles_data', JSON.stringify(vehicles));
+      broadcastEvent({ type: 'VEHICLES_UPDATED', vehicles });
+    } catch (e) {}
+  }, [vehicles, broadcastEvent]);
+
   // Listen to incoming BroadcastChannel / localStorage sync events
   useEffect(() => {
     let channel: BroadcastChannel | null = null;
+
+    const resolveVehicleId = (data: any, vehicleMap: Record<string, Vehicle>): string | null => {
+      if (data.vehicleId && vehicleMap[data.vehicleId]) return data.vehicleId;
+      if (data.plate) {
+        const found = Object.keys(vehicleMap).find(
+          (k) => vehicleMap[k].plate.trim().toUpperCase() === data.plate.trim().toUpperCase()
+        );
+        if (found) return found;
+      }
+      return null;
+    };
 
     const handleMessage = (data: any) => {
       if (!data) return;
@@ -111,13 +248,14 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (!action) return;
 
       if (action === 'START_TRIP') {
-        const vehicleId = data.vehicleId || 'v1';
         setVehicles((prev) => {
+          const vehicleId = resolveVehicleId(data, prev) || Object.keys(prev)[0];
           const current = prev[vehicleId];
           if (!current) return prev;
           const lat = data.lat || current.lat;
           const lng = data.lng || current.lng;
-          const newRoute = current.route ? [...current.route, [lat, lng] as [number, number]] : [[lat, lng] as [number, number]];
+          // Fresh trip starts with origin coordinate only (clears old completed trip route)
+          const newRoute: Array<[number, number]> = [[lat, lng] as [number, number]];
           return {
             ...prev,
             [vehicleId]: {
@@ -139,10 +277,10 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           const newTrip: Trip = {
             id: `trip-${Date.now()}`,
             tripNum: newTripNum,
-            truckPlate: data.plate || 'TN 09 AB 1234',
+            truckPlate: data.plate || 'Vehicle',
             driverName: data.driverName || 'Driver',
             startTime: data.startTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            startLocation: data.startLocation || 'Chennai Central Freight Corridor',
+            startLocation: data.startLocation || 'Departure Corridor',
             endTime: '--',
             endLocation: 'In Transit',
             duration: '00:00:01',
@@ -159,8 +297,9 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         addToast(`🟢 Trip started: ${data.plate || 'Vehicle'} — ${data.driverName || 'Driver'}`, 'success');
       } else if (action === 'END_TRIP') {
-        const vehicleId = data.vehicleId || 'v1';
         setVehicles((prev) => {
+          const vehicleId = resolveVehicleId(data, prev);
+          if (!vehicleId) return prev;
           const current = prev[vehicleId];
           if (!current) return prev;
           return {
@@ -179,6 +318,9 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTrips((prev) =>
           prev.map((t) => {
             if (t.status === 'active' && (!data.plate || t.truckPlate === data.plate)) {
+              const haltSec = data.haltSeconds ?? t.haltSeconds ?? 0;
+              const m = Math.floor(haltSec / 60);
+              const s = haltSec % 60;
               return {
                 ...t,
                 status: 'completed',
@@ -187,6 +329,8 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 duration: data.duration || t.duration,
                 distance: data.distance ? `${data.distance} km` : (data.distanceKm ? `${data.distanceKm.toFixed(1)} km` : t.distance),
                 avgSpeed: data.avgSpeed ? `${data.avgSpeed} km/h` : t.avgSpeed,
+                haltSeconds: haltSec,
+                haltTime: `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`,
               };
             }
             return t;
@@ -195,28 +339,40 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         addToast(`🛑 Trip ended: ${data.plate || 'Vehicle'} (${data.distance || data.distanceKm || '0'} km)`, 'info');
       } else if (action === 'SPEED_UPDATE') {
-        const vehicleId = data.vehicleId || 'v1';
+        const newSpeed = typeof data.speed === 'number' ? data.speed : 0;
         setVehicles((prev) => {
+          const vehicleId = resolveVehicleId(data, prev);
+          if (!vehicleId) return prev;
           const current = prev[vehicleId];
           if (!current) return prev;
+          const isHalt = newSpeed === 0;
           return {
             ...prev,
             [vehicleId]: {
               ...current,
-              speed: typeof data.speed === 'number' ? data.speed : current.speed,
+              speed: newSpeed,
+              status: isHalt ? 'halted' : 'driving',
+              haltReason: isHalt ? (current.haltReason || 'Stop') : undefined,
               distanceToday: data.kmToday ? data.kmToday : current.distanceToday,
               lastSeen: 'Live now',
             },
           };
         });
       } else if (action === 'LOCATION_UPDATE') {
-        const vehicleId = data.vehicleId || 'v1';
         setVehicles((prev) => {
+          const vehicleId = resolveVehicleId(data, prev);
+          if (!vehicleId) return prev;
           const current = prev[vehicleId];
           if (!current) return prev;
           const lat = data.lat || current.lat;
           const lng = data.lng || current.lng;
-          const newRoute = current.route ? [...current.route, [lat, lng] as [number, number]] : [[lat, lng] as [number, number]];
+          const lastPt = current.route && current.route.length > 0 ? current.route[current.route.length - 1] : null;
+          const isDuplicate = lastPt && Math.abs(lastPt[0] - lat) < 0.00005 && Math.abs(lastPt[1] - lng) < 0.00005;
+          const newRoute = isDuplicate
+            ? current.route
+            : current.route
+            ? [...current.route, [lat, lng] as [number, number]]
+            : [[lat, lng] as [number, number]];
           return {
             ...prev,
             [vehicleId]: {
@@ -231,8 +387,9 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           };
         });
       } else if (action === 'HALT_UPDATE') {
-        const vehicleId = data.vehicleId || 'v1';
         setVehicles((prev) => {
+          const vehicleId = resolveVehicleId(data, prev);
+          if (!vehicleId) return prev;
           const current = prev[vehicleId];
           if (!current) return prev;
           return {
@@ -241,11 +398,29 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               ...current,
               status: 'halted',
               speed: 0,
-              haltReason: data.haltReason || current.haltReason,
-              haltSeconds: data.haltSeconds || current.haltSeconds,
+              haltReason: data.haltReason || current.haltReason || 'Stop',
+              haltSeconds: data.haltSeconds ?? current.haltSeconds,
+              lastSeen: 'Live now',
             },
           };
         });
+
+        // Also sync active trip's haltTime live in Trips list
+        setTrips((prev) =>
+          prev.map((t) => {
+            if (t.status === 'active' && (!data.plate || t.truckPlate === data.plate)) {
+              const sec = data.haltSeconds ?? t.haltSeconds ?? 0;
+              const m = Math.floor(sec / 60);
+              const s = sec % 60;
+              return {
+                ...t,
+                haltSeconds: sec,
+                haltTime: `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`,
+              };
+            }
+            return t;
+          })
+        );
       }
     };
 
@@ -292,49 +467,58 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           const delta = (Math.random() - 0.49) * 2;
           v.speed = Math.max(40, Math.min(65, Math.round(v.speed + delta)));
 
-          // Corridor advancement
+          // Corridor advancement - forward towards destination only (never reverse)
           const corridor = corridors[vid];
           if (corridor) {
             const pts = corridor.points;
-            const targetPt = pts[corridor.targetIndex];
-            if (targetPt) {
-              const dLat = targetPt[0] - v.lat;
-              const dLng = targetPt[1] - v.lng;
-              const dist = Math.hypot(dLat, dLng);
-              const step = Math.min(dist, 0.00020);
+            if (corridor.targetIndex >= pts.length) {
+              v.speed = 0;
+              v.status = 'halted';
+              v.lastSeen = 'Arrived at destination';
+            } else {
+              const targetPt = pts[corridor.targetIndex];
+              if (targetPt) {
+                const dLat = targetPt[0] - v.lat;
+                const dLng = targetPt[1] - v.lng;
+                const dist = Math.hypot(dLat, dLng);
+                const step = Math.min(dist, 0.00020);
 
-              if (dist <= 0.00025) {
-                v.lat = targetPt[0];
-                v.lng = targetPt[1];
-                corridor.targetIndex += corridor.direction;
-                if (corridor.targetIndex >= pts.length || corridor.targetIndex < 0) {
-                  corridor.direction = -corridor.direction;
-                  corridor.targetIndex += corridor.direction * 2;
+                if (dist <= 0.00025) {
+                  v.lat = targetPt[0];
+                  v.lng = targetPt[1];
+                  corridor.targetIndex += 1; // Only advance forward! Never reverse!
+                  if (corridor.targetIndex >= pts.length) {
+                    v.speed = 0;
+                    v.status = 'halted';
+                    v.lastSeen = 'Arrived at destination';
+                  }
+                } else {
+                  v.lat = +(v.lat + (dLat / dist) * step).toFixed(5);
+                  v.lng = +(v.lng + (dLng / dist) * step).toFixed(5);
                 }
-              } else {
-                v.lat = +(v.lat + (dLat / dist) * step).toFixed(5);
-                v.lng = +(v.lng + (dLng / dist) * step).toFixed(5);
               }
             }
           }
 
-          // Dynamic Route Line Growth
-          const route: Array<[number, number]> = v.route ? [...v.route] : [[v.lat, v.lng]];
-          const lastPt = route[route.length - 1];
-          if (!lastPt) {
-            route.push([v.lat, v.lng]);
-          } else {
-            const distFromLast = Math.hypot(v.lat - lastPt[0], v.lng - lastPt[1]);
-            if (distFromLast >= 0.00035) {
-              route.push([v.lat, v.lng]);
-              if (route.length > 200) route.shift();
+          // Dynamic Route Line Growth (always cleaned of loops/hairpins)
+          if (v.status === 'driving') {
+            const clean = cleanVehicleRoute(v);
+            const lastPt = clean[clean.length - 1];
+            if (!lastPt) {
+              clean.push([v.lat, v.lng]);
             } else {
-              route[route.length - 1] = [v.lat, v.lng];
+              const distFromLast = Math.hypot(v.lat - lastPt[0], v.lng - lastPt[1]);
+              if (distFromLast >= 0.00035) {
+                clean.push([v.lat, v.lng]);
+                if (clean.length > 200) clean.shift();
+              } else {
+                clean[clean.length - 1] = [v.lat, v.lng];
+              }
             }
+            v.route = clean;
+            v.distanceToday = +(v.distanceToday + 0.02).toFixed(1);
+            v.lastSeen = 'Live now';
           }
-          v.route = route;
-          v.distanceToday = +(v.distanceToday + 0.02).toFixed(1);
-          v.lastSeen = 'Live now';
           next[vid] = v;
         });
 
@@ -371,7 +555,14 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const addVehicle = useCallback(
-    (v: { plate: string; model: string; type: VehicleType; source: TrackingSource; driverId: string }) => {
+    (v: {
+      plate: string;
+      model: string;
+      type: VehicleType;
+      source: TrackingSource;
+      driverId: string;
+      simPhone?: string;
+    }) => {
       const newId = `v${Date.now().toString().slice(-4)}`;
       const newVehicle: Vehicle = {
         id: newId,
@@ -389,6 +580,8 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         accuracy: 15,
         lastSeen: 'Registered just now',
         distanceToday: 0.0,
+        simPhone: v.simPhone || '',
+        simConsentStatus: v.source === 'sim' ? 'none' : undefined,
         route: [
           [13.1492, 80.2312],
           [13.1550, 80.2280],
@@ -548,19 +741,25 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addToast(`Select a driver first to simulate missed call`, 'alert');
         return;
       }
-      const vehicleId = driver.assignedVehicle || 'v4';
+      const vehicleId =
+        driver.assignedVehicle ||
+        Object.keys(vehicles).find((vid) => vehicles[vid].driverId === driverId);
+      if (!vehicleId || !vehicles[vehicleId]) {
+        addToast(`⚠️ No vehicle assigned to driver ${driver.name}`, 'alert');
+        return;
+      }
       const vehicle = vehicles[vehicleId];
-      if (!vehicle) return;
 
       if (vehicle.status === 'driving') {
         // End trip
+        const endLocation = driver.destination || vehicle.destination || 'Destination Hub';
         setVehicles((prev) => ({
           ...prev,
           [vehicleId]: {
             ...vehicle,
             status: 'halted',
             speed: 0,
-            currentLocation: driver.destination || 'Destination Hub',
+            currentLocation: endLocation,
             lastSeen: 'Trip completed via Missed Call',
           },
         }));
@@ -572,7 +771,7 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 ...t,
                 status: 'completed',
                 endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                endLocation: driver.destination || 'Destination Hub',
+                endLocation,
               };
             }
             return t;
@@ -585,7 +784,7 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           plate: vehicle.plate,
           driverName: driver.name,
           endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          endLocation: driver.destination,
+          endLocation,
         });
 
         addToast(
@@ -594,13 +793,14 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         );
       } else {
         // Start trip
+        const startLocation = vehicle.startLocation || vehicle.currentLocation || 'Depot (Departure)';
         setVehicles((prev) => ({
           ...prev,
           [vehicleId]: {
             ...vehicle,
             status: 'driving',
             speed: 52,
-            currentLocation: 'Madhavaram Central Depot (Departure)',
+            currentLocation: startLocation,
             lastSeen: 'Just started via Missed Call',
           },
         }));
@@ -612,7 +812,7 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           truckPlate: vehicle.plate,
           driverName: driver.name,
           startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          startLocation: 'Madhavaram Central Depot',
+          startLocation,
           endTime: '--',
           endLocation: 'In Transit',
           duration: '00:00:01',
@@ -651,6 +851,7 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (!vehicle) return;
       const driver = drivers[vehicle.driverId];
       const driverName = driver ? driver.name : 'Assigned Driver';
+      const hubName = vehicle.startLocation || vehicle.currentLocation || 'Depot Hub';
 
       setVehicles((prev) => ({
         ...prev,
@@ -658,7 +859,7 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           ...vehicle,
           status: 'driving',
           speed: 48,
-          currentLocation: 'Madhavaram Depot 500m Gate Crossing (Auto Geofence Triggered)',
+          currentLocation: `${hubName} 500m Gate Crossing (Auto Geofence Triggered)`,
           lastSeen: 'Live corridor tracking',
         },
       }));
@@ -670,7 +871,7 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         truckPlate: vehicle.plate,
         driverName: driverName,
         startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        startLocation: 'Madhavaram Depot Geofence Perimeter Gate',
+        startLocation: `${hubName} Geofence Perimeter Gate`,
         endTime: '--',
         endLocation: 'In Transit',
         duration: '00:00:01',
@@ -702,6 +903,316 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     [vehicles, drivers, trips, broadcastEvent, addToast]
   );
 
+  const openSimDrawer = useCallback((vehicleId: string) => {
+    setActiveSimDrawerVehicleId(vehicleId);
+  }, []);
+
+  const closeSimDrawer = useCallback(() => {
+    setActiveSimDrawerVehicleId(null);
+  }, []);
+
+  const switchVehicleTrackingMode = useCallback(
+    (vehicleId: string, mode: TrackingSource) => {
+      const v = vehicles[vehicleId];
+      if (!v) return;
+      if (v.source === mode) return; // Ignore if already in this mode
+
+      const driver = drivers[v.driverId];
+      let simConsentStatus = v.simConsentStatus;
+      let simPhone = v.simPhone;
+
+      if (mode === 'sim') {
+        if (!simConsentStatus || simConsentStatus === 'none') {
+          simConsentStatus = driver && driver.phoneType === 'button' ? 'pending' : 'none';
+        }
+        if (!simPhone && driver && driver.phone) {
+          simPhone = driver.phone;
+        }
+        addToast(
+          `📶 Switched ${v.plate} to Telecom SIM LBS Tracking. Enter driver phone and initiate DoT consent.`,
+          'info'
+        );
+      } else {
+        addToast(`📱 Switched ${v.plate} to Smartphone Driver App GPS Tracking.`, 'info');
+      }
+
+      setVehicles((prev) => {
+        const cur = prev[vehicleId];
+        if (!cur) return prev;
+        return {
+          ...prev,
+          [vehicleId]: {
+            ...cur,
+            source: mode,
+            simConsentStatus,
+            simPhone,
+          },
+        };
+      });
+    },
+    [vehicles, drivers, addToast]
+  );
+
+  const updateVehicleSimPhone = useCallback((vehicleId: string, phone: string) => {
+    setVehicles((prev) => {
+      const v = prev[vehicleId];
+      if (!v) return prev;
+      return {
+        ...prev,
+        [vehicleId]: { ...v, simPhone: phone },
+      };
+    });
+  }, []);
+
+  const initiateSimConsent = useCallback(
+    (vehicleId: string, customPhone?: string) => {
+      const v = vehicles[vehicleId];
+      if (!v) return;
+      const driver = drivers[v.driverId];
+      const phoneToUse = customPhone || v.simPhone;
+
+      setVehicles((prev) => ({
+        ...prev,
+        [vehicleId]: {
+          ...prev[vehicleId],
+          simConsentStatus: 'pending',
+          simPhone: phoneToUse || prev[vehicleId].simPhone,
+        },
+      }));
+      // Dispatch DoT 56161 consent SMS via gateway
+      sendDriverSms({
+        vehicleId,
+        driverPhone: phoneToUse,
+        type: 'sim_consent',
+        plate: v.plate,
+        driverName: driver?.name,
+      });
+      addToast(
+        `📨 DoT Consent SMS dispatched to ${phoneToUse || 'driver'}!\nWaiting for driver reply YES to 56161.`,
+        'info'
+      );
+      setActiveSimDrawerVehicleId(vehicleId);
+    },
+    [vehicles, drivers, addToast]
+  );
+
+  const adminStartSimTrip = useCallback(
+    (vehicleId: string) => {
+      const v = vehicles[vehicleId];
+      if (!v) return;
+      const driver = drivers[v.driverId];
+
+      // Check existing active trip for this vehicle
+      const existingActive = trips.find((t) => t.status === 'active' && t.truckPlate === v.plate);
+      if (existingActive) {
+        addToast(`⚠️ Trip #${existingActive.tripNum} is already ACTIVE for ${v.plate}!`, 'info');
+        return;
+      }
+
+      const carrier =
+        driver && driver.device && driver.device.toLowerCase().includes('jio') ? 'Jio' : 'Airtel';
+      const cellId = carrier === 'Jio' ? 'JIO-BTS-8821' : 'AIRTEL-BTS-4819';
+      const startLoc = v.startLocation || v.currentLocation || 'Logistics Depot';
+
+      setVehicles((prev) => {
+        const cur = prev[vehicleId];
+        if (!cur) return prev;
+        return {
+          ...prev,
+          [vehicleId]: {
+            ...cur,
+            status: 'driving',
+            speed: 48,
+            currentLocation: `${startLoc} (Linked to ${cellId})`,
+            lastSeen: 'Live now',
+            route: cur.route && cur.route.length > 0 ? cur.route : [[cur.lat, cur.lng]],
+          },
+        };
+      });
+
+      const newTripNum = trips.length > 0 ? Math.max(...trips.map((t) => t.tripNum)) + 1 : 1;
+      const newTrip: Trip = {
+        id: `trip-sim-${Date.now()}`,
+        tripNum: newTripNum,
+        truckPlate: v.plate,
+        driverName: driver ? driver.name : 'Unknown Driver',
+        startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        startLocation: `${startLoc} (${cellId})`,
+        endTime: '--',
+        endLocation: 'In Transit',
+        duration: '00:00:01',
+        durationSeconds: 1,
+        haltTime: '00:00',
+        haltSeconds: 0,
+        avgSpeed: '48 km/h',
+        distance: '0.00 km',
+        distanceNum: 0,
+        status: 'active',
+      };
+
+      setTrips((prev) => [newTrip, ...prev]);
+
+      // Broadcast event so other tabs/portal sync
+      broadcastEvent({
+        type: 'START_TRIP',
+        vehicleId,
+        plate: v.plate,
+        driverName: driver ? driver.name : 'Unknown Driver',
+        startTime: newTrip.startTime,
+        startLocation: newTrip.startLocation,
+      });
+
+      addToast(
+        `📶 Telecom SIM LBS Tracking active for ${v.plate}!\nStatus updated to Driving. Driver (${driver ? driver.name : 'Assigned'}) notified via SMS.`,
+        'success'
+      );
+    },
+    [vehicles, drivers, trips, broadcastEvent, addToast]
+  );
+
+  const adminEndSimTrip = useCallback(
+    (vehicleId: string) => {
+      const v = vehicles[vehicleId];
+      if (!v) return;
+      const driver = drivers[v.driverId];
+
+      const carrier =
+        driver && driver.device && driver.device.toLowerCase().includes('jio') ? 'Jio' : 'Airtel';
+      const cellId = carrier === 'Jio' ? 'JIO-BTS-9104' : 'AIRTEL-BTS-5022';
+      const endLoc = v.destination || (driver && driver.destination) || 'Destination Freight Hub';
+
+      const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      setVehicles((prev) => {
+        const cur = prev[vehicleId];
+        if (!cur) return prev;
+        return {
+          ...prev,
+          [vehicleId]: {
+            ...cur,
+            status: 'halted',
+            speed: 0,
+            currentLocation: `${endLoc} (Trip Completed)`,
+            lastSeen: 'Trip completed via SIM LBS',
+          },
+        };
+      });
+
+      setTrips((prev) =>
+        prev.map((t) => {
+          if (t.status === 'active' && t.truckPlate === v.plate) {
+            return {
+              ...t,
+              status: 'completed',
+              endTime: nowTime,
+              endLocation: `${endLoc} (${cellId})`,
+            };
+          }
+          return t;
+        })
+      );
+
+      broadcastEvent({
+        type: 'END_TRIP',
+        vehicleId,
+        plate: v.plate,
+        driverName: driver ? driver.name : 'Unknown Driver',
+        endTime: nowTime,
+        endLocation: endLoc,
+      });
+
+      addToast(`🛑 Telecom SIM LBS Trip Completed for ${v.plate}! Status changed to Halted.`, 'info');
+    },
+    [vehicles, drivers, broadcastEvent, addToast]
+  );
+
+  const updateSimConsentStatus = useCallback(
+    (vehicleId: string, status: SimConsentStatus) => {
+      setVehicles((prev) => {
+        const v = prev[vehicleId];
+        if (!v) return prev;
+        return {
+          ...prev,
+          [vehicleId]: { ...v, simConsentStatus: status },
+        };
+      });
+      const v = vehicles[vehicleId];
+      const plate = v ? v.plate : 'Vehicle';
+      if (status === 'approved') {
+        addToast(
+          `✅ DoT Consent Approved! Driver sent YES from ${v?.simPhone || 'device'}.\nLBS Cell Tower Triangulation active for ${plate}.`,
+          'success'
+        );
+      } else if (status === 'denied') {
+        addToast(
+          `🛑 DoT Consent Declined! Driver sent NO.\nCell tower triangulation disabled for ${plate}.`,
+          'alert'
+        );
+      }
+    },
+    [vehicles, addToast]
+  );
+
+  const pingSimLbs = useCallback(
+    (vehicleId: string) => {
+      const v = vehicles[vehicleId];
+      if (!v) return;
+      const driver = drivers[v.driverId];
+      const carrier =
+        driver && driver.device && driver.device.toLowerCase().includes('jio') ? 'Jio' : 'Airtel';
+      const towerId = carrier === 'Jio' ? '#8821' : '#4819';
+      const randomRssi = -68 - Math.floor(Math.random() * 12);
+
+      // Trigger map LBS visualization (850m circle + BTS antenna)
+      setSimTowerPing({
+        vehicleId,
+        lat: v.lat,
+        lng: v.lng,
+        carrier,
+        towerId,
+        rssi: randomRssi,
+        timestamp: Date.now(),
+      });
+
+      // Auto remove after 8 seconds
+      setTimeout(() => {
+        setSimTowerPing((cur) => (cur && cur.vehicleId === vehicleId ? null : cur));
+      }, 8000);
+
+      addToast(
+        `📡 Cell Tower LBS Triangulation:\nCarrier: ${carrier} Telecom · Tower: ${towerId}\nSignal: ${randomRssi} dBm (Strong) · Coords: ${v.lat.toFixed(4)}, ${v.lng.toFixed(4)}`,
+        'info'
+      );
+    },
+    [vehicles, drivers, addToast]
+  );
+
+  const sendAppPortalLinkSms = useCallback(
+    (vehicleId: string) => {
+      const v = vehicles[vehicleId];
+      if (!v) return;
+      const driver = drivers[v.driverId];
+      const phone = (driver && driver.phone) || v.simPhone;
+      if (!phone) {
+        addToast(`⚠️ Please enter or assign a driver phone number for ${v.plate} first!`, 'alert');
+        return;
+      }
+      // Dispatch driver portal link via SMS gateway
+      sendDriverSms({
+        vehicleId,
+        driverPhone: phone,
+        type: 'driver_link',
+        plate: v.plate,
+        driverName: driver?.name,
+      });
+      addToast(
+        `📲 Driver App Portal SMS sent to ${phone}!\n"Login link: ${window.location.origin}/driver/?truck=${encodeURIComponent(v.plate)}"`,
+        'success'
+      );
+    },
+    [vehicles, drivers, addToast]
+  );
+
   return (
     <FleetContext.Provider
       value={{
@@ -724,9 +1235,21 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addDriver,
         editDriver,
         deleteDriver,
+        adminStartSimTrip,
+        adminEndSimTrip,
         simulateMissedCall,
         simulateGeofence,
         broadcastEvent,
+        activeSimDrawerVehicleId,
+        openSimDrawer,
+        closeSimDrawer,
+        switchVehicleTrackingMode,
+        updateVehicleSimPhone,
+        initiateSimConsent,
+        updateSimConsentStatus,
+        pingSimLbs,
+        sendAppPortalLinkSms,
+        simTowerPing,
       }}
     >
       {children}

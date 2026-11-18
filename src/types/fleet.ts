@@ -3,6 +3,7 @@ export type TrackingSource = 'app' | 'sim' | 'gps';
 export type VehicleStatus = 'driving' | 'halted' | 'offline';
 export type PhoneType = 'smart' | 'button';
 export type TripStatus = 'active' | 'completed';
+export type SimConsentStatus = 'none' | 'pending' | 'approved' | 'denied';
 
 export interface Vehicle {
   id: string;
@@ -23,6 +24,13 @@ export interface Vehicle {
   route: Array<[number, number]>;
   haltReason?: string;
   haltSeconds?: number;
+  startTime?: string;
+  startLocation?: string;
+  destination?: string;
+  eta?: string;
+  remainingDist?: string;
+  simConsentStatus?: SimConsentStatus;
+  simPhone?: string;
 }
 
 export interface Driver {
@@ -94,5 +102,15 @@ export interface SyncMessage {
   haltReason?: string;
   haltSeconds?: number;
   timestamp?: number;
+}
+
+export interface SimTowerPing {
+  vehicleId: string;
+  lat: number;
+  lng: number;
+  carrier: string;
+  towerId: string;
+  rssi: number;
+  timestamp: number;
 }
 

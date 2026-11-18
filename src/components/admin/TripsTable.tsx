@@ -3,7 +3,7 @@ import { useFleet } from '../../context/FleetContext';
 import { exportTripsToCsv } from '../../services/exportService';
 
 export const TripsTable: React.FC = () => {
-  const { trips } = useFleet();
+  const { trips, vehicles } = useFleet();
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const filteredTrips = trips.filter((t) => {
@@ -87,6 +87,25 @@ export const TripsTable: React.FC = () => {
                     </td>
                     <td>
                       <span className="plate-badge">{trip.truckPlate}</span>
+                      {(() => {
+                        const v = Object.values(vehicles).find((veh) => veh.plate === trip.truckPlate);
+                        const isSim = v && v.source === 'sim';
+                        return isSim ? (
+                          <span
+                            className="source-badge sim"
+                            style={{ fontSize: '10px', display: 'inline-block', marginTop: '3px' }}
+                          >
+                            📞 SIM LBS
+                          </span>
+                        ) : (
+                          <span
+                            className="source-badge app"
+                            style={{ fontSize: '10px', display: 'inline-block', marginTop: '3px' }}
+                          >
+                            📱 Driver App
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td>{trip.driverName}</td>
                     <td>{trip.startTime}</td>

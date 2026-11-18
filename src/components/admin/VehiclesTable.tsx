@@ -13,6 +13,7 @@ export const VehiclesTable: React.FC = () => {
   const [vModel, setVModel] = useState<string>('');
   const [vType, setVType] = useState<VehicleType>('Truck 28T');
   const [vTracking, setVTracking] = useState<TrackingSource>('app');
+  const [vSimPhone, setVSimPhone] = useState<string>('');
   const [vAssignedDriver, setVAssignedDriver] = useState<string>('');
 
   // Edit modal fields
@@ -20,6 +21,7 @@ export const VehiclesTable: React.FC = () => {
   const [editModel, setEditModel] = useState<string>('');
   const [editType, setEditType] = useState<VehicleType>('Truck 28T');
   const [editTracking, setEditTracking] = useState<TrackingSource>('app');
+  const [editSimPhone, setEditSimPhone] = useState<string>('');
   const [editDriverId, setEditDriverId] = useState<string>('');
 
   const handleOpenAddForm = () => {
@@ -27,6 +29,7 @@ export const VehiclesTable: React.FC = () => {
     setVModel('');
     setVType('Truck 28T');
     setVTracking('app');
+    setVSimPhone('');
     setVAssignedDriver('');
     setShowAddForm(true);
   };
@@ -42,6 +45,7 @@ export const VehiclesTable: React.FC = () => {
       type: vType,
       source: vTracking,
       driverId: vAssignedDriver,
+      simPhone: vSimPhone.trim(),
     });
     setShowAddForm(false);
   };
@@ -62,6 +66,7 @@ export const VehiclesTable: React.FC = () => {
     setEditModel(v.model);
     setEditType(v.type);
     setEditTracking(v.source);
+    setEditSimPhone(v.simPhone || '');
     setEditDriverId(v.driverId || '');
   };
 
@@ -72,6 +77,7 @@ export const VehiclesTable: React.FC = () => {
       model: editModel,
       type: editType,
       source: editTracking,
+      simPhone: editSimPhone.trim(),
       driverId: editDriverId,
     });
     setEditingVehicle(null);
@@ -135,6 +141,18 @@ export const VehiclesTable: React.FC = () => {
                 <option value="gps">GPS Device</option>
               </select>
             </div>
+            {vTracking === 'sim' && (
+              <div className="form-group">
+                <label htmlFor="vSimPhone">SIM Mobile Number</label>
+                <input
+                  type="tel"
+                  id="vSimPhone"
+                  placeholder="+91 9840X XXXXX"
+                  value={vSimPhone}
+                  onChange={(e) => setVSimPhone(e.target.value)}
+                />
+              </div>
+            )}
             <div className="form-group">
               <label htmlFor="vAssignedDriver">Assign Driver</label>
               <select
@@ -183,12 +201,34 @@ export const VehiclesTable: React.FC = () => {
           </thead>
           <tbody id="vehiclesTableBody">
             {vehicleList.map((v) => {
-              const sourceDisplay =
-                v.source === 'app' ? (
-                  <span className="source-badge app">📱 Driver App GPS</span>
-                ) : (
-                  <span className="source-badge sim">📶 Telecom SIM LBS</span>
+              let sourceDisplay = <span className="source-badge app">📱 Driver App GPS</span>;
+              if (v.source === 'gps') {
+                sourceDisplay = <span className="source-badge gps">🛰️ GPS Device</span>;
+              } else if (v.source === 'sim') {
+                const consentDot =
+                  v.simConsentStatus === 'approved' ? (
+                    <span style={{ color: '#059669', fontWeight: 700 }}>🟢</span>
+                  ) : v.simConsentStatus === 'pending' ? (
+                    <span style={{ color: '#d97706', fontWeight: 700 }}>🟡</span>
+                  ) : (
+                    <span style={{ color: '#64748b', fontWeight: 700 }}>⚪</span>
+                  );
+                sourceDisplay = (
+                  <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start' }}>
+                    <span
+                      className="source-badge sim"
+                      title={`Consent: ${v.simConsentStatus || 'none'}`}
+                    >
+                      📶 SIM LBS {consentDot}
+                    </span>
+                    {v.simPhone && (
+                      <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
+                        {v.simPhone}
+                      </span>
+                    )}
+                  </div>
                 );
+              }
 
               let statusHtml = (
                 <span style={{ color: '#ef4444', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -318,6 +358,18 @@ export const VehiclesTable: React.FC = () => {
                   <option value="gps">GPS Device</option>
                 </select>
               </div>
+              {editTracking === 'sim' && (
+                <div className="form-group">
+                  <label htmlFor="editSimPhone">SIM Mobile Number</label>
+                  <input
+                    type="tel"
+                    id="editSimPhone"
+                    placeholder="+91 9840X XXXXX"
+                    value={editSimPhone}
+                    onChange={(e) => setEditSimPhone(e.target.value)}
+                  />
+                </div>
+              )}
               <div className="form-group">
                 <label htmlFor="editVehicleDriver">Assigned Driver</label>
                 <select

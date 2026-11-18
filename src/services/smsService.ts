@@ -1,9 +1,14 @@
 export interface SendSmsPayload {
-  driverName: string;
-  phone: string;
-  truckPlate: string;
-  destination: string;
+  driverName?: string;
+  phone?: string;
+  driverPhone?: string;
+  truckPlate?: string;
+  plate?: string;
+  destination?: string;
   tollFree?: string;
+  type?: 'dispatch' | 'sim_consent' | 'driver_link';
+  customMessage?: string;
+  vehicleId?: string;
 }
 
 export async function sendDriverSms(payload: SendSmsPayload): Promise<{ success: boolean; message?: string }> {

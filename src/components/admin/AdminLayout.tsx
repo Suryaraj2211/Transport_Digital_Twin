@@ -4,6 +4,7 @@ import { DashboardOverview } from './DashboardOverview';
 import { VehiclesTable } from './VehiclesTable';
 import { DriversTable } from './DriversTable';
 import { TripsTable } from './TripsTable';
+import { DriverPhoneSimDrawer } from './DriverPhoneSimDrawer';
 import { ToastContainer } from '../common/ToastContainer';
 
 interface AdminLayoutProps {
@@ -32,6 +33,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onOpenDriverPortal }) 
 
       {/* Toast Notification Container */}
       <ToastContainer />
+
+      {/* Interactive Nokia 105 Keypad Phone Simulator Drawer */}
+      <DriverPhoneSimDrawer />
     </div>
   );
 };

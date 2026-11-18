@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFleet } from '../../context/FleetContext';
 import { Vehicle } from '../../types/fleet';
 
@@ -7,7 +7,8 @@ interface LiveFleetSidebarProps {
 }
 
 export const LiveFleetSidebar: React.FC<LiveFleetSidebarProps> = ({ onSelectVehicle }) => {
-  const { vehicles, drivers, filter, selectedVehicleId } = useFleet();
+  const { vehicles, drivers, trips, filter, selectedVehicleId } = useFleet();
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const getVehicleCat = (v: Vehicle): 'moving' | 'halt' | 'offline' => {
     if (v.status === 'driving') return 'moving';
@@ -17,9 +18,25 @@ export const LiveFleetSidebar: React.FC<LiveFleetSidebarProps> = ({ onSelectVehi
 
   const allVehicles = Object.values(vehicles);
   const filteredVehicles = allVehicles.filter((v) => {
-    if (filter === 'all') return true;
-    const cat = getVehicleCat(v);
-    return cat === filter;
+    // 1. Status Filter
+    if (filter !== 'all') {
+      const cat = getVehicleCat(v);
+      if (cat !== filter) return false;
+    }
+
+    // 2. Search Query Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const driver = v.driverId ? drivers[v.driverId] : null;
+      const plateMatch = v.plate.toLowerCase().includes(q);
+      const driverMatch = driver ? driver.name.toLowerCase().includes(q) : false;
+      const locationMatch = v.currentLocation ? v.currentLocation.toLowerCase().includes(q) : false;
+      const destMatch = (v.destination || driver?.destination || '').toLowerCase().includes(q);
+      const modelMatch = v.model.toLowerCase().includes(q);
+      return plateMatch || driverMatch || locationMatch || destMatch || modelMatch;
+    }
+
+    return true;
   });
 
   const filterLabel =
@@ -40,11 +57,50 @@ export const LiveFleetSidebar: React.FC<LiveFleetSidebarProps> = ({ onSelectVehi
         </span>
       </div>
 
+      {/* Quick Fleet Search Bar */}
+      <div className="fleet-search-box">
+        <span className="fleet-search-icon">🔍</span>
+        <input
+          type="text"
+          id="fleetSearchInput"
+          placeholder="Search plate, driver, location..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          autoComplete="off"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            className="btn-clear-fleet-search"
+            id="btnClearFleetSearch"
+            onClick={() => setSearchQuery('')}
+            title="Clear search"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       <div className="live-vehicle-list" id="liveVehicleList">
         {filteredVehicles.length === 0 ? (
-          <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
-            No vehicles in "{filter}" status.
-          </div>
+          searchQuery.trim() ? (
+            <div className="fleet-search-empty">
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
+                No matches for "{searchQuery}"
+              </div>
+              <button
+                type="button"
+                className="btn-reset-search"
+                onClick={() => setSearchQuery('')}
+              >
+                Reset search
+              </button>
+            </div>
+          ) : (
+            <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
+              No vehicles in "{filter}" status.
+            </div>
+          )
         ) : (
           filteredVehicles.map((v) => {
             const cat = getVehicleCat(v);
@@ -52,12 +108,24 @@ export const LiveFleetSidebar: React.FC<LiveFleetSidebarProps> = ({ onSelectVehi
             const driver = v.driverId ? drivers[v.driverId] : null;
             const driverName = driver ? driver.name : 'Unassigned';
 
+            const activeTrip = trips.find((t) => t.status === 'active' && t.truckPlate === v.plate);
+            const isTripEnded = !activeTrip && (v.lastSeen?.toLowerCase().includes('trip ended') || v.lastSeen?.toLowerCase().includes('arrived'));
+
+            let pillClass: string = cat;
             let pillText = '● Moving';
-            if (cat === 'halt') pillText = '● Halt';
-            else if (cat === 'offline') pillText = '● Offline';
+            if (isTripEnded) {
+              pillClass = 'arrived';
+              pillText = '🏁 Arrived';
+            } else if (cat === 'halt') {
+              pillText = '● Halt';
+            } else if (cat === 'offline') {
+              pillText = '● Offline';
+            }
 
             let subText = '';
-            if (cat === 'moving') {
+            if (isTripEnded) {
+              subText = `Arrived · ${v.currentLocation || 'Destination Hub'}`;
+            } else if (cat === 'moving') {
               subText = `${v.speed} km/h · ${v.lastSeen || 'Live now'}`;
             } else if (cat === 'halt') {
               subText = v.lastSeen || 'Halted · 2 min ago';
@@ -76,7 +144,7 @@ export const LiveFleetSidebar: React.FC<LiveFleetSidebarProps> = ({ onSelectVehi
                   <span className="item-driver">{driverName}</span>
                   <span className="item-sub">{subText}</span>
                 </div>
-                <span className={`item-pill ${cat}`}>{pillText}</span>
+                <span className={`item-pill ${pillClass}`}>{pillText}</span>
               </div>
             );
           })
@@ -85,4 +153,3 @@ export const LiveFleetSidebar: React.FC<LiveFleetSidebarProps> = ({ onSelectVehi
     </aside>
   );
 };
-

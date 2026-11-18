@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { useDriver } from '../../context/DriverContext';
 
 const CORRIDOR_LOCATIONS: Record<string, { name: string; lat: number; lng: number }> = {
-  chennai_port: { name: '⚓ Chennai Port Terminal', lat: 13.0850, lng: 80.2980 },
-  sriperumbudur: { name: '🏭 Sriperumbudur Hub', lat: 12.9818, lng: 79.9442 },
-  hosur: { name: '📦 Hosur SIPCOT Logistics', lat: 12.7409, lng: 77.8253 },
-  coimbatore: { name: '🏢 Coimbatore Depot', lat: 11.0168, lng: 76.9558 },
+  koyambedu: { name: '🏬 Koyambedu Freight Hub', lat: 13.0694, lng: 80.1948 },
+  maduravoyal: { name: '🌉 Maduravoyal Junction', lat: 13.0645, lng: 80.1605 },
+  vanagaram: { name: '📦 Vanagaram Logistics Hub', lat: 13.0538, lng: 80.1340 },
+  poonamallee: { name: '🏭 Poonamallee Freight Depot', lat: 13.0480, lng: 80.1050 },
+  porur: { name: '🛣️ Porur Toll Plaza', lat: 13.0350, lng: 80.1550 },
+  ambattur: { name: '🏭 Ambattur Industrial Estate', lat: 13.0900, lng: 80.1600 },
 };
 
 export const DemoToolbar: React.FC = () => {
   const { setSpeedManual, setLocationManual } = useDriver();
-  const [selectedLocKey, setSelectedLocKey] = useState<string>('chennai_port');
+  const [selectedLocKey, setSelectedLocKey] = useState<string>('vanagaram');
 
   const handleLocationChange = (key: string) => {
     setSelectedLocKey(key);
@@ -55,10 +57,12 @@ export const DemoToolbar: React.FC = () => {
             onChange={(e) => handleLocationChange(e.target.value)}
           >
             <option value="real">🛰️ Auto Device GPS</option>
-            <option value="chennai_port">⚓ Chennai Port Terminal</option>
-            <option value="sriperumbudur">🏭 Sriperumbudur Hub</option>
-            <option value="hosur">📦 Hosur SIPCOT Logistics</option>
-            <option value="coimbatore">🏢 Coimbatore Depot</option>
+            <option value="vanagaram">📦 Vanagaram Logistics Hub</option>
+            <option value="maduravoyal">🌉 Maduravoyal Junction</option>
+            <option value="koyambedu">🏬 Koyambedu Freight Hub</option>
+            <option value="poonamallee">🏭 Poonamallee Freight Depot</option>
+            <option value="porur">🛣️ Porur Toll Plaza</option>
+            <option value="ambattur">🏭 Ambattur Industrial Estate</option>
           </select>
         </div>
       </div>
