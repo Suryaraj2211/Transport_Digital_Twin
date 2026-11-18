@@ -2609,9 +2609,10 @@ window.initiateSimConsent = function(vid) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             vehicleId: vid,
-            driverPhone: formattedPhone,
-            type: 'sim_consent',
-            plate: v.plate
+            driverName: driver ? driver.name : 'Driver',
+            phone: formattedPhone,
+            truckPlate: v.plate,
+            type: 'sim_consent'
         })
     }).then(res => res.json()).then(data => {
         console.log('SIM Consent SMS API Response:', data);
@@ -2788,9 +2789,10 @@ window.sendDriverPortalLinkSms = function(vid) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             vehicleId: vid,
-            driverPhone: targetPhone,
-            type: 'driver_link',
-            plate: v.plate
+            driverName: driver ? driver.name : 'Driver',
+            phone: targetPhone,
+            truckPlate: v.plate,
+            type: 'driver_link'
         })
     }).then(res => res.json()).then(data => {
         console.log('Driver Link SMS API Response:', data);
@@ -3046,15 +3048,6 @@ function updateLiveMapKpis() {
     if ($completed) $completed.textContent = completedToday;
     if ($offline) $offline.textContent = offline;
     if ($dist) $dist.textContent = totalDist.toFixed(1);
-
-    const $chipAll = document.getElementById('chipAllCount');
-    const $chipMov = document.getElementById('chipMovingCount');
-    const $chipHalt = document.getElementById('chipHaltCount');
-    const $chipOff = document.getElementById('chipOfflineCount');
-    if ($chipAll) $chipAll.textContent = total;
-    if ($chipMov) $chipMov.textContent = activeTrips;
-    if ($chipHalt) $chipHalt.textContent = haltedCount;
-    if ($chipOff) $chipOff.textContent = offline;
 
     const $badge = document.getElementById('fleetFilterIndicator');
     if ($badge && currentFleetFilter === 'all') {
@@ -4179,15 +4172,6 @@ window.filterLiveFleet = function(fType) {
             card.classList.add('active');
         } else {
             card.classList.remove('active');
-        }
-    });
-
-    document.querySelectorAll('.fleet-filter-pill').forEach(pill => {
-        const pFilter = pill.dataset.filter;
-        if (pFilter === fType || (currentFleetFilter === 'halt' && (pFilter === 'halt' || pFilter === 'idle'))) {
-            pill.classList.add('active');
-        } else {
-            pill.classList.remove('active');
         }
     });
 

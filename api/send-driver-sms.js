@@ -72,7 +72,9 @@ module.exports = async (req, res) => {
     if (type === 'sim_consent') {
       smsContent = payload.customMessage || `Vanakkam ${driverName}! V3 Logistics requests consent to track mobile ${phone} for vehicle ${truckPlate}. Reply YES to 56161 to approve (DoT LBS Gateway). Standard SMS rates apply.`;
     } else if (type === 'driver_link') {
-      smsContent = payload.customMessage || `Vanakkam ${driverName}! Your trip for ${truckPlate} is ready. Open Driver App to start GPS tracking: http://${req.headers.host || 'localhost:5000'}/driver/ - V3 Logistics`;
+      const host = req.headers.host || 'localhost:5000';
+      const proto = req.headers['x-forwarded-proto'] || (String(host).includes('localhost') ? 'http' : 'https');
+      smsContent = payload.customMessage || `Vanakkam ${driverName}! Your trip for ${truckPlate} is ready. Open Driver App to start GPS tracking: ${proto}://${host}/driver/ - V3 Logistics`;
     } else {
       smsContent = `Vanakkam ${driverName}! Ungal Vandi: ${truckPlate} | Enga Ponum: ${destination}. Vandi start panradhuku munnadi intha number-ku oru missed call kuduthutu start pannunga: ${tollFree} (Trip automatic-ah start aagidum). Destination reach aana udane thirumba oru missed call kudunga. - V3 Logistics`;
     }
