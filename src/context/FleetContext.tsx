@@ -77,7 +77,7 @@ interface FleetContextType {
 const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
 const SYNC_CHANNEL_NAME = 'fleet-tracker-sync';
-export const FLEET_STORAGE_VERSION = 'v6_distinct_routes_chennai';
+export const FLEET_STORAGE_VERSION = 'v7_only_one_arrived_others_moving';
 
 const loadInitialDrivers = (): Record<string, Driver> => {
   if (typeof window !== 'undefined') {
@@ -486,9 +486,13 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           if (corridor) {
             const pts = corridor.points;
             if (corridor.targetIndex >= pts.length) {
-              v.speed = 0;
-              v.status = 'halted';
-              v.lastSeen = 'Arrived at destination';
+              // Smooth cycle back to start so active moving vehicles keep moving continuously!
+              corridor.targetIndex = 1;
+              v.lat = pts[0][0];
+              v.lng = pts[0][1];
+              v.route = [pts[0]];
+              v.speed = Math.floor(45 + Math.random() * 12);
+              v.lastSeen = 'Live now';
             } else {
               const targetPt = pts[corridor.targetIndex];
               if (targetPt) {
@@ -500,11 +504,15 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 if (dist <= 0.00025) {
                   v.lat = targetPt[0];
                   v.lng = targetPt[1];
-                  corridor.targetIndex += 1; // Only advance forward! Never reverse!
+                  corridor.targetIndex += 1;
                   if (corridor.targetIndex >= pts.length) {
-                    v.speed = 0;
-                    v.status = 'halted';
-                    v.lastSeen = 'Arrived at destination';
+                    // Smooth cycle back to start so active moving vehicles keep moving continuously!
+                    corridor.targetIndex = 1;
+                    v.lat = pts[0][0];
+                    v.lng = pts[0][1];
+                    v.route = [pts[0]];
+                    v.speed = Math.floor(45 + Math.random() * 12);
+                    v.lastSeen = 'Live now';
                   }
                 } else {
                   v.lat = +(v.lat + (dLat / dist) * step).toFixed(5);
