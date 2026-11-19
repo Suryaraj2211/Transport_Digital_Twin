@@ -77,7 +77,7 @@ interface FleetContextType {
 const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
 const SYNC_CHANNEL_NAME = 'fleet-tracker-sync';
-export const FLEET_STORAGE_VERSION = 'v9_real_osm_road_geometry_chennai';
+export const FLEET_STORAGE_VERSION = 'v11_exact_road_constrained_tick';
 
 const loadInitialDrivers = (): Record<string, Driver> => {
   if (typeof window !== 'undefined') {
@@ -464,10 +464,28 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // 2-Second Corridor Simulation & Active Duration Ticker (Identical to vanilla admin.js tick())
   useEffect(() => {
-    const corridors = JSON.parse(JSON.stringify(FLEET_CORRIDORS));
+    interface SimulationState {
+      points: Array<[number, number]>;
+      segIdx: number;
+      t: number;
+      initialized: boolean;
+    }
+    const simStates: Record<string, SimulationState> = {};
+
+    Object.keys(FLEET_CORRIDORS).forEach((vid) => {
+      const corr = FLEET_CORRIDORS[vid];
+      if (corr && corr.points && corr.points.length >= 2) {
+        simStates[vid] = {
+          points: corr.points,
+          segIdx: 0,
+          t: 0,
+          initialized: false,
+        };
+      }
+    });
 
     const interval = setInterval(() => {
-      // 1. Advance moving vehicles along realistic road corridors
+      // 1. Advance moving vehicles strictly along realistic road corridors
       setVehicles((prev) => {
         let changed = false;
         const next = { ...prev };
@@ -481,66 +499,62 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           const delta = (Math.random() - 0.49) * 2;
           v.speed = Math.max(40, Math.min(65, Math.round(v.speed + delta)));
 
-          // Corridor advancement - forward towards destination only (never reverse)
-          const corridor = corridors[vid];
-          if (corridor) {
-            const pts = corridor.points;
-            if (corridor.targetIndex >= pts.length) {
-              // Smooth cycle back to start so active moving vehicles keep moving continuously!
-              corridor.targetIndex = 1;
-              v.lat = pts[0][0];
-              v.lng = pts[0][1];
-              v.route = [pts[0]];
-              v.speed = Math.floor(45 + Math.random() * 12);
-              v.lastSeen = 'Live now';
-            } else {
-              const targetPt = pts[corridor.targetIndex];
-              if (targetPt) {
-                const dLat = targetPt[0] - v.lat;
-                const dLng = targetPt[1] - v.lng;
-                const dist = Math.hypot(dLat, dLng);
-                const step = Math.min(dist, 0.00035);
+          // Corridor advancement - strictly constrained along road centerline segments
+          const sim = simStates[vid];
+          if (sim && sim.points.length >= 2) {
+            const pts = sim.points;
 
-                if (dist <= 0.00040) {
-                  v.lat = targetPt[0];
-                  v.lng = targetPt[1];
-                  corridor.targetIndex += 1;
-                  if (corridor.targetIndex >= pts.length) {
-                    // Smooth cycle back to start so active moving vehicles keep moving continuously!
-                    corridor.targetIndex = 1;
-                    v.lat = pts[0][0];
-                    v.lng = pts[0][1];
-                    v.route = [pts[0]];
-                    v.speed = Math.floor(45 + Math.random() * 12);
-                    v.lastSeen = 'Live now';
-                  }
-                } else {
-                  v.lat = +(v.lat + (dLat / dist) * step).toFixed(5);
-                  v.lng = +(v.lng + (dLng / dist) * step).toFixed(5);
+            // Initialize segIdx and fractional progress t based on current vehicle coordinates
+            if (!sim.initialized) {
+              let bestSeg = 0;
+              let bestT = 0;
+              let minD = Infinity;
+              for (let i = 0; i < pts.length - 1; i++) {
+                const res = projectPointOnSegment([v.lat, v.lng], pts[i], pts[i + 1]);
+                if (res.dist < minD) {
+                  minD = res.dist;
+                  bestSeg = i;
+                  bestT = res.t;
                 }
               }
+              sim.segIdx = bestSeg;
+              sim.t = bestT;
+              sim.initialized = true;
             }
-          }
 
-          // Dynamic Route Line Growth (always cleaned of loops/hairpins)
-          if (v.status === 'driving') {
-            const clean = cleanVehicleRoute(v);
-            const lastPt = clean[clean.length - 1];
-            if (!lastPt) {
-              clean.push([v.lat, v.lng]);
-            } else {
-              const distFromLast = Math.hypot(v.lat - lastPt[0], v.lng - lastPt[1]);
-              if (distFromLast >= 0.00035) {
-                clean.push([v.lat, v.lng]);
-                if (clean.length > 200) clean.shift();
-              } else {
-                clean[clean.length - 1] = [v.lat, v.lng];
+            let p1 = pts[sim.segIdx];
+            let p2 = pts[sim.segIdx + 1];
+            let segDist = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+            if (segDist < 0.00001) segDist = 0.00001;
+
+            // Step in degrees per 2 seconds based on vehicle speed (at 50 km/h: ~0.00028 degrees)
+            const stepDist = (v.speed / 50) * 0.00028;
+            sim.t += stepDist / segDist;
+
+            while (sim.t >= 1.0) {
+              sim.t -= 1.0;
+              sim.segIdx += 1;
+              if (sim.segIdx >= pts.length - 1) {
+                // Reached destination corridor end: cycle seamlessly back to the beginning
+                sim.segIdx = 0;
+                sim.t = 0.0;
+                break;
               }
+              p1 = pts[sim.segIdx];
+              p2 = pts[sim.segIdx + 1];
+              segDist = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+              if (segDist < 0.00001) segDist = 0.00001;
             }
-            v.route = clean;
+
+            p1 = pts[sim.segIdx];
+            p2 = pts[sim.segIdx + 1];
+            v.lat = +(p1[0] + sim.t * (p2[0] - p1[0])).toFixed(5);
+            v.lng = +(p1[1] + sim.t * (p2[1] - p1[1])).toFixed(5);
+            v.route = cleanVehicleRoute(v);
             v.distanceToday = +(v.distanceToday + 0.02).toFixed(1);
             v.lastSeen = 'Live now';
           }
+
           next[vid] = v;
         });
 

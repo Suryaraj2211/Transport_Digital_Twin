@@ -728,10 +728,20 @@ export const FleetMap: React.FC<FleetMapProps> = ({ onSelectVehicle }) => {
 
             forwardCorridorLayersRef.current[v.id] = forwardLine;
 
-            // Render directional chevrons (➤) along forward route segments
+            // Render directional chevrons (➤) along forward route segments at well-spaced intervals
+            let lastArrowAccum = 0;
             for (let i = 0; i < destInfo.forwardWaypoints.length - 1; i++) {
               const p1 = destInfo.forwardWaypoints[i];
               const p2 = destInfo.forwardWaypoints[i + 1];
+              const segLen = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+              lastArrowAccum += segLen;
+
+              // Space arrows out by at least ~0.006 degrees (~600m) to avoid dense clustering
+              if (i > 0 && lastArrowAccum < 0.006 && i < destInfo.forwardWaypoints.length - 2) {
+                continue;
+              }
+              lastArrowAccum = 0;
+
               const midLat = (p1[0] + p2[0]) / 2;
               const midLng = (p1[1] + p2[1]) / 2;
 
