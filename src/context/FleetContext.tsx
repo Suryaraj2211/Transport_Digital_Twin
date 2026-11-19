@@ -98,34 +98,48 @@ const loadInitialDrivers = (): Record<string, Driver> => {
   return INITIAL_DRIVERS;
 };
 
+function projectPointOnSegment(p: [number, number], a: [number, number], b: [number, number]) {
+  const dx = b[1] - a[1];
+  const dy = b[0] - a[0];
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return { dist: Math.hypot(p[0] - a[0], p[1] - a[1]), t: 0 };
+  let t = ((p[1] - a[1]) * dx + (p[0] - a[0]) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  const projLat = a[0] + t * dy;
+  const projLng = a[1] + t * dx;
+  const dist = Math.hypot(p[0] - projLat, p[1] - projLng);
+  return { dist, t };
+}
+
 export function cleanVehicleRoute(v: Vehicle): Array<[number, number]> {
-  if (!v) return [];
+  if (!v || !v.lat || !v.lng) return [];
   const corridor = FLEET_CORRIDORS[v.id];
   if (!corridor || !corridor.points || corridor.points.length === 0) {
     return v.route || [[v.lat, v.lng]];
   }
   const pts = corridor.points;
+  if (pts.length === 1) return [[v.lat, v.lng]];
 
-  // Find index of the corridor waypoint closest to truck's current position
-  let closestIdx = 0;
+  // Find which corridor segment [pts[i] -> pts[i+1]] the truck is currently traversing
+  let bestSeg = 0;
   let minD = Infinity;
-  for (let i = 0; i < pts.length; i++) {
-    const d = Math.hypot(pts[i][0] - v.lat, pts[i][1] - v.lng);
-    if (d < minD) {
-      minD = d;
-      closestIdx = i;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const res = projectPointOnSegment([v.lat, v.lng], pts[i], pts[i + 1]);
+    if (res.dist < minD) {
+      minD = res.dist;
+      bestSeg = i;
     }
   }
 
-  // Build clean sequential route from origin up to closest waypoint
+  // Traversed waypoints strictly up to the start of current segment (already passed)
   const cleanRoute: Array<[number, number]> = [];
-  for (let i = 0; i <= closestIdx; i++) {
+  for (let i = 0; i <= bestSeg; i++) {
     cleanRoute.push(pts[i]);
   }
 
-  // Append live truck position if not directly on top of the last waypoint
+  // Append live truck position if not directly on top of the last passed waypoint
   const lastPt = cleanRoute[cleanRoute.length - 1];
-  if (!lastPt || Math.hypot(lastPt[0] - v.lat, lastPt[1] - v.lng) > 0.0002) {
+  if (!lastPt || Math.hypot(lastPt[0] - v.lat, lastPt[1] - v.lng) > 0.00015) {
     cleanRoute.push([v.lat, v.lng]);
   }
 

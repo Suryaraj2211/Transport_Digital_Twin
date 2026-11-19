@@ -21,9 +21,6 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onGoToTrip
           <span className="dash-status-dot-pulse"></span>
           <span className="dash-sub-note">Real-time GPS telematics · Auto-refreshes every 5s</span>
         </div>
-        <div className="dash-header-actions">
-          <span className="dash-corridor-tag">🛣️ Tamil Nadu Freight Corridors</span>
-        </div>
       </div>
 
       {/* KPI Filter Cards */}

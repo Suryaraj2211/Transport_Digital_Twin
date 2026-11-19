@@ -86,6 +86,19 @@ function calculateHeading(p1: [number, number], p2: [number, number]): number {
   return Math.round((brng + 360) % 360);
 }
 
+function projectPointOnSegment(p: [number, number], a: [number, number], b: [number, number]) {
+  const dx = b[1] - a[1];
+  const dy = b[0] - a[0];
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return { dist: Math.hypot(p[0] - a[0], p[1] - a[1]), t: 0 };
+  let t = ((p[1] - a[1]) * dx + (p[0] - a[0]) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  const projLat = a[0] + t * dy;
+  const projLng = a[1] + t * dx;
+  const dist = Math.hypot(p[0] - projLat, p[1] - projLng);
+  return { dist, t };
+}
+
 /**
  * Retrieve comprehensive destination information and forward corridor waypoints for a vehicle
  */
@@ -114,19 +127,19 @@ function getVehicleDestinationInfo(v: Vehicle, driver: Driver | null, isTripEnde
     if (v.lat && v.lng) {
       forwardWaypoints.push([v.lat, v.lng]);
 
-      // Dynamically find the closest waypoint to the truck's current live position
-      let closestIdx = 0;
-      let minDistance = Infinity;
-      for (let i = 0; i < pts.length; i++) {
-        const d = Math.hypot(pts[i][0] - v.lat, pts[i][1] - v.lng);
-        if (d < minDistance) {
-          minDistance = d;
-          closestIdx = i;
+      // Find which corridor segment [pts[i] -> pts[i+1]] the truck is currently on
+      let bestSeg = 0;
+      let minD = Infinity;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const res = projectPointOnSegment([v.lat, v.lng], pts[i], pts[i + 1]);
+        if (res.dist < minD) {
+          minD = res.dist;
+          bestSeg = i;
         }
       }
 
-      // Only add future waypoints forward towards destination (never backward/reverse)
-      for (let i = closestIdx + 1; i < pts.length; i++) {
+      // Add all future waypoints forward towards destination (never backward/reverse)
+      for (let i = bestSeg + 1; i < pts.length; i++) {
         forwardWaypoints.push(pts[i]);
       }
     }
@@ -459,15 +472,34 @@ export const FleetMap: React.FC<FleetMapProps> = ({ onSelectVehicle }) => {
 
       // Heading Direction Bezel for Moving Vehicles (Blue pointer matching user's Image)
       let headingBezelHtml = '';
+      let isMovingEast = false;
       if (cat === 'moving') {
         const clean = cleanVehicleRoute(v);
+        let p1: [number, number] | null = null;
+        let p2: [number, number] | null = null;
+
         if (clean && clean.length >= 2) {
-          let p1 = clean[clean.length - 2];
-          const p2 = clean[clean.length - 1];
+          p1 = clean[clean.length - 2];
+          p2 = clean[clean.length - 1];
           if (Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) < 0.0001 && clean.length >= 3) {
             p1 = clean[clean.length - 3];
           }
+        }
+
+        // If distance between p1 and p2 is negligible, look forward along corridor
+        if (!p1 || !p2 || Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) < 0.0001) {
+          const driver = v.driverId ? drivers[v.driverId] : null;
+          const destInfo = getVehicleDestinationInfo(v, driver, isTripEnded);
+          if (destInfo && destInfo.forwardWaypoints && destInfo.forwardWaypoints.length >= 2) {
+            p1 = destInfo.forwardWaypoints[0];
+            p2 = destInfo.forwardWaypoints[1];
+          }
+        }
+
+        if (p1 && p2) {
           const heading = calculateHeading(p1, p2);
+          // Unicode 🚚 naturally points West (left). When vehicle heads East (0° to 180°), flip horizontally so it faces travel direction
+          isMovingEast = heading >= 0 && heading < 180;
           headingBezelHtml = `
               <div class="heading-bezel" style="transform: rotate(${heading}deg);">
                   <span class="heading-arrow-marker">▲</span>
@@ -481,7 +513,7 @@ export const FleetMap: React.FC<FleetMapProps> = ({ onSelectVehicle }) => {
       const iconHtml = `
         <div class="custom-map-pin">
             <div class="map-pin-icon-circle ${cat} ${isSelected ? 'selected' : ''}" style="${isSelected ? `box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px ${palette.main}; border-color: ${palette.main};` : `border-color: #ffffff;`}">
-                <span>🚚</span>
+                <span class="truck-icon-glyph" style="display: inline-block; transform: ${isMovingEast ? 'scaleX(-1)' : 'scaleX(1)'}; transition: transform 0.2s ease;">🚚</span>
                 ${headingBezelHtml}
             </div>
             <div class="map-pin-pointer" style="${isSelected ? `border-top-color: ${palette.main};` : ''}"></div>
