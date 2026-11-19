@@ -77,7 +77,7 @@ interface FleetContextType {
 const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
 const SYNC_CHANNEL_NAME = 'fleet-tracker-sync';
-export const FLEET_STORAGE_VERSION = 'v7_only_one_arrived_others_moving';
+export const FLEET_STORAGE_VERSION = 'v8_with_halt_offline_arrived_moving';
 
 const loadInitialDrivers = (): Record<string, Driver> => {
   if (typeof window !== 'undefined') {
