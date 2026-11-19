@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import * as L from 'leaflet';
-import { useFleet, cleanVehicleRoute } from '../../context/FleetContext';
+import { useFleet, cleanVehicleRoute, projectPointOnSegment } from '../../context/FleetContext';
 import { Vehicle, Driver } from '../../types/fleet';
 import { FLEET_CORRIDORS } from '../../data/initialData';
 
@@ -86,18 +86,6 @@ function calculateHeading(p1: [number, number], p2: [number, number]): number {
   return Math.round((brng + 360) % 360);
 }
 
-function projectPointOnSegment(p: [number, number], a: [number, number], b: [number, number]) {
-  const dx = b[1] - a[1];
-  const dy = b[0] - a[0];
-  const len2 = dx * dx + dy * dy;
-  if (len2 === 0) return { dist: Math.hypot(p[0] - a[0], p[1] - a[1]), t: 0 };
-  let t = ((p[1] - a[1]) * dx + (p[0] - a[0]) * dy) / len2;
-  t = Math.max(0, Math.min(1, t));
-  const projLat = a[0] + t * dy;
-  const projLng = a[1] + t * dx;
-  const dist = Math.hypot(p[0] - projLat, p[1] - projLng);
-  return { dist, t };
-}
 
 /**
  * Retrieve comprehensive destination information and forward corridor waypoints for a vehicle

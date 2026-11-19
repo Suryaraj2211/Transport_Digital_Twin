@@ -98,7 +98,7 @@ const loadInitialDrivers = (): Record<string, Driver> => {
   return INITIAL_DRIVERS;
 };
 
-function projectPointOnSegment(p: [number, number], a: [number, number], b: [number, number]) {
+export function projectPointOnSegment(p: [number, number], a: [number, number], b: [number, number]) {
   const dx = b[1] - a[1];
   const dy = b[0] - a[0];
   const len2 = dx * dx + dy * dy;
