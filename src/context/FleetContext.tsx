@@ -77,7 +77,7 @@ interface FleetContextType {
 const FleetContext = createContext<FleetContextType | undefined>(undefined);
 
 const SYNC_CHANNEL_NAME = 'fleet-tracker-sync';
-export const FLEET_STORAGE_VERSION = 'v8_with_halt_offline_arrived_moving';
+export const FLEET_STORAGE_VERSION = 'v9_real_osm_road_geometry_chennai';
 
 const loadInitialDrivers = (): Record<string, Driver> => {
   if (typeof window !== 'undefined') {
@@ -499,9 +499,9 @@ export const FleetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 const dLat = targetPt[0] - v.lat;
                 const dLng = targetPt[1] - v.lng;
                 const dist = Math.hypot(dLat, dLng);
-                const step = Math.min(dist, 0.00020);
+                const step = Math.min(dist, 0.00035);
 
-                if (dist <= 0.00025) {
+                if (dist <= 0.00040) {
                   v.lat = targetPt[0];
                   v.lng = targetPt[1];
                   corridor.targetIndex += 1;
